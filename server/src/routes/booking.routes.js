@@ -5,10 +5,10 @@ import requireRole from '../middleware/requireRole.js';
 
 const router = Router();
 
-router.post('/', verifyToken, requireRole('driver'), startSession);
-router.put('/:id/end', verifyToken, requireRole('driver'), endSession);
-router.put('/:id/cancel', verifyToken, requireRole('driver'), cancelBooking);
+router.post('/', verifyToken, requireRole('user'), startSession);
+router.put('/:id/end', verifyToken, requireRole('user'), endSession);
+router.put('/:id/cancel', verifyToken, requireRole('user'), cancelBooking);
 router.get('/my', verifyToken, getMyBookings);
-router.get('/active', verifyToken, requireRole('driver'), getActiveSession);
+router.get('/active', verifyToken, requireRole('user'), getActiveSession);
 
 export default router;

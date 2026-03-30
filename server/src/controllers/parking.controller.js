@@ -71,7 +71,7 @@ export const getSpotById = async (req, res, next) => {
     if (!spot) return res.status(404).json({ error: 'Spot not found' });
 
     const reviews = await Review.find({ spot: spot._id })
-      .populate('driver', 'name avatar')
+      .populate('user', 'name avatar')
       .sort('-createdAt')
       .limit(20);
 
@@ -138,7 +138,7 @@ export const addReview = async (req, res, next) => {
     const spotId = req.params.id;
 
     const review = await Review.create({
-      driver: req.user._id,
+      user: req.user._id,
       spot: spotId,
       rating: parseInt(rating),
       comment
@@ -157,7 +157,7 @@ export const addReview = async (req, res, next) => {
       });
     }
 
-    await review.populate('driver', 'name avatar');
+    await review.populate('user', 'name avatar');
     res.status(201).json({ review });
   } catch (error) {
     next(error);

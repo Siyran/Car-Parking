@@ -33,7 +33,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-surface-300 max-w-2xl mx-auto mb-12 font-medium leading-relaxed animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            ParkFlow connects drivers with private parking spaces. Search, navigate, park, and pay seamlessly — all from your phone.
+            ParkFlow connects users with private parking spaces. Search, navigate, park, and pay seamlessly — all from your phone.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
@@ -51,7 +51,7 @@ export default function Home() {
           <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
             {[
               { label: 'Verified Spots', value: '5K+' },
-              { label: 'Happy Drivers', value: '50K+' },
+              { label: 'Happy Users', value: '50K+' },
               { label: 'Cities', value: '12' },
               { label: 'Uptime', value: '99.9%' }
             ].map((stat, i) => (
@@ -175,11 +175,11 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center text-white">
           <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Ready to Park Smarter?</h2>
           <p className="text-xl text-primary-100 mb-10 font-medium max-w-2xl mx-auto">
-            Join thousands of drivers finding parking instantly, and owners earning passive income today.
+            Join thousands of users finding parking instantly, and owners earning passive income today.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button onClick={() => navigate('/register')} className="px-8 py-4 rounded-full bg-white text-primary-600 font-bold text-lg hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all">
-              Start as Driver
+              Start as User
             </button>
             <button onClick={() => navigate('/register')} className="px-8 py-4 rounded-full glass border-white/30 text-white font-bold text-lg hover:bg-white/20 transition-all">
               Become an Owner

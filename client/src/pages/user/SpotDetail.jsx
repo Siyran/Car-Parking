@@ -177,7 +177,7 @@ export default function SpotDetail() {
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-surface-800">Reviews ({reviews.length})</h3>
-                {user?.role === 'driver' && (
+                {user?.role === 'user' && (
                   <Button size="sm" variant="ghost" onClick={() => setShowReview(true)}>Write Review</Button>
                 )}
               </div>
@@ -188,11 +188,11 @@ export default function SpotDetail() {
                   {reviews.map(r => (
                     <div key={r._id} className="flex gap-3">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                        {r.driver?.name?.[0] || '?'}
+                        {r.user?.name?.[0] || '?'}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-surface-800">{r.driver?.name}</span>
+                          <span className="text-sm font-medium text-surface-800">{r.user?.name}</span>
                           <div className="flex">{Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="w-3 h-3 fill-warning-400 text-warning-400" />)}</div>
                         </div>
                         <p className="text-sm text-surface-500 mt-0.5">{r.comment}</p>
@@ -227,12 +227,12 @@ export default function SpotDetail() {
                   <span className="font-medium text-surface-800">{spot.owner?.name}</span>
                 </div>
               </div>
-              {user?.role === 'driver' && spot.availableSlots > 0 && (
+              {user?.role === 'user' && spot.availableSlots > 0 && (
                 <Button onClick={handleStartParking} loading={starting} className="w-full" size="lg">
                   <Clock className="w-4 h-4" /> Start Parking
                 </Button>
               )}
-              {(!user || !['driver'].includes(user.role)) && spot.availableSlots > 0 && (
+              {(!user || !['user'].includes(user.role)) && spot.availableSlots > 0 && (
                 <Button onClick={() => navigate('/login')} className="w-full" size="lg">
                   Login to Park
                 </Button>

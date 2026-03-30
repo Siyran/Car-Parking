@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   if (loading) return <div className="pt-20 flex justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>;
 
   const stats = [
-    { label: 'Total Users', value: analytics?.users?.total, sub: `${analytics?.users?.drivers} drivers, ${analytics?.users?.owners} owners`, icon: Users, color: 'from-primary-500 to-blue-400' },
+    { label: 'Total Users', value: analytics?.users?.total, sub: `${analytics?.users?.regular} regular, ${analytics?.users?.owners} owners`, icon: Users, color: 'from-primary-500 to-blue-400' },
     { label: 'Parking Spots', value: analytics?.spots?.total, sub: `${analytics?.spots?.pending} pending approval`, icon: ParkingCircle, color: 'from-accent-500 to-purple-400' },
     { label: 'Total Bookings', value: analytics?.bookings?.total, sub: `${analytics?.bookings?.active} active now`, icon: Car, color: 'from-success-500 to-emerald-400' },
     { label: 'Platform Revenue', value: formatCurrency(analytics?.revenue?.platformRevenue || 0), sub: `Total: ${formatCurrency(analytics?.revenue?.totalRevenue || 0)}`, icon: IndianRupee, color: 'from-warning-500 to-amber-400' }

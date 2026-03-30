@@ -20,7 +20,7 @@ export const register = async (req, res, next) => {
 
     const userData = {
       name, email, phone, password: hashedPassword,
-      role: role || 'driver'
+      role: role || 'user'
     };
 
     if (role === 'owner') {

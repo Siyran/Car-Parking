@@ -55,7 +55,7 @@ export default function Login() {
             <p className="text-xs text-surface-400 text-center mb-3">Demo Accounts</p>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { email: 'amit@parkflow.com', label: 'Driver' },
+                { email: 'amit@parkflow.com', label: 'User' },
                 { email: 'rajesh@parkflow.com', label: 'Owner' },
                 { email: 'admin@parkflow.com', label: 'Admin' },
               ].map(({ email, label }) => (

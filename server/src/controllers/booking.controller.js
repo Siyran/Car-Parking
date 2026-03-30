@@ -11,8 +11,8 @@ export const startSession = async (req, res, next) => {
     if (spot.status !== 'approved') return res.status(400).json({ error: 'Spot not approved' });
     if (spot.availableSlots <= 0) return res.status(400).json({ error: 'No available slots' });
 
-    // Check if driver already has an active session
-    const activeBooking = await Booking.findOne({ driver: req.user._id, status: 'active' });
+    // Check if user already has an active session
+    const activeBooking = await Booking.findOne({ user: req.user._id, status: 'active' });
     if (activeBooking) return res.status(400).json({ error: 'You already have an active parking session' });
 
     // Decrease available slots
@@ -21,7 +21,7 @@ export const startSession = async (req, res, next) => {
 
     const now = new Date();
     const booking = await Booking.create({
-      driver: req.user._id,
+      user: req.user._id,
       spot: spot._id,
       startTime: now,
       billingMonth: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -42,7 +42,7 @@ export const startSession = async (req, res, next) => {
 
 export const endSession = async (req, res, next) => {
   try {
-    const booking = await Booking.findOne({ _id: req.params.id, driver: req.user._id, status: 'active' });
+    const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id, status: 'active' });
     if (!booking) return res.status(404).json({ error: 'Active booking not found' });
 
     const spot = await ParkingSpot.findById(booking.spot);
@@ -65,7 +65,7 @@ export const endSession = async (req, res, next) => {
     // Create transaction with 60/40 split
     await Transaction.create({
       booking: booking._id,
-      driver: req.user._id,
+      user: req.user._id,
       owner: spot.owner,
       amount: totalAmount,
       ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
@@ -91,7 +91,7 @@ export const endSession = async (req, res, next) => {
 export const getMyBookings = async (req, res, next) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const query = { driver: req.user._id };
+    const query = { user: req.user._id };
     if (status) query.status = status;
 
     const bookings = await Booking.find(query)
@@ -110,7 +110,7 @@ export const getMyBookings = async (req, res, next) => {
 
 export const getActiveSession = async (req, res, next) => {
   try {
-    const booking = await Booking.findOne({ driver: req.user._id, status: 'active' })
+    const booking = await Booking.findOne({ user: req.user._id, status: 'active' })
       .populate('spot', 'title address pricePerHour photos location');
     res.json({ booking });
   } catch (error) {
@@ -120,7 +120,7 @@ export const getActiveSession = async (req, res, next) => {
 
 export const cancelBooking = async (req, res, next) => {
   try {
-    const booking = await Booking.findOne({ _id: req.params.id, driver: req.user._id, status: 'active' });
+    const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id, status: 'active' });
     if (!booking) return res.status(404).json({ error: 'Active booking not found' });
 
     booking.status = 'cancelled';

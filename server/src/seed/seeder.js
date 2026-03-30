@@ -39,14 +39,14 @@ export const seedData = async () => {
     upiId: 'priya@upi', isVerified: true
   });
 
-  const driver1 = await User.create({
+  const user1 = await User.create({
     name: 'Amit Patel', email: 'amit@parkflow.com', phone: '9000000004',
-    password, role: 'driver', isVerified: true
+    password, role: 'user', isVerified: true
   });
 
-  const driver2 = await User.create({
+  const user2 = await User.create({
     name: 'Sneha Gupta', email: 'sneha@parkflow.com', phone: '9000000005',
-    password, role: 'driver', isVerified: true
+    password, role: 'user', isVerified: true
   });
 
   const spots = await ParkingSpot.insertMany([
@@ -125,7 +125,7 @@ export const seedData = async () => {
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   const booking1 = await Booking.create({
-    driver: driver1._id, spot: spots[0]._id,
+    user: user1._id, spot: spots[0]._id,
     startTime: new Date(now - 2 * 60 * 60 * 1000),
     endTime: new Date(now - 1 * 60 * 60 * 1000),
     duration: 60, totalAmount: 40, status: 'completed',
@@ -133,7 +133,7 @@ export const seedData = async () => {
   });
 
   const booking2 = await Booking.create({
-    driver: driver2._id, spot: spots[2]._id,
+    user: user2._id, spot: spots[2]._id,
     startTime: new Date(now - 3 * 60 * 60 * 1000),
     endTime: new Date(now - 0.5 * 60 * 60 * 1000),
     duration: 150, totalAmount: 180, status: 'completed',
@@ -141,7 +141,7 @@ export const seedData = async () => {
   });
 
   await Booking.create({
-    driver: driver1._id, spot: spots[1]._id,
+    user: user1._id, spot: spots[1]._id,
     startTime: new Date(now - 5 * 60 * 60 * 1000),
     endTime: new Date(now - 3 * 60 * 60 * 1000),
     duration: 120, totalAmount: 60, status: 'completed',
@@ -150,13 +150,13 @@ export const seedData = async () => {
 
   await Transaction.insertMany([
     {
-      booking: booking1._id, driver: driver1._id, owner: owner1._id,
+      booking: booking1._id, user: user1._id, owner: owner1._id,
       amount: 40, ownerShare: 24, platformShare: 16,
       type: 'booking', status: 'completed', month,
       description: 'Parking at MG Road Secure Parking - 60 mins'
     },
     {
-      booking: booking2._id, driver: driver2._id, owner: owner2._id,
+      booking: booking2._id, user: user2._id, owner: owner2._id,
       amount: 180, ownerShare: 108, platformShare: 72,
       type: 'booking', status: 'completed', month,
       description: 'Parking at Indiranagar Premium Garage - 150 mins'
@@ -164,16 +164,16 @@ export const seedData = async () => {
   ]);
 
   await Review.insertMany([
-    { driver: driver1._id, spot: spots[0]._id, rating: 5, comment: 'Great parking spot! Well maintained and secure. Will use again.' },
-    { driver: driver2._id, spot: spots[0]._id, rating: 4, comment: 'Good location, easy to find. Slightly narrow entrance.' },
-    { driver: driver1._id, spot: spots[2]._id, rating: 5, comment: 'Premium service, totally worth the price. Car wash was a bonus!' },
-    { driver: driver2._id, spot: spots[1]._id, rating: 4, comment: 'Decent open parking. Very affordable for daily use.' }
+    { user: user1._id, spot: spots[0]._id, rating: 5, comment: 'Great parking spot! Well maintained and secure. Will use again.' },
+    { user: user2._id, spot: spots[0]._id, rating: 4, comment: 'Good location, easy to find. Slightly narrow entrance.' },
+    { user: user1._id, spot: spots[2]._id, rating: 5, comment: 'Premium service, totally worth the price. Car wash was a bonus!' },
+    { user: user2._id, spot: spots[1]._id, rating: 4, comment: 'Decent open parking. Very affordable for daily use.' }
   ]);
 
   console.log('  📧 Test Accounts:');
   console.log('     Admin:  admin@parkflow.com / password123');
   console.log('     Owner:  rajesh@parkflow.com / password123');
-  console.log('     Driver: amit@parkflow.com / password123');
+  console.log('     User:   amit@parkflow.com / password123');
 };
 
 // Allow running directly

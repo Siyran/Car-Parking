@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Map, Calendar, User, Wallet, BarChart3, Menu, X, ParkingCircle } from 'lucide-react';
+import { LogOut, MapPin, Calendar, User, Wallet, BarChart3, Menu, X, ParkingCircle, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
@@ -15,10 +15,10 @@ export default function Navbar() {
   }, []);
 
   const links = {
-    driver: [
-      { name: 'Find Parking', path: '/search', icon: Map },
+    user: [
+      { name: 'Find Parking', path: '/search', icon: MapPin },
       { name: 'My Bookings', path: '/bookings', icon: Calendar },
-      { name: 'Billing', path: '/billing', icon: Wallet },
+      { name: 'Billing', path: '/billing', icon: CreditCard },
     ],
     owner: [
       { name: 'Dashboard', path: '/owner', icon: BarChart3 },
@@ -32,7 +32,7 @@ export default function Navbar() {
     ]
   };
 
-  const navLinks = user ? links[user.role] : [];
+  const navLinks = (user && links[user.role]) ? links[user.role] : [];
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'glass py-3' : 'bg-transparent py-5'}`}>

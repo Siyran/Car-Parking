@@ -5,9 +5,9 @@ import requireRole from '../middleware/requireRole.js';
 
 const router = Router();
 
-// Driver billing
-router.get('/monthly', verifyToken, requireRole('driver'), getMonthlyBill);
-router.post('/pay', verifyToken, requireRole('driver'), simulatePayment);
+// User billing
+router.get('/monthly', verifyToken, requireRole('user'), getMonthlyBill);
+router.post('/pay', verifyToken, requireRole('user'), simulatePayment);
 
 // Owner dashboard & earnings
 router.get('/owner/dashboard', verifyToken, requireRole('owner'), getOwnerDashboard);

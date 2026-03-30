@@ -43,7 +43,7 @@ export default function AdminTransactions() {
             <table className="w-full">
               <thead className="bg-surface-50">
                 <tr>
-                  {['Type', 'Driver', 'Owner', 'Amount', 'Owner Share', 'Platform Share', 'Status', 'Date'].map(h => (
+                  {['Type', 'User', 'Owner', 'Amount', 'Owner Share', 'Platform Share', 'Status', 'Date'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-surface-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -52,7 +52,7 @@ export default function AdminTransactions() {
                 {transactions.map(t => (
                   <tr key={t._id} className="border-t border-surface-50 hover:bg-surface-50/50">
                     <td className="px-4 py-3"><Badge variant={typeVariant[t.type] || 'neutral'}>{t.type}</Badge></td>
-                    <td className="px-4 py-3 text-sm text-surface-600">{t.driver?.name || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-surface-600">{t.user?.name || '—'}</td>
                     <td className="px-4 py-3 text-sm text-surface-600">{t.owner?.name || '—'}</td>
                     <td className="px-4 py-3 text-sm font-bold text-surface-800">{formatCurrency(t.amount)}</td>
                     <td className="px-4 py-3 text-sm text-success-500">{formatCurrency(t.ownerShare)}</td>

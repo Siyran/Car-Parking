@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema({
-  driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   spot: { type: mongoose.Schema.Types.ObjectId, ref: 'ParkingSpot', required: true },
   startTime: { type: Date, required: true },
   endTime: { type: Date },
@@ -12,7 +12,7 @@ const bookingSchema = new mongoose.Schema({
   billingMonth: { type: String } // format: "2026-03"
 }, { timestamps: true });
 
-bookingSchema.index({ driver: 1, status: 1 });
+bookingSchema.index({ user: 1, status: 1 });
 bookingSchema.index({ spot: 1, status: 1 });
 bookingSchema.index({ billingMonth: 1 });
 

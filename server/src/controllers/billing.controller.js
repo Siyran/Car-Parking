@@ -7,7 +7,7 @@ export const getMonthlyBill = async (req, res, next) => {
     const billingMonth = month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
     const bookings = await Booking.find({
-      driver: req.user._id,
+      user: req.user._id,
       billingMonth,
       status: 'completed'
     }).populate('spot', 'title address pricePerHour');
@@ -16,7 +16,7 @@ export const getMonthlyBill = async (req, res, next) => {
     const totalDuration = bookings.reduce((sum, b) => sum + b.duration, 0);
 
     const transactions = await Transaction.find({
-      driver: req.user._id,
+      user: req.user._id,
       month: billingMonth,
       type: 'booking'
     });
@@ -42,13 +42,13 @@ export const simulatePayment = async (req, res, next) => {
 
     // Mark all pending transactions for this month as completed
     await Transaction.updateMany(
-      { driver: req.user._id, month, status: 'pending' },
+      { user: req.user._id, month, status: 'pending' },
       { status: 'completed', paymentMethod: 'simulated' }
     );
 
     // Mark bookings as paid
     await Booking.updateMany(
-      { driver: req.user._id, billingMonth: month, status: 'completed' },
+      { user: req.user._id, billingMonth: month, status: 'completed' },
       { isPaid: true }
     );
 
@@ -88,7 +88,7 @@ export const getOwnerDashboard = async (req, res, next) => {
     const recentTransactions = await Transaction.find({ owner: ownerId })
       .sort('-createdAt')
       .limit(10)
-      .populate('driver', 'name');
+      .populate('user', 'name');
 
     // Active bookings on owner's spots
     const ParkingSpot = (await import('../models/ParkingSpot.js')).default;
@@ -163,7 +163,7 @@ export const getOwnerEarnings = async (req, res, next) => {
     const transactions = await Transaction.find({ owner: ownerId })
       .sort('-createdAt')
       .limit(50)
-      .populate('driver', 'name')
+      .populate('user', 'name')
       .populate('booking');
 
     res.json({ earningsByMonth, transactions });
@@ -179,7 +179,7 @@ export const getSpotBookings = async (req, res, next) => {
     if (!spot) return res.status(404).json({ error: 'Spot not found' });
 
     const bookings = await Booking.find({ spot: spot._id })
-      .populate('driver', 'name phone')
+      .populate('user', 'name phone')
       .sort('-createdAt')
       .limit(50);
 

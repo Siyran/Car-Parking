@@ -12,6 +12,6 @@ router.get('/:id', getSpotById);
 router.post('/', verifyToken, requireRole('owner'), upload.array('photos', 5), createSpot);
 router.put('/:id', verifyToken, requireRole('owner'), upload.array('photos', 5), updateSpot);
 router.delete('/:id', verifyToken, requireRole('owner'), deleteSpot);
-router.post('/:id/reviews', verifyToken, requireRole('driver'), addReview);
+router.post('/:id/reviews', verifyToken, requireRole('user'), addReview);
 
 export default router;

@@ -70,7 +70,7 @@ export const getTransactions = async (req, res, next) => {
     if (month) query.month = month;
 
     const transactions = await Transaction.find(query)
-      .populate('driver', 'name email')
+      .populate('user', 'name email')
       .populate('owner', 'name email')
       .sort('-createdAt')
       .skip((page - 1) * limit)
@@ -86,7 +86,7 @@ export const getTransactions = async (req, res, next) => {
 export const getAnalytics = async (req, res, next) => {
   try {
     const totalUsers = await User.countDocuments();
-    const totalDrivers = await User.countDocuments({ role: 'driver' });
+    const totalRegularUsers = await User.countDocuments({ role: 'user' });
     const totalOwners = await User.countDocuments({ role: 'owner' });
     const totalSpots = await ParkingSpot.countDocuments();
     const pendingSpots = await ParkingSpot.countDocuments({ status: 'pending' });
@@ -113,7 +113,7 @@ export const getAnalytics = async (req, res, next) => {
     ]);
 
     res.json({
-      users: { total: totalUsers, drivers: totalDrivers, owners: totalOwners },
+      users: { total: totalUsers, regular: totalRegularUsers, owners: totalOwners },
       spots: { total: totalSpots, pending: pendingSpots, approved: approvedSpots },
       bookings: { total: totalBookings, active: activeBookings },
       revenue: revenueStats[0] || { totalRevenue: 0, platformRevenue: 0, ownerPayouts: 0 },

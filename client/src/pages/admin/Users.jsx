@@ -32,7 +32,7 @@ export default function AdminUsers() {
     } catch { toast.error('Failed'); }
   };
 
-  const roleVariant = { driver: 'primary', owner: 'success', admin: 'warning' };
+  const roleVariant = { user: 'primary', owner: 'success', admin: 'warning' };
 
   return (
     <div className="pt-20 min-h-screen bg-surface-50">
@@ -46,7 +46,7 @@ export default function AdminUsers() {
               onKeyDown={e => e.key === 'Enter' && load()} />
           </div>
           <div className="flex gap-2">
-            {['', 'driver', 'owner', 'admin'].map(r => (
+            {['', 'user', 'owner', 'admin'].map(r => (
               <button key={r} onClick={() => setRoleFilter(r)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${roleFilter === r ? 'bg-primary-100 text-primary-700' : 'text-surface-500 hover:bg-surface-100'}`}>
                 {r || 'All'}

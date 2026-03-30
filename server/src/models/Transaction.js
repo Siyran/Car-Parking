@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const transactionSchema = new mongoose.Schema({
   booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
-  driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   amount: { type: Number, required: true },
   ownerShare: { type: Number, required: true }, // 60%

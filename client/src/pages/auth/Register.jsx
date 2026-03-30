@@ -10,7 +10,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const defaultRole = searchParams.get('role') || 'driver';
+  const defaultRole = searchParams.get('role') || 'user';
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
@@ -54,12 +54,12 @@ export default function Register() {
             <div className="mb-6">
               <label className="block text-sm font-medium text-surface-700 mb-2">I want to</label>
               <div className="grid grid-cols-2 gap-3">
-                {['driver', 'owner'].map(role => (
+                {['user', 'owner'].map(role => (
                   <button key={role} type="button" onClick={() => setForm({...form, role})}
                     className={`p-4 rounded-xl border-2 transition-all text-center ${form.role === role ? 'border-primary-500 bg-primary-50 shadow-sm' : 'border-surface-200 hover:border-surface-300'}`}>
-                    {role === 'driver' ? <User className="w-6 h-6 mx-auto mb-2 text-primary-600" /> : <Building className="w-6 h-6 mx-auto mb-2 text-primary-600" />}
+                    {role === 'user' ? <User className="w-6 h-6 mx-auto mb-2 text-primary-600" /> : <Building className="w-6 h-6 mx-auto mb-2 text-primary-600" />}
                     <span className={`text-sm font-semibold ${form.role === role ? 'text-primary-600' : 'text-surface-600'}`}>
-                      {role === 'driver' ? 'Find Parking' : 'List My Space'}
+                      {role === 'user' ? 'Find Parking' : 'List My Space'}
                     </span>
                   </button>
                 ))}

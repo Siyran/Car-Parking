@@ -10,12 +10,19 @@ import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 
 function LocationPicker({ position, setPosition }) {
-  useMapEvents({
+  const map = useMapEvents({
     click(e) {
       setPosition([e.latlng.lat, e.latlng.lng]);
     }
   });
+
   return position ? <Marker position={position} /> : null;
+}
+
+function MapRecenter({ position }) {
+  const map = useMapEvents({});
+  if (position) map.setView(position, 16);
+  return null;
 }
 
 export default function AddSpot() {
@@ -29,6 +36,28 @@ export default function AddSpot() {
     title: '', description: '', address: '', pricePerHour: '', totalSlots: '',
     amenities: '', vehicleTypes: ['car']
   });
+  const [locating, setLocating] = useState(false);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPosition([latitude, longitude]);
+        setLocating(false);
+        toast.success('Location detected!');
+      },
+      (err) => {
+        setLocating(false);
+        toast.error('Failed to get your location. Please check permissions.');
+      }
+    );
+  };
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -98,11 +127,17 @@ export default function AddSpot() {
           {/* Location */}
           <Card><div className="p-6 space-y-4">
             <h2 className="font-semibold text-surface-800">Location (Click to drop pin)</h2>
-            <div className="h-64 rounded-xl overflow-hidden border border-surface-200">
+            <div className="h-64 rounded-xl overflow-hidden border border-surface-200 relative">
               <MapContainer center={[12.9716, 77.5946]} zoom={13} className="h-full w-full">
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <LocationPicker position={position} setPosition={setPosition} />
+                <MapRecenter position={position} />
               </MapContainer>
+              
+              <button type="button" onClick={handleUseMyLocation} disabled={locating}
+                className="absolute bottom-4 right-4 z-[1000] p-3 bg-white hover:bg-surface-50 text-primary-600 rounded-full shadow-lg border border-surface-200 transition-all active:scale-95 disabled:opacity-50">
+                {locating ? <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" /> : <MapPin className="w-5 h-5" />}
+              </button>
             </div>
             {position && (
               <p className="text-xs text-surface-500">📍 {position[0].toFixed(6)}, {position[1].toFixed(6)}</p>

@@ -7,10 +7,10 @@ import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Search from './pages/driver/Search';
-import SpotDetail from './pages/driver/SpotDetail';
-import MyBookings from './pages/driver/MyBookings';
-import Billing from './pages/driver/Billing';
+import Search from './pages/user/Search';
+import SpotDetail from './pages/user/SpotDetail';
+import MyBookings from './pages/user/MyBookings';
+import Billing from './pages/user/Billing';
 import OwnerDashboard from './pages/owner/Dashboard';
 import AddSpot from './pages/owner/AddSpot';
 import MyListings from './pages/owner/MyListings';
@@ -40,9 +40,9 @@ function AppRoutes() {
       <Route path="/search" element={<Search />} />
       <Route path="/spots/:id" element={<SpotDetail />} />
 
-      {/* Driver */}
-      <Route path="/bookings" element={<ProtectedRoute roles={['driver']}><MyBookings /></ProtectedRoute>} />
-      <Route path="/billing" element={<ProtectedRoute roles={['driver']}><Billing /></ProtectedRoute>} />
+      {/* User (formerly Driver) */}
+      <Route path="/bookings" element={<ProtectedRoute roles={['user']}><MyBookings /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute roles={['user']}><Billing /></ProtectedRoute>} />
 
       {/* Owner */}
       <Route path="/owner" element={<ProtectedRoute roles={['owner']}><OwnerDashboard /></ProtectedRoute>} />
