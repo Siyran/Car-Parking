@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
 import { Mail, Lock, Sparkles, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 import toast from 'react-hot-toast';
+
 
 export default function Login() {
   const { login } = useAuth();
@@ -71,21 +72,19 @@ export default function Login() {
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-md"
         >
-          <div className="mb-10 lg:text-right">
-            <Link to="/" className="inline-flex items-center gap-3 mb-8 group lg:flex-row-reverse">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-                <span className="font-display font-black text-xl text-white">P</span>
-              </div>
-              <span className="font-display font-black text-2xl text-white tracking-tight italic">ParkFlow</span>
-            </Link>
-            <h1 className="text-4xl font-black text-white mb-3">Welcome Back</h1>
-            <p className="text-surface-400 font-medium">Continue your journey with us.</p>
+          <div className="mb-20 space-y-4">
+            <h2 className="text-5xl font-black text-white tracking-tighter leading-none">Initialize <br/><span className="gradient-text italic text-glow">Account</span></h2>
+            <p className="text-surface-400 font-medium italic text-lg">Enter your credentials to begin your journey.</p>
           </div>
 
-          <div className="glass-dark rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input label="Email Address" type="email" icon={Mail} placeholder="name@company.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="!bg-white/[0.03]" />
-              <Input label="Access Password" type="password" icon={Lock} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required className="!bg-white/[0.03]" />
+          <div className="glass-dark rounded-[2.5rem] p-10 border border-white/5 shadow-2xl overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 blur-3xl pointer-events-none" />
+            
+            <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+              <div className="space-y-6">
+                <Input label="Email Identity" type="email" icon={Mail} placeholder="name@domain.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="!bg-white/[0.03]" />
+                <Input label="Access Key" type="password" icon={Lock} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required className="!bg-white/[0.03]" />
+              </div>
               
               <div className="flex items-center justify-between px-1">
                 <label className="flex items-center gap-2 cursor-pointer group">

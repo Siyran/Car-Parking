@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Input = forwardRef(({ label, error, icon: Icon, className = '', containerClassName = '', ...props }, ref) => {
   return (
-    <div className={`space-y-2 ${containerClassName}`}>
+    <div className={`flex flex-col gap-4 ${containerClassName}`}>
       {label && (
-        <label className="block text-sm font-bold text-surface-700 dark:text-surface-300 ml-1">
+        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-surface-500 mb-1 ml-1">
           {label}
         </label>
       )}
       <div className="relative group">
         {Icon && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary-500 transition-colors duration-300">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary-500 transition-colors duration-300 z-10">
             <Icon className="w-5 h-5 flex-shrink-0" />
           </div>
         )}
@@ -22,16 +22,12 @@ const Input = forwardRef(({ label, error, icon: Icon, className = '', containerC
             text-surface-900 dark:text-white placeholder:text-surface-400 
             focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500
             transition-all duration-300 border-surface-200 dark:border-surface-800
-            ${Icon ? 'pl-[3.5rem]' : ''} 
+            ${Icon ? '!pl-14' : ''} 
             ${error ? 'border-danger-500 focus:ring-danger-500/10' : 'hover:border-surface-300 dark:hover:border-surface-700'} 
             ${className}
           `}
           {...props}
         />
-
-
-        
-        {/* Active border glow effect */}
         <div className="absolute inset-0 rounded-2xl pointer-events-none border border-transparent group-focus-within:border-primary-500/30 transition-all duration-300" />
       </div>
       
@@ -41,7 +37,7 @@ const Input = forwardRef(({ label, error, icon: Icon, className = '', containerC
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="text-xs font-semibold text-danger-500 ml-1"
+            className="text-xs font-semibold text-danger-500 ml-1 leading-relaxed"
           >
             {error}
           </motion.p>
@@ -53,4 +49,3 @@ const Input = forwardRef(({ label, error, icon: Icon, className = '', containerC
 
 Input.displayName = 'Input';
 export default Input;
-

@@ -24,7 +24,7 @@ const parkingSpotSchema = new mongoose.Schema({
   },
   amenities: [{ type: String }],
   vehicleTypes: [{ type: String, enum: ['car', 'bike', 'suv', 'truck'] }],
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
   isActive: { type: Boolean, default: true },
   averageRating: { type: Number, default: 0 },
   totalReviews: { type: Number, default: 0 }

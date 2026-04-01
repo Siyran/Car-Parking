@@ -39,12 +39,13 @@ export default function Navbar() {
   const isHomePage = pathname === '/';
 
   return (
-    <nav className="fixed top-0 w-full z-50 px-4 py-4 md:py-6 pointer-events-none">
+    <nav className="fixed top-0 w-full z-50 px-6 py-4 md:py-8 pointer-events-none">
       <div className={`
-        max-w-7xl mx-auto px-4 md:px-6 py-3 rounded-[2rem] transition-all duration-500 pointer-events-auto
-        ${scrolled ? 'glass shadow-premium translate-y-0' : `${isHomePage ? 'bg-transparent' : 'glass'} translate-y-1`}
+        max-w-[1400px] mx-auto px-8 md:px-12 py-5 rounded-[2.5rem] transition-all duration-500 pointer-events-auto
+        ${scrolled ? 'glass-dark shadow-glow translate-y-0' : `${isHomePage ? 'bg-transparent' : 'glass-dark'} translate-y-1`}
       `}>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center bg-transparent">
+
           <Link to="/" className="flex items-center gap-3 group shrink-0">
             <motion.div 
               whileHover={{ rotate: -10, scale: 1.1 }}
@@ -86,47 +87,62 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-              
-              {!user && !isHomePage && (
-                 <Link to="/" className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-surface-500 hover:text-surface-900 transition-colors">
-                   Home
-                 </Link>
-              )}
             </div>
-            
-            <div className="flex items-center gap-4 ml-4 shrink-0">
+
+            <div className="hidden lg:flex items-center gap-10 ml-8">
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Reserve', path: '/search' },
+                { name: 'Host', path: '/register?role=owner' },
+              ].map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`
+                    text-xs font-black uppercase tracking-[0.2em] transition-all duration-300
+                    ${scrolled || !isHomePage ? 'text-surface-400 hover:text-white' : 'text-white/70 hover:text-white'}
+                    hover:scale-110 active:scale-95
+                  `}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-12 ml-12 shrink-0">
               {user ? (
-                <div className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-                  <div className="bg-white/5 border border-white/10 py-1.5 px-4 rounded-2xl flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center text-white text-[10px] font-black shadow-inner">
+                <div className="flex items-center gap-6 group">
+                  <div className="glass-dark py-2 px-5 rounded-2xl flex items-center gap-4 border-white/5 group-hover:border-primary-500/30 transition-all">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center text-white text-xs font-black shadow-glow">
                       {user.name[0]}
                     </div>
-                    <span className="text-sm font-black text-white capitalize">{user.name}</span>
+                    <span className="text-sm font-black text-white italic tracking-tight">{user.name}</span>
                   </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={logout} 
-                    className="w-10 h-10 !p-0 rounded-full text-surface-400 hover:text-danger-500 hover:bg-danger-50 transition-colors"
+                    className="w-12 h-12 !p-0 rounded-2xl text-surface-500 hover:text-danger-500 hover:bg-danger-500/10 transition-all"
                   >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-6 h-6" />
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-8">
                   <Link 
                     to="/login" 
-                    className="text-sm font-black text-white hover:text-primary-400 transition-colors uppercase tracking-widest"
+                    className="text-xs font-black text-white hover:text-primary-400 transition-all uppercase tracking-[0.2em]"
                   >
-                    Sign In
+                    Login
                   </Link>
-                  <Button size="sm" onClick={() => (window.location.href = '/register')} className="!rounded-xl shadow-lg shadow-primary-500/20">
-                    Get Started
+                  <Button size="sm" onClick={() => (window.location.href = '/register')} className="!rounded-2xl px-8 shadow-glow-primary">
+                    Get Access
                   </Button>
                 </div>
               )}
             </div>
           </div>
+
 
           {/* Mobile menu button */}
           <button 

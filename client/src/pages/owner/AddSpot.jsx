@@ -91,7 +91,7 @@ export default function AddSpot() {
       photos.forEach(p => formData.append('photos', p));
 
       await spotAPI.create(formData);
-      toast.success('Parking spot submitted for approval!');
+      toast.success('Parking spot added successfully!');
       navigate('/owner/listings');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to add spot');
@@ -183,7 +183,7 @@ export default function AddSpot() {
             </div>
           </div></Card>
 
-          <Button type="submit" loading={loading} className="w-full" size="lg">Submit for Approval</Button>
+          <Button type="submit" loading={loading} className="w-full" size="lg">Add Parking Spot</Button>
         </form>
       </div>
     </div>
