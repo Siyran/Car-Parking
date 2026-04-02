@@ -33,7 +33,7 @@ export default function AddSpot() {
   const [photos, setPhotos] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [form, setForm] = useState({
-    title: '', description: '', address: '', pricePerHour: '', totalSlots: '',
+    title: '', description: '', address: '', totalSlots: '',
     amenities: '', vehicleTypes: ['car']
   });
   const [locating, setLocating] = useState(false);
@@ -84,7 +84,6 @@ export default function AddSpot() {
       formData.append('address', form.address);
       formData.append('latitude', position[0]);
       formData.append('longitude', position[1]);
-      formData.append('pricePerHour', form.pricePerHour);
       formData.append('totalSlots', form.totalSlots);
       formData.append('amenities', JSON.stringify(form.amenities.split(',').map(s => s.trim()).filter(Boolean)));
       formData.append('vehicleTypes', JSON.stringify(form.vehicleTypes));
@@ -118,8 +117,7 @@ export default function AddSpot() {
                 placeholder="Describe your parking space..." value={form.description} onChange={set('description')} />
             </div>
             <Input label="Address" icon={MapPin} placeholder="Full address" value={form.address} onChange={set('address')} required />
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Price per Hour (₹)" type="number" placeholder="40" value={form.pricePerHour} onChange={set('pricePerHour')} required min="1" />
+            <div className="grid grid-cols-1 gap-4">
               <Input label="Total Slots" type="number" placeholder="10" value={form.totalSlots} onChange={set('totalSlots')} required min="1" />
             </div>
           </div></Card>

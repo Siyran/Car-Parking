@@ -12,7 +12,7 @@ export const createSpot = async (req, res, next) => {
       title, description, address,
       location: { type: 'Point', coordinates: [parseFloat(longitude), parseFloat(latitude)] },
       photos,
-      pricePerHour: parseFloat(pricePerHour),
+      pricePerHour: 100,
       totalSlots: parseInt(totalSlots),
       availableSlots: parseInt(totalSlots),
       availability: availability ? JSON.parse(availability) : undefined,

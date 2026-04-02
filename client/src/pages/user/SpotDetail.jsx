@@ -8,10 +8,12 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
-import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send } from 'lucide-react';
+import RoutingMachine from '../../components/map/RoutingMachine';
+import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -30,9 +32,15 @@ export default function SpotDetail() {
   const [starting, setStarting] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [userLocation, setUserLocation] = useState(null);
+  const [showRoute, setShowRoute] = useState(false);
 
   useEffect(() => {
     loadSpot();
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => console.log('Location access denied')
+    );
   }, [id]);
 
   const loadSpot = async () => {
@@ -61,9 +69,11 @@ export default function SpotDetail() {
   };
 
   const handleNavigate = () => {
-    if (!spot) return;
-    const [lng, lat] = spot.location.coordinates;
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+    if (!userLocation) {
+      toast.error('Location access is required for directions');
+      return;
+    }
+    setShowRoute(!showRoute);
   };
 
   const submitReview = async () => {
@@ -126,12 +136,16 @@ export default function SpotDetail() {
             <div className="h-64 relative">
               <MapContainer center={[lat, lng]} zoom={16} className="h-full w-full" zoomControl={false} scrollWheelZoom={false}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[lat, lng]} />
+                {!showRoute && <Marker position={[lat, lng]} />}
+                {showRoute && userLocation && (
+                  <RoutingMachine start={userLocation} end={[lat, lng]} />
+                )}
               </MapContainer>
             </div>
             <div className="p-4 flex gap-2">
-              <Button onClick={handleNavigate} variant="secondary" size="sm" className="flex-1">
-                <Navigation className="w-4 h-4" /> Navigate
+              <Button onClick={handleNavigate} variant={showRoute ? 'primary' : 'secondary'} size="lg" className="flex-1 py-4 text-base shadow-sm hover:shadow-md transition-all">
+                {showRoute ? <ArrowLeft className="w-5 h-5" /> : <Navigation className="w-5 h-5" />}
+                {showRoute ? 'Back to Spot' : 'Get Directions'}
               </Button>
             </div>
           </Card>
