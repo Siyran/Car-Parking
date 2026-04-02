@@ -42,7 +42,7 @@ export default function MyListings() {
           <div className="space-y-4">
              <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary-600/10 border border-primary-500/20 text-[10px] font-black text-primary-400 uppercase tracking-[0.3em] w-fit">
                 <MapPin className="w-3.5 h-3.5" />
-                Network Infrastructure
+                Space Management
              </div>
              <h1 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
                 My <span className="gradient-text italic text-glow">Listings</span>.
@@ -50,7 +50,7 @@ export default function MyListings() {
           </div>
           <Link to="/owner/add-spot">
              <Button size="lg" className="!rounded-[1.5rem] px-8 py-5 text-sm font-black uppercase tracking-widest shadow-glow flex items-center gap-3">
-                <Plus className="w-5 h-5" /> Deploy New Node
+                <Plus className="w-5 h-5" /> List My Space
              </Button>
           </Link>
         </div>
@@ -60,9 +60,9 @@ export default function MyListings() {
         ) : spots.length === 0 ? (
           <div className="text-center py-24 glass-dark border border-white/5 rounded-[3rem]">
             <Settings className="w-20 h-20 mx-auto mb-8 text-surface-600 opacity-20 animate-pulse" />
-            <p className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">Zero Nodes Identified</p>
+            <p className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">No Spaces Found</p>
             <p className="text-xs font-bold text-surface-500 uppercase tracking-[0.2em] mb-8">No parking infrastructure linked to your account.</p>
-            <Link to="/owner/add-spot"><Button variant="primary">Initialize First Node</Button></Link>
+            <Link to="/owner/add-spot"><Button variant="primary">Initialize First Space</Button></Link>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

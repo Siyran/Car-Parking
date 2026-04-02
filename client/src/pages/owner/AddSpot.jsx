@@ -112,7 +112,7 @@ export default function AddSpot() {
               <Plus className="w-6 h-6" />
            </div>
            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">
-              Deploy <span className="gradient-text italic text-glow">Node</span>.
+              List My <span className="gradient-text italic text-glow">Space</span>.
            </h1>
         </div>
 
@@ -121,7 +121,7 @@ export default function AddSpot() {
           <Card className="glass-dark border-white/5 overflow-hidden">
             <div className="p-8 space-y-8">
               <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-4">Core Identification</h2>
-              <Input label="Protocol Designation (Title)" placeholder="e.g., MG Road Secure Parking" value={form.title} onChange={set('title')} required />
+              <Input label="Space Title" placeholder="e.g., MG Road Secure Parking" value={form.title} onChange={set('title')} required />
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-surface-500 mb-2.5 ml-1">Operational Description</label>
                 <textarea className="w-full h-32 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4 text-sm text-white placeholder:text-surface-600 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-300 outline-none resize-none"
@@ -129,7 +129,7 @@ export default function AddSpot() {
               </div>
               <Input label="Geospatial Address" icon={MapPin} placeholder="Full physical address" value={form.address} onChange={set('address')} required />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Input label="Node Capacity (Slots)" type="number" placeholder="10" value={form.totalSlots} onChange={set('totalSlots')} required min="1" />
+                <Input label="Space Capacity (Slots)" type="number" placeholder="10" value={form.totalSlots} onChange={set('totalSlots')} required min="1" />
                 <Input label="Base Rate / Hour" type="number" placeholder="50" value={form.pricePerHour} onChange={set('pricePerHour')} required min="1" icon={IndianRupee} />
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function AddSpot() {
             </div>
           </Card>
 
-          <Button type="submit" loading={loading} className="w-full !rounded-[2rem] py-6 text-sm font-black uppercase tracking-[0.3em] shadow-glow" size="lg">Initialize Node Deployment</Button>
+          <Button type="submit" loading={loading} className="w-full !rounded-[2rem] py-6 text-sm font-black uppercase tracking-[0.3em] shadow-glow" size="lg">Confirm Space Listing</Button>
         </form>
       </div>
     </div>

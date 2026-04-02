@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { spotAPI, bookingAPI } from '../../api';
+import { spotAPI, bookingAPI, billingAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -34,14 +34,14 @@ export default function OwnerDashboard() {
       });
       setRecentBookings(data.recentTransactions || []);
     } catch (err) {
-      toast.error('Provider telemetry link failed: Sync required');
+      toast.error('Provider connectivity failed: Sync required');
     }
     setLoading(false);
   };
 
   const statCards = [
-    { label: 'Total Infrastructure Units', value: stats.totalSpots, icon: MapPin, color: 'text-primary-400', bg: 'bg-primary-500/10' },
-    { label: 'Live Node Occupancy', value: stats.activeBookings, icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { label: 'Total Listed Spaces', value: stats.totalSpots, icon: MapPin, color: 'text-primary-400', bg: 'bg-primary-500/10' },
+    { label: 'Live Space Occupancy', value: stats.activeBookings, icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     { label: 'Aggregated Revenue', value: formatCurrency(stats.totalEarnings), icon: IndianRupee, color: 'text-accent-400', bg: 'bg-accent-500/10' }
   ];
 
@@ -56,7 +56,7 @@ export default function OwnerDashboard() {
            <div className="space-y-4">
               <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent-600/10 border border-accent-500/20 text-[10px] font-black text-accent-400 uppercase tracking-[0.3em] w-fit">
                  <Cpu className="w-3.5 h-3.5" />
-                 Infrastructure Management
+                 Space Management Center
               </div>
               <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
                  Owner <span className="gradient-text italic text-glow">Dashboard</span>.
@@ -65,12 +65,12 @@ export default function OwnerDashboard() {
            
            <div className="flex gap-4">
               <Button onClick={() => navigate('/owner/add-spot')} size="lg" className="!rounded-[1.5rem] px-8 py-5 text-sm font-black uppercase tracking-widest shadow-glow flex items-center gap-3">
-                 <Plus className="w-5 h-5" /> Deploy New Node
+                 <Plus className="w-5 h-5" /> List My Space
               </Button>
            </div>
         </div>
 
-        {/* Real-time Telemetry Stats */}
+        {/* Real-time Status Stats */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
            {statCards.map((stat, i) => (
              <motion.div key={stat.label} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
@@ -89,12 +89,12 @@ export default function OwnerDashboard() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
-           {/* Primary Feed: Node Activity */}
+           {/* Primary Feed: Space Activity */}
            <div className="lg:col-span-2 space-y-8">
               <div className="flex items-center justify-between px-4">
                  <div className="flex items-center gap-3">
                     <Activity className="w-5 h-5 text-primary-400 tech-pulse" />
-                    <h4 className="text-[11px] font-black text-white uppercase tracking-[0.4em] italic">Live Node Telemetry</h4>
+                    <h4 className="text-[11px] font-black text-white uppercase tracking-[0.4em] italic">Live Space Activity</h4>
                  </div>
                  <Button variant="ghost" className="text-[10px] font-black uppercase text-surface-500" onClick={() => navigate('/owner/my-listings')}>View Full Grid</Button>
               </div>
@@ -105,7 +105,7 @@ export default function OwnerDashboard() {
                  ) : recentBookings.length === 0 ? (
                     <div className="text-center py-20 glass-dark border border-white/5 rounded-[3rem]">
                        <Shield className="w-16 h-16 text-surface-600 mx-auto mb-6 opacity-20" />
-                       <p className="text-xl font-black text-white italic uppercase tracking-tighter">Zero Network Activity</p>
+                       <p className="text-xl font-black text-white italic uppercase tracking-tighter">Zero Space Activity</p>
                        <p className="text-sm font-medium text-surface-600 mt-2">No active sessions or reservations linked to your identity.</p>
                     </div>
                  ) : (
