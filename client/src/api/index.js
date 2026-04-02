@@ -51,7 +51,8 @@ export const bookingAPI = {
   endActive: () => api.put('/bookings/active/end'),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
   getMy: (params) => api.get('/bookings/my', { params }),
-  getActive: () => api.get('/bookings/active')
+  getActive: () => api.get('/bookings/active'),
+  getOwnerBookings: (params) => api.get('/bookings/owner', { params })
 };
 
 // Billing

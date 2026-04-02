@@ -189,3 +189,25 @@ export const cancelBooking = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getOwnerBookings = async (req, res, next) => {
+  try {
+    const { limit = 20 } = req.query;
+    const ownerId = req.user._id;
+
+    // First find all spots owned by this user
+    const ownerSpots = await ParkingSpot.find({ owner: ownerId }).select('_id');
+    const spotIds = ownerSpots.map(s => s._id);
+
+    // Then find bookings for those spots
+    const bookings = await Booking.find({ spot: { $in: spotIds } })
+      .populate('user', 'name email phone avatar')
+      .populate('spot', 'title address pricePerHour')
+      .sort('-createdAt')
+      .limit(parseInt(limit));
+
+    res.json({ bookings });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -25,22 +25,16 @@ export default function OwnerDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [spotsRes, bookingsRes] = await Promise.all([
-        spotAPI.getMy(),
-        bookingAPI.getOwnerBookings({ limit: 5 })
-      ]);
-      
-      const spots = spotsRes.data.spots;
-      const earnings = spots.reduce((acc, s) => acc + (s.totalEarnings || 0), 0);
+      const { data } = await billingAPI.getOwnerDashboard();
       
       setStats({
-        totalSpots: spots.length,
-        activeBookings: bookingsRes.data.bookings.filter(b => b.status === 'active').length,
-        totalEarnings: earnings
+        totalSpots: data.totalSpots || 0,
+        activeBookings: data.activeBookings || 0,
+        totalEarnings: data.totalEarnings || 0
       });
-      setRecentBookings(bookingsRes.data.bookings);
+      setRecentBookings(data.recentTransactions || []);
     } catch (err) {
-      toast.error('Provider telemetry link failed');
+      toast.error('Provider telemetry link failed: Sync required');
     }
     setLoading(false);
   };

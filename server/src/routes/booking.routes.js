@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { startSession, endSession, endActiveSession, getMyBookings, getActiveSession, cancelBooking } from '../controllers/booking.controller.js';
+import { 
+  startSession, endSession, endActiveSession, getMyBookings, 
+  getActiveSession, cancelBooking, getOwnerBookings 
+} from '../controllers/booking.controller.js';
 import verifyToken from '../middleware/verifyToken.js';
 import requireRole from '../middleware/requireRole.js';
 
@@ -10,6 +13,7 @@ router.put('/active/end', verifyToken, requireRole('user'), endActiveSession);
 router.put('/:id/end', verifyToken, requireRole('user'), endSession);
 router.put('/:id/cancel', verifyToken, requireRole('user'), cancelBooking);
 router.get('/my', verifyToken, getMyBookings);
+router.get('/owner', verifyToken, requireRole('owner'), getOwnerBookings);
 router.get('/active', verifyToken, requireRole('user'), getActiveSession);
 
 export default router;
