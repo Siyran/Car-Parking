@@ -37,11 +37,13 @@ const userIcon = L.divIcon({
   iconAnchor: [12, 12],
 });
 
-function MapUpdater({ center }) {
+function MapUpdater({ center, isManual }) {
   const map = useMap();
   useEffect(() => {
-    if (center) map.flyTo(center, 14, { duration: 1.5 });
-  }, [center, map]);
+    if (center && isManual) {
+      map.flyTo(center, map.getZoom() < 14 ? 14 : map.getZoom(), { duration: 1.5 });
+    }
+  }, [center, isManual, map]);
   return null;
 }
 
@@ -64,6 +66,7 @@ export default function Search() {
   const [view, setView] = useState('map');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ minPrice: '', maxPrice: '', radius: 5000 });
+  const [isManual, setIsManual] = useState(true);
   const [routingTo, setRoutingTo] = useState(null);
   const searchTimeout = useRef(null);
 
@@ -72,6 +75,7 @@ export default function Search() {
       (pos) => {
         const loc = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
+        setIsManual(true);
         setMapCenter(loc);
       },
       () => { fetchSpots(mapCenter[0], mapCenter[1]); },
@@ -108,6 +112,7 @@ export default function Search() {
       toast.error('GPS Lock Required');
       return;
     }
+    setIsManual(true);
     setRoutingTo([lat, lng]);
     setView('map');
   };
@@ -115,6 +120,7 @@ export default function Search() {
   const handleMoveEnd = (center) => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
+      setIsManual(false);
       setMapCenter(center);
     }, 500);
   };
@@ -216,7 +222,7 @@ export default function Search() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <MapUpdater center={mapCenter} />
+            <MapUpdater center={mapCenter} isManual={isManual} />
             <MapEventHandler onMoveEnd={handleMoveEnd} />
             
             {userLocation && <Marker position={userLocation} icon={userIcon} />}
@@ -266,7 +272,10 @@ export default function Search() {
           </MapContainer>
           
           <div className="absolute bottom-8 right-8 z-[1000] flex flex-col gap-4">
-             <button onClick={() => setMapCenter(userLocation || [12.9716, 77.5946])}
+             <button onClick={() => {
+                 setIsManual(true);
+                 setMapCenter(userLocation || [12.9716, 77.5946]);
+               }}
                className="p-5 glass-dark rounded-[1.5rem] border border-white/20 shadow-glow text-primary-400 hover:text-white transition-all transform hover:scale-110 active:scale-95">
                <Navigation className="w-7 h-7" />
              </button>
