@@ -158,7 +158,7 @@ export default function OwnerDashboard() {
                     <div className="space-y-6">
                        {[
                          { label: 'Blockchain Log', val: '99.4%', color: 'bg-primary-500' },
-                         { label: 'Node Uptime', val: '100%', color: 'bg-emerald-500' },
+                         { label: 'Space Uptime', val: '100%', color: 'bg-emerald-500' },
                          { label: 'API Latency', val: '12ms', color: 'bg-accent-500' },
                        ].map(node => (
                          <div key={node.label} className="space-y-2">
