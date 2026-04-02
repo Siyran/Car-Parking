@@ -48,6 +48,7 @@ export const spotAPI = {
 export const bookingAPI = {
   start: (data) => api.post('/bookings', data),
   end: (id) => api.put(`/bookings/${id}/end`),
+  endActive: () => api.put('/bookings/active/end'),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
   getMy: (params) => api.get('/bookings/my', { params }),
   getActive: () => api.get('/bookings/active')

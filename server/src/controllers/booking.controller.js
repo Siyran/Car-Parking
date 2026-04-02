@@ -118,6 +118,54 @@ export const getActiveSession = async (req, res, next) => {
   }
 };
 
+export const endActiveSession = async (req, res, next) => {
+  try {
+    const booking = await Booking.findOne({ user: req.user._id, status: 'active' });
+    if (!booking) return res.json({ message: 'No active session' });
+
+    const spot = await ParkingSpot.findById(booking.spot);
+    const endTime = new Date();
+    const durationMs = endTime - booking.startTime;
+    const durationMinutes = Math.ceil(durationMs / (1000 * 60));
+    const durationHours = Math.ceil(durationMinutes / 60);
+    const totalAmount = durationHours * spot.pricePerHour;
+
+    booking.endTime = endTime;
+    booking.duration = durationMinutes;
+    booking.totalAmount = totalAmount;
+    booking.status = 'completed';
+    await booking.save();
+
+    // Increase available slots
+    spot.availableSlots = Math.min(spot.availableSlots + 1, spot.totalSlots);
+    await spot.save();
+
+    // Create transaction with 60/40 split
+    await Transaction.create({
+      booking: booking._id,
+      user: req.user._id,
+      owner: spot.owner,
+      amount: totalAmount,
+      ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
+      platformShare: Math.round(totalAmount * 0.4 * 100) / 100,
+      type: 'booking',
+      status: 'completed',
+      month: booking.billingMonth,
+      description: `Parking at ${spot.title} for ${durationMinutes} mins`
+    });
+
+    // Emit socket event
+    if (req.app.get('io')) {
+      req.app.get('io').emit('spotUpdate', { spotId: spot._id, availableSlots: spot.availableSlots });
+    }
+
+    await booking.populate('spot', 'title address pricePerHour');
+    res.json({ booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const cancelBooking = async (req, res, next) => {
   try {
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id, status: 'active' });

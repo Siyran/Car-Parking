@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../api';
+import { authAPI, bookingAPI } from '../api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
@@ -40,10 +41,27 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem('parkflow_token');
-    localStorage.removeItem('parkflow_user');
-    setUser(null);
+  const logout = async () => {
+    const toastId = toast.loading('Logging out and securing session...');
+    try {
+      if (user?.role === 'user') {
+        const { data } = await bookingAPI.endActive();
+        if (data.booking) {
+          toast.success(`Session Ended: ${data.booking.spot?.title || 'Parking Spot'}`, { id: toastId });
+        } else {
+          toast.success('Logged out successfully', { id: toastId });
+        }
+      } else {
+        toast.success('Logged out successfully', { id: toastId });
+      }
+    } catch (err) {
+      console.error('Failed to auto-end session:', err);
+      toast.error('Logout completed with session errors', { id: toastId });
+    } finally {
+      localStorage.removeItem('parkflow_token');
+      localStorage.removeItem('parkflow_user');
+      setUser(null);
+    }
   };
 
   const updateUser = (updatedUser) => {
