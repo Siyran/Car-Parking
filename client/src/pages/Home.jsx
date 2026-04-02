@@ -57,7 +57,7 @@ export default function Home() {
           >
             <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-4 py-2 rounded-full glass-dark border border-white/10 text-primary-400 text-xs font-black tracking-[0.2em] uppercase">
               <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-              Next-Gen Parking Infrastructure
+              Next-Gen Parking Space Network
             </motion.div>
 
             <motion.h1 variants={itemVariants} className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] italic uppercase">
