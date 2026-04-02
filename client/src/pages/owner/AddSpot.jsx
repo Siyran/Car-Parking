@@ -5,7 +5,7 @@ import { spotAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import { MapPin, Upload, Image, X, ChevronLeft } from 'lucide-react';
+import { MapPin, Upload, Image, X, ChevronLeft, Plus, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 
