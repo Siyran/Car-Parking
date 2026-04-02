@@ -99,89 +99,111 @@ export default function AddSpot() {
   };
 
   return (
-    <div className="pt-20 min-h-screen bg-surface-50">
-      <div className="max-w-3xl mx-auto px-4 pb-12">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-surface-500 hover:text-surface-700 mb-4">
-          <ChevronLeft className="w-4 h-4" /> Back
+    <div className="pt-24 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
+      <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
+      
+      <div className="max-w-4xl mx-auto px-8 w-full pb-24 relative z-10">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-surface-500 hover:text-white mb-8 transition-colors">
+          <ChevronLeft className="w-4 h-4" /> Back to Dashboard
         </button>
-        <h1 className="text-2xl font-bold text-surface-900 mb-6">Add Parking Spot</h1>
+        
+        <div className="flex items-center gap-4 mb-10">
+           <div className="w-12 h-12 rounded-2xl bg-primary-600/10 border border-primary-500/20 flex items-center justify-center text-primary-400 shadow-glow">
+              <Plus className="w-6 h-6" />
+           </div>
+           <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">
+              Deploy <span className="gradient-text italic text-glow">Node</span>.
+           </h1>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Info */}
-          <Card><div className="p-6 space-y-4">
-            <h2 className="font-semibold text-surface-800">Basic Information</h2>
-            <Input label="Spot Title" placeholder="e.g., MG Road Secure Parking" value={form.title} onChange={set('title')} required />
-            <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Description</label>
-              <textarea className="w-full rounded-xl border border-surface-200 px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500/30 outline-none resize-none" rows={3}
-                placeholder="Describe your parking space..." value={form.description} onChange={set('description')} />
-            </div>
-            <Input label="Address" icon={MapPin} placeholder="Full address" value={form.address} onChange={set('address')} required />
-            <div className="grid grid-cols-1 gap-4">
-              <Input label="Total Slots" type="number" placeholder="10" value={form.totalSlots} onChange={set('totalSlots')} required min="1" />
-            </div>
-          </div></Card>
-
-          {/* Location */}
-          <Card><div className="p-6 space-y-4">
-            <h2 className="font-semibold text-surface-800">Location (Click to drop pin)</h2>
-            <div className="h-64 rounded-xl overflow-hidden border border-surface-200 relative">
-              <MapContainer center={[12.9716, 77.5946]} zoom={13} className="h-full w-full">
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <LocationPicker position={position} setPosition={setPosition} />
-                <MapRecenter position={position} />
-              </MapContainer>
-              
-              <button type="button" onClick={handleUseMyLocation} disabled={locating}
-                className="absolute bottom-4 right-4 z-[1000] p-3 bg-white hover:bg-surface-50 text-primary-600 rounded-full shadow-lg border border-surface-200 transition-all active:scale-95 disabled:opacity-50">
-                {locating ? <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" /> : <MapPin className="w-5 h-5" />}
-              </button>
-            </div>
-            {position && (
-              <p className="text-xs text-surface-500">📍 {position[0].toFixed(6)}, {position[1].toFixed(6)}</p>
-            )}
-          </div></Card>
-
-          {/* Photos */}
-          <Card><div className="p-6 space-y-4">
-            <h2 className="font-semibold text-surface-800">Photos</h2>
-            <div className="flex flex-wrap gap-3">
-              {previews.map((p, i) => (
-                <div key={i} className="relative w-24 h-24 rounded-xl overflow-hidden border border-surface-200">
-                  <img src={p} alt="" className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => removePhoto(i)} className="absolute top-1 right-1 p-1 bg-surface-900/60 rounded-full text-white">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-              <button type="button" onClick={() => fileRef.current?.click()}
-                className="w-24 h-24 rounded-xl border-2 border-dashed border-surface-300 flex flex-col items-center justify-center text-surface-400 hover:border-primary-400 hover:text-primary-500 transition-all">
-                <Upload className="w-5 h-5 mb-1" />
-                <span className="text-[10px]">Upload</span>
-              </button>
-            </div>
-            <input ref={fileRef} type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden" />
-          </div></Card>
-
-          {/* Extras */}
-          <Card><div className="p-6 space-y-4">
-            <h2 className="font-semibold text-surface-800">Additional Details</h2>
-            <Input label="Amenities (comma separated)" placeholder="CCTV, Covered, Security Guard" value={form.amenities} onChange={set('amenities')} />
-            <div>
-              <label className="block text-sm font-medium text-surface-700 mb-2">Vehicle Types</label>
-              <div className="flex flex-wrap gap-2">
-                {['car', 'bike', 'suv', 'truck'].map(v => (
-                  <button key={v} type="button"
-                    onClick={() => setForm({ ...form, vehicleTypes: form.vehicleTypes.includes(v) ? form.vehicleTypes.filter(x => x !== v) : [...form.vehicleTypes, v] })}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${form.vehicleTypes.includes(v) ? 'bg-primary-100 text-primary-700 border border-primary-200' : 'bg-surface-100 text-surface-500 border border-surface-200'}`}>
-                    {v}
-                  </button>
-                ))}
+          <Card className="glass-dark border-white/5 overflow-hidden">
+            <div className="p-8 space-y-8">
+              <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-4">Core Identification</h2>
+              <Input label="Protocol Designation (Title)" placeholder="e.g., MG Road Secure Parking" value={form.title} onChange={set('title')} required />
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-surface-500 mb-2.5 ml-1">Operational Description</label>
+                <textarea className="w-full h-32 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4 text-sm text-white placeholder:text-surface-600 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all duration-300 outline-none resize-none"
+                  placeholder="Describe your parking space..." value={form.description} onChange={set('description')} />
+              </div>
+              <Input label="Geospatial Address" icon={MapPin} placeholder="Full physical address" value={form.address} onChange={set('address')} required />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Input label="Node Capacity (Slots)" type="number" placeholder="10" value={form.totalSlots} onChange={set('totalSlots')} required min="1" />
+                <Input label="Base Rate / Hour" type="number" placeholder="50" value={form.pricePerHour} onChange={set('pricePerHour')} required min="1" icon={IndianRupee} />
               </div>
             </div>
-          </div></Card>
+          </Card>
 
-          <Button type="submit" loading={loading} className="w-full" size="lg">Add Parking Spot</Button>
+          {/* Location */}
+          <Card className="glass-dark border-white/5">
+            <div className="p-8 space-y-6">
+              <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-2">Coordinate Calibration (Click to drop pin)</h2>
+              <div className="h-80 rounded-[2rem] overflow-hidden border border-white/10 relative shadow-inner">
+                <MapContainer center={[12.9716, 77.5946]} zoom={13} className="h-full w-full dark-map-tiles">
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <LocationPicker position={position} setPosition={setPosition} />
+                  <MapRecenter position={position} />
+                </MapContainer>
+                
+                <button type="button" onClick={handleUseMyLocation} disabled={locating}
+                  className="absolute bottom-6 right-6 z-[1000] p-4 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl shadow-glow border border-primary-500/30 transition-all active:scale-95 disabled:opacity-50">
+                  {locating ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <MapPin className="w-6 h-6" />}
+                </button>
+              </div>
+              {position && (
+                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/[0.03] border border-white/5 w-fit">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                   <p className="text-[10px] font-mono font-black text-primary-400 uppercase tracking-widest leading-none">Lat: {position[0].toFixed(6)} | Lng: {position[1].toFixed(6)}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Photos */}
+          <Card className="glass-dark border-white/5">
+            <div className="p-8 space-y-6">
+              <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-4">Visual Telemetry</h2>
+              <div className="flex flex-wrap gap-5">
+                {previews.map((p, i) => (
+                  <div key={i} className="relative w-32 h-32 rounded-[1.5rem] overflow-hidden border border-white/10 shadow-2xl group">
+                    <img src={p} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <button type="button" onClick={() => removePhoto(i)} className="absolute top-2 right-2 p-2 bg-danger-500/80 rounded-xl text-white backdrop-blur-md transition-all hover:bg-danger-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="w-32 h-32 rounded-[1.5rem] border-2 border-dashed border-white/10 bg-white/[0.02] flex flex-col items-center justify-center text-surface-500 hover:border-primary-500/40 hover:text-primary-400 hover:bg-primary-500/5 transition-all group">
+                  <Upload className="w-6 h-6 mb-2 group-hover:-translate-y-1 transition-transform" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Interface</span>
+                </button>
+              </div>
+              <input ref={fileRef} type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden" />
+            </div>
+          </Card>
+
+          {/* Extras */}
+          <Card className="glass-dark border-white/5">
+            <div className="p-8 space-y-8">
+              <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-4">Subsystem Capability</h2>
+              <Input label="Advanced Amenities (comma separated)" placeholder="CCTV, Covered, Security Guard" value={form.amenities} onChange={set('amenities')} />
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-surface-500 mb-4 ml-1">Vehicle Protocol Compatibility</label>
+                <div className="flex flex-wrap gap-3">
+                  {['car', 'bike', 'suv', 'truck'].map(v => (
+                    <button key={v} type="button"
+                      onClick={() => setForm({ ...form, vehicleTypes: form.vehicleTypes.includes(v) ? form.vehicleTypes.filter(x => x !== v) : [...form.vehicleTypes, v] })}
+                      className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${form.vehicleTypes.includes(v) ? 'bg-primary-600 border-primary-500 text-white shadow-glow' : 'bg-white/[0.02] border-white/10 text-surface-500 hover:text-white'}`}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Button type="submit" loading={loading} className="w-full !rounded-[2rem] py-6 text-sm font-black uppercase tracking-[0.3em] shadow-glow" size="lg">Initialize Node Deployment</Button>
         </form>
       </div>
     </div>

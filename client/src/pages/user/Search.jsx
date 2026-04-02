@@ -242,15 +242,15 @@ export default function Search() {
                    <div className="p-5 bg-surface-950 border border-white/10 rounded-3xl min-w-[280px] shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/10 blur-2xl pointer-events-none" />
                     <h3 className="text-lg font-black text-white italic uppercase tracking-tighter leading-none mb-2">{spot.title}</h3>
-                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest leading-none mb-4 line-clamp-1">{spot.address}</p>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest leading-none mb-4 line-clamp-1 opacity-80">{spot.address}</p>
                     
                     <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
                       <div className="flex flex-col gap-1">
-                         <span className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Rate_H</span>
+                         <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest opacity-60">Rate_H</span>
                          <span className="text-primary-400 font-black text-base italic tracking-tighter">₹{spot.pricePerHour}</span>
                       </div>
                       <div className="flex flex-col gap-1 items-end">
-                         <span className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Infrastructure</span>
+                         <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest opacity-60">Infrastructure</span>
                          <Badge variant={spot.availableSlots > 0 ? 'success' : 'danger'} className="!rounded-lg px-2 text-[10px] font-black uppercase text-glow">
                            {spot.availableSlots} SLOTS
                          </Badge>
@@ -286,7 +286,7 @@ export default function Search() {
         <div className={`${view === 'list' ? 'flex-1' : 'hidden md:block md:w-[480px]'} bg-surface-950 border-l border-white/5 overflow-y-auto custom-scrollbar relative z-20`}>
           <div className="p-8 space-y-6">
             <div className="flex items-center justify-between px-2">
-               <h4 className="text-[10px] font-black text-surface-600 uppercase tracking-[0.5em]">System Results</h4>
+               <h4 className="text-[10px] font-black text-surface-400 uppercase tracking-[0.5em] opacity-60">System Results</h4>
                <div className="flex items-center gap-2 text-[10px] font-black text-primary-500 uppercase tracking-widest">
                   Live Feed <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-ping" />
                </div>
@@ -296,10 +296,10 @@ export default function Search() {
               <div className="text-center py-32 px-10 glass-dark border border-white/5 rounded-[3rem] relative overflow-hidden">
                  <div className="absolute inset-0 bg-primary-500/5 opacity-20 pointer-events-none animate-pulse" />
                  <div className="w-24 h-24 rounded-[2rem] bg-white/5 flex items-center justify-center mx-auto mb-8 border border-white/10">
-                    <Shield className="w-10 h-10 text-surface-600" />
+                    <Shield className="w-10 h-10 text-surface-400 opacity-60" />
                  </div>
                  <p className="text-2xl font-black text-white italic uppercase tracking-tighter">Infrastructural Void</p>
-                 <p className="text-sm font-medium text-surface-500 mt-3 leading-relaxed">No active nodes detected in current coordinate range.</p>
+                 <p className="text-sm font-medium text-surface-400 mt-3 leading-relaxed opacity-70">No active nodes detected in current coordinate range.</p>
                  <Button variant="outline" className="mt-10 !rounded-2xl w-full text-xs font-black py-4 uppercase tracking-widest border-primary-500/20 text-primary-400" onClick={() => setFilters({...filters, radius: 20000})}>Authorize Wider Scan</Button>
               </div>
             )}
@@ -317,7 +317,7 @@ export default function Search() {
                        <h3 className="text-xl font-black text-white italic uppercase tracking-tighter truncate group-hover:text-primary-400 transition-colors leading-none mb-2">{spot.title}</h3>
                        <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-primary-600" />
-                          <p className="text-[10px] font-black text-surface-500 tracking-widest uppercase truncate">{spot.address}</p>
+                          <p className="text-[10px] font-black text-surface-400 tracking-widest uppercase truncate opacity-80">{spot.address}</p>
                        </div>
                      </div>
                      <Badge variant={spot.availableSlots > 0 ? 'success' : 'danger'} className="!rounded-xl px-4 py-1.5 font-black uppercase text-[10px] border-none shadow-glow">
@@ -329,14 +329,14 @@ export default function Search() {
                       <div className="space-y-2">
                          <div className="flex items-center gap-1.5 grayscale opacity-50">
                             <IndianRupee className="w-3 h-3 text-white" />
-                            <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Rate Per Cycle</p>
+                            <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest opacity-60">Rate Per Cycle</p>
                          </div>
                          <p className="text-2xl font-black text-primary-400 italic tracking-tighter">₹{spot.pricePerHour}</p>
                       </div>
                       <div className="space-y-2 text-right">
                          <div className="flex items-center gap-1.5 justify-end grayscale opacity-50">
                             <Navigation className="w-3 h-3 text-white rotate-45" />
-                            <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Calculated Proximity</p>
+                            <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest opacity-60">Calculated Proximity</p>
                          </div>
                          <p className="text-2xl font-black text-white italic tracking-tighter">{spot.distance !== null ? formatDistance(spot.distance) : '---'}</p>
                       </div>

@@ -34,48 +34,81 @@ export default function MyListings() {
   const statusVariant = { pending: 'warning', approved: 'success', rejected: 'danger' };
 
   return (
-    <div className="pt-20 min-h-screen bg-surface-50">
-      <div className="max-w-4xl mx-auto px-4 pb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-surface-900">My Listings</h1>
-          <Link to="/owner/add-spot"><Button><Plus className="w-4 h-4" /> Add Spot</Button></Link>
+    <div className="pt-24 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
+      <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
+      
+      <div className="max-w-[1240px] mx-auto px-8 w-full pb-24 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 border-b border-white/5 pb-10">
+          <div className="space-y-4">
+             <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary-600/10 border border-primary-500/20 text-[10px] font-black text-primary-400 uppercase tracking-[0.3em] w-fit">
+                <MapPin className="w-3.5 h-3.5" />
+                Network Infrastructure
+             </div>
+             <h1 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
+                My <span className="gradient-text italic text-glow">Listings</span>.
+             </h1>
+          </div>
+          <Link to="/owner/add-spot">
+             <Button size="lg" className="!rounded-[1.5rem] px-8 py-5 text-sm font-black uppercase tracking-widest shadow-glow flex items-center gap-3">
+                <Plus className="w-5 h-5" /> Deploy New Node
+             </Button>
+          </Link>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>
+          <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
         ) : spots.length === 0 ? (
-          <div className="text-center py-16 text-surface-400">
-            <MapPin className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium mb-2">No parking spots listed yet</p>
-            <Link to="/owner/add-spot"><Button>Add Your First Spot</Button></Link>
+          <div className="text-center py-24 glass-dark border border-white/5 rounded-[3rem]">
+            <Settings className="w-20 h-20 mx-auto mb-8 text-surface-600 opacity-20 animate-pulse" />
+            <p className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">Zero Nodes Identified</p>
+            <p className="text-xs font-bold text-surface-500 uppercase tracking-[0.2em] mb-8">No parking infrastructure linked to your account.</p>
+            <Link to="/owner/add-spot"><Button variant="primary">Initialize First Node</Button></Link>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {spots.map(s => (
-              <Card key={s._id} className="overflow-hidden">
-                {s.photos?.[0] && (
-                  <div className="h-40 bg-surface-100">
-                    <img src={s.photos[0]} alt="" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="p-5">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-surface-800">{s.title}</h3>
-                    <Badge variant={statusVariant[s.status]}>{s.status}</Badge>
-                  </div>
-                  <p className="text-xs text-surface-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{s.address}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-lg font-bold text-primary-600">{formatCurrency(s.pricePerHour)}<span className="text-xs font-normal text-surface-400">/hr</span></span>
-                    <span className="text-sm text-surface-500">{s.availableSlots}/{s.totalSlots} slots</span>
-                  </div>
-                  {s.averageRating > 0 && (
-                    <div className="flex items-center gap-1 mt-2 text-sm text-surface-500">
-                      <Star className="w-3.5 h-3.5 fill-warning-400 text-warning-400" /> {s.averageRating} ({s.totalReviews})
-                    </div>
+              <Card key={s._id} className="group glass-dark border border-white/5 hover:border-primary-500/20 rounded-[2.5rem] overflow-hidden transition-all hover:bg-white/[0.02]">
+                <div className="h-48 relative overflow-hidden bg-surface-900">
+                  {s.photos?.[0] ? (
+                    <img src={s.photos[0]} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-100" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center opacity-10"><MapPin className="w-12 h-12" /></div>
                   )}
-                  <div className="flex gap-2 mt-4">
-                    <Link to={`/spots/${s._id}`} className="flex-1"><Button variant="secondary" size="sm" className="w-full"><Settings className="w-3.5 h-3.5" /> View</Button></Link>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(s._id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                  <div className="absolute top-5 right-5">
+                     <Badge variant={statusVariant[s.status]} className="!rounded-lg px-3 py-1 text-[8px] font-black uppercase text-glow backdrop-blur-md">
+                        {s.status}
+                     </Badge>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter leading-none group-hover:text-primary-400 transition-colors truncate pr-4">{s.title}</h3>
+                  </div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <MapPin className="w-3.5 h-3.5 text-surface-600 group-hover:text-primary-400 transition-colors" />
+                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest truncate">{s.address}</p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-8 pt-6 border-t border-white/5">
+                    <div className="flex flex-col gap-1">
+                       <span className="text-[10px] font-black text-surface-600 uppercase tracking-widest leading-none">Rate / Pulse</span>
+                       <span className="text-2xl font-black text-white italic tracking-tighter">{formatCurrency(s.pricePerHour).split('.')[0]}<span className="text-xs font-bold text-surface-500 uppercase tracking-widest ml-1">/hr</span></span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                       <span className="text-[10px] font-black text-surface-600 uppercase tracking-widest leading-none">Occupancy</span>
+                       <span className="text-sm font-black text-white italic uppercase tracking-tighter">{s.availableSlots} / {s.totalSlots} Slots</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Link to={`/spots/${s._id}`} className="flex-1">
+                       <Button variant="secondary" className="w-full !rounded-xl py-4 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white/5">
+                          <Settings className="w-4 h-4 mr-2" /> Interface
+                       </Button>
+                    </Link>
+                    <Button variant="danger" className="!rounded-xl p-4 transition-all hover:bg-danger-500/20" onClick={() => handleDelete(s._id)}>
+                       <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </Card>

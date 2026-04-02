@@ -143,15 +143,15 @@ export default function MyBookings() {
 
                  <div className="grid md:grid-cols-3 gap-8 p-8 bg-black/40 rounded-[2rem] border border-white/5 shadow-inner">
                     <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-8 md:pb-0">
-                       <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest opacity-60">Temporal Duration</p>
+                       <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Temporal Duration</p>
                        <div className="text-4xl font-mono font-black text-primary-400 italic tracking-widest">{fmtElapsed()}</div>
                     </div>
                     <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-8 md:pb-0">
-                       <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest opacity-60">Accrued Charges</p>
+                       <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Accrued Charges</p>
                        <div className="text-4xl font-black text-white italic tracking-tighter">₹{currentCost()}</div>
                     </div>
                     <div className="text-center space-y-3">
-                       <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest opacity-60">Unit Base Rate</p>
+                       <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Unit Base Rate</p>
                        <div className="text-4xl font-black text-accent-500 italic tracking-tighter">₹{activeSession.spot?.pricePerHour}/H</div>
                     </div>
                  </div>
@@ -176,7 +176,7 @@ export default function MyBookings() {
         <div className="space-y-6 relative">
           <div className="flex items-center gap-4 px-2">
              <div className="h-px flex-1 bg-white/5" />
-             <span className="text-[10px] font-black text-surface-600 uppercase tracking-[0.5em]">Historical Nodes</span>
+             <span className="text-[10px] font-black text-surface-400 uppercase tracking-[0.5em] opacity-80">Historical Nodes</span>
              <div className="h-px flex-1 bg-white/5" />
           </div>
 
@@ -185,7 +185,7 @@ export default function MyBookings() {
                <div className="absolute inset-0 bg-primary-500/5 opacity-10 pointer-events-none" />
                <Calendar className="w-20 h-20 mx-auto mb-8 opacity-20 text-white" />
                <p className="text-2xl font-black text-white italic uppercase tracking-tighter">No Ledger Entries</p>
-               <p className="text-sm font-medium text-surface-600 mt-2 max-w-xs mx-auto">Infrastructure utilization records are currently empty. Resume search to begin.</p>
+               <p className="text-sm font-medium text-surface-400 mt-2 max-w-xs mx-auto opacity-70">Infrastructure utilization records are currently empty. Resume search to begin.</p>
                <Button onClick={() => navigate('/search')} variant="ghost" className="mt-10 !rounded-2xl px-10 py-4 text-xs font-black uppercase tracking-widest border border-white/5 text-primary-400">Execute Terminal Search</Button>
             </div>
           )}
@@ -205,9 +205,9 @@ export default function MyBookings() {
                  <div className="flex-1 min-w-0 text-center md:text-left">
                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter truncate group-hover:text-primary-400 transition-colors leading-none mb-2">{b.spot?.title || 'System Unknown'}</h3>
                    <div className="flex items-center justify-center md:justify-start gap-4">
-                      <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">{formatDate(b.startTime)}</p>
+                      <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest">{formatDate(b.startTime)}</p>
                       <div className="w-1 h-1 rounded-full bg-white/20" />
-                      <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">{formatTime(b.startTime)} — {b.endTime ? formatTime(b.endTime) : 'ACTIVE'}</p>
+                      <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest">{formatTime(b.startTime)} — {b.endTime ? formatTime(b.endTime) : 'ACTIVE'}</p>
                    </div>
                  </div>
 
