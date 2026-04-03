@@ -126,7 +126,7 @@ export default function Search() {
   };
 
   return (
-    <div className="pt-28 h-screen flex flex-col bg-surface-950 selection:bg-primary-500 overflow-hidden relative">
+    <div className="pt-40 h-screen flex flex-col bg-surface-950 selection:bg-primary-500 overflow-hidden relative">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
 
       {/* High-Fidelity Technical Top Bar */}

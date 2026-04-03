@@ -42,7 +42,7 @@ export default function Billing() {
   };
 
   return (
-    <div className="pt-20 min-h-screen bg-surface-950 text-white selection:bg-primary-500 relative overflow-hidden flex flex-col">
+    <div className="pt-32 min-h-screen bg-surface-950 text-white selection:bg-primary-500 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
       <div className="max-w-3xl mx-auto px-4 pb-12 relative z-10 w-full">
         <div className="flex items-center justify-between mb-6">

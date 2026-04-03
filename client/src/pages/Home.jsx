@@ -30,10 +30,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-950 text-white selection:bg-primary-500 overflow-hidden">
+    <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
       
       {/* Hero Section */}
-      <section className="relative min-h-[100vh] flex items-center justify-center pt-20 pb-20 mesh-bg-dark border-b border-white/5">
+      <section className="relative min-h-[100vh] flex items-center justify-center pt-40 pb-20 mesh-bg-dark border-b border-white/5">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
           <motion.div 

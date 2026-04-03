@@ -24,7 +24,7 @@ export default function Earnings() {
   if (loading) return <div className="pt-20 flex justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>;
 
   return (
-    <div className="pt-24 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
+    <div className="pt-36 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-8 w-full pb-24 relative z-10">

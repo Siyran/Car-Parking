@@ -99,7 +99,7 @@ export default function AddSpot() {
   };
 
   return (
-    <div className="pt-24 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
+    <div className="pt-36 min-h-screen bg-surface-950 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-8 w-full pb-24 relative z-10">

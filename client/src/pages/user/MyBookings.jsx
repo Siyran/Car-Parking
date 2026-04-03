@@ -85,7 +85,7 @@ export default function MyBookings() {
   const statusVariant = { active: 'primary', completed: 'success', cancelled: 'danger' };
 
   return (
-    <div className="pt-20 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
+    <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
 
       <div className="max-w-[1000px] mx-auto px-8 w-full pb-24 relative z-10">

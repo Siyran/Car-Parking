@@ -123,9 +123,10 @@ export default function Navbar() {
                   </Link>
                   <button 
                     onClick={logout} 
-                    className="w-10 h-10 rounded-xl glass-dark hover:bg-danger-500/10 text-surface-500 hover:text-danger-500 transition-all duration-500 border border-white/5 flex items-center justify-center"
+                    className="h-10 px-4 rounded-xl glass-dark hover:bg-danger-500/10 text-surface-500 hover:text-danger-500 transition-all duration-500 border border-white/5 flex items-center gap-2 group/logout"
                   >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-4 h-4 transition-transform group-hover/logout:-translate-x-1" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Logout</span>
                   </button>
                 </div>
               ) : (
