@@ -50,7 +50,7 @@ export const endSession = async (req, res, next) => {
     const durationMs = endTime - booking.startTime;
     const durationMinutes = Math.ceil(durationMs / (1000 * 60));
     const durationHours = Math.ceil(durationMinutes / 60);
-    const totalAmount = durationHours * spot.pricePerHour;
+    const totalAmount = durationHours * (spot?.pricePerHour || 0);
 
     booking.endTime = endTime;
     booking.duration = durationMinutes;
@@ -58,26 +58,30 @@ export const endSession = async (req, res, next) => {
     booking.status = 'completed';
     await booking.save();
 
-    // Increase available slots
-    spot.availableSlots = Math.min(spot.availableSlots + 1, spot.totalSlots);
-    await spot.save();
+    // Increase available slots if spot exists
+    if (spot) {
+      spot.availableSlots = Math.min(spot.availableSlots + 1, spot.totalSlots);
+      await spot.save();
+    }
 
-    // Create transaction with 60/40 split
-    await Transaction.create({
-      booking: booking._id,
-      user: req.user._id,
-      owner: spot.owner,
-      amount: totalAmount,
-      ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
-      platformShare: Math.round(totalAmount * 0.4 * 100) / 100,
-      type: 'booking',
-      status: 'completed',
-      month: booking.billingMonth,
-      description: `Parking at ${spot.title} for ${durationMinutes} mins`
-    });
+    // Create transaction if spot exists
+    if (spot) {
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        owner: spot.owner,
+        amount: totalAmount,
+        ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
+        platformShare: Math.round(totalAmount * 0.4 * 100) / 100,
+        type: 'booking',
+        status: 'completed',
+        month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+        description: `Parking at ${spot.title} for ${durationMinutes} mins`
+      });
+    }
 
     // Emit socket event
-    if (req.app.get('io')) {
+    if (spot && req.app.get('io')) {
       req.app.get('io').emit('spotUpdate', { spotId: spot._id, availableSlots: spot.availableSlots });
     }
 
@@ -128,7 +132,7 @@ export const endActiveSession = async (req, res, next) => {
     const durationMs = endTime - booking.startTime;
     const durationMinutes = Math.ceil(durationMs / (1000 * 60));
     const durationHours = Math.ceil(durationMinutes / 60);
-    const totalAmount = durationHours * spot.pricePerHour;
+    const totalAmount = durationHours * (spot?.pricePerHour || 0);
 
     booking.endTime = endTime;
     booking.duration = durationMinutes;
@@ -137,25 +141,29 @@ export const endActiveSession = async (req, res, next) => {
     await booking.save();
 
     // Increase available slots
-    spot.availableSlots = Math.min(spot.availableSlots + 1, spot.totalSlots);
-    await spot.save();
+    if (spot) {
+      spot.availableSlots = Math.min(spot.availableSlots + 1, spot.totalSlots);
+      await spot.save();
+    }
 
     // Create transaction with 60/40 split
-    await Transaction.create({
-      booking: booking._id,
-      user: req.user._id,
-      owner: spot.owner,
-      amount: totalAmount,
-      ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
-      platformShare: Math.round(totalAmount * 0.4 * 100) / 100,
-      type: 'booking',
-      status: 'completed',
-      month: booking.billingMonth,
-      description: `Parking at ${spot.title} for ${durationMinutes} mins`
-    });
+    if (spot) {
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        owner: spot.owner,
+        amount: totalAmount,
+        ownerShare: Math.round(totalAmount * 0.6 * 100) / 100,
+        platformShare: Math.round(totalAmount * 0.4 * 100) / 100,
+        type: 'booking',
+        status: 'completed',
+        month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+        description: `Parking at ${spot.title} for ${durationMinutes} mins`
+      });
+    }
 
     // Emit socket event
-    if (req.app.get('io')) {
+    if (spot && req.app.get('io')) {
       req.app.get('io').emit('spotUpdate', { spotId: spot._id, availableSlots: spot.availableSlots });
     }
 

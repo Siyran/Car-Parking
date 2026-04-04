@@ -14,7 +14,7 @@ const transactionSchema = new mongoose.Schema({
   paymentMethod: { type: String, default: 'simulated' }
 }, { timestamps: true });
 
-transactionSchema.index({ driver: 1, month: 1 });
+transactionSchema.index({ user: 1, month: 1 });
 transactionSchema.index({ owner: 1, month: 1 });
 transactionSchema.index({ type: 1, status: 1 });
 
