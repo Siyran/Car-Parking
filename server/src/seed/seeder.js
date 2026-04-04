@@ -11,14 +11,15 @@ import Transaction from '../models/Transaction.js';
 import Review from '../models/Review.js';
 
 export const seedData = async () => {
-  // Clear existing data
-  await Promise.all([
-    User.deleteMany({}),
-    ParkingSpot.deleteMany({}),
-    Booking.deleteMany({}),
-    Transaction.deleteMany({}),
-    Review.deleteMany({})
-  ]);
+  // SAFETY: Only seed if the database is completely empty.
+  // This prevents wiping user-created data on restart.
+  const existingUsers = await User.countDocuments();
+  if (existingUsers > 0) {
+    console.log('  ℹ️  Database already has data. Skipping seed.');
+    return;
+  }
+
+  console.log('  📦 Empty database detected. Seeding initial sample data...');
 
   const password = await bcrypt.hash('password123', 10);
 
@@ -49,75 +50,76 @@ export const seedData = async () => {
     password, role: 'user', isVerified: true
   });
 
+  // Srinagar, J&K location spots
   const spots = await ParkingSpot.insertMany([
     {
-      owner: owner1._id, title: 'MG Road Secure Parking',
-      description: 'Well-lit underground parking near MG Road metro station. 24/7 CCTV surveillance with trained security guards. Walking distance to Commercial Street and Brigade Road.',
-      address: '45, MG Road, Bangalore 560001',
-      location: { type: 'Point', coordinates: [77.6070, 12.9752] },
+      owner: owner1._id, title: 'Lal Chowk Secure Parking',
+      description: 'Well-lit underground parking near Lal Chowk. 24/7 CCTV surveillance with trained security guards. Walking distance to major shops and markets.',
+      address: 'Lal Chowk, Srinagar, J&K 190001',
+      location: { type: 'Point', coordinates: [74.7973, 34.0837] },
       pricePerHour: 40, totalSlots: 10, availableSlots: 7,
-      amenities: ['CCTV', 'Covered', 'Security Guard', 'EV Charging'],
+      amenities: ['CCTV', 'Covered', 'Security Guard'],
       vehicleTypes: ['car', 'bike'], status: 'approved', isActive: true,
       averageRating: 4.5, totalReviews: 12
     },
     {
-      owner: owner1._id, title: 'Koramangala Hub Parking',
-      description: 'Open parking lot in the heart of Koramangala. Walking distance to restaurants, cafes, and shopping centers. Well-lit at night.',
-      address: '88, 4th Block, Koramangala, Bangalore 560034',
-      location: { type: 'Point', coordinates: [77.6239, 12.9352] },
+      owner: owner1._id, title: 'Dal Gate Parking Hub',
+      description: 'Open parking near Dal Gate with scenic views. Walking distance to Boulevard Road, Nehru Park, and Dal Lake houseboats.',
+      address: 'Dal Gate, Boulevard Road, Srinagar, J&K 190001',
+      location: { type: 'Point', coordinates: [74.8560, 34.0902] },
       pricePerHour: 30, totalSlots: 15, availableSlots: 12,
       amenities: ['Open Air', 'Night Lights', 'Wide Spaces'],
       vehicleTypes: ['car', 'bike', 'suv'], status: 'approved', isActive: true,
       averageRating: 4.0, totalReviews: 8
     },
     {
-      owner: owner2._id, title: 'Indiranagar Premium Garage',
-      description: 'Premium covered garage in Indiranagar with car wash facility. Valet service available on weekends. Air-conditioned waiting area.',
-      address: '12, 100 Feet Road, Indiranagar, Bangalore 560038',
-      location: { type: 'Point', coordinates: [77.6408, 12.9784] },
+      owner: owner2._id, title: 'Rajbagh Premium Garage',
+      description: 'Premium covered garage in Rajbagh near Bund. Valet service available on weekends. Well-maintained and safe.',
+      address: 'Rajbagh, Srinagar, J&K 190008',
+      location: { type: 'Point', coordinates: [74.8196, 34.0762] },
       pricePerHour: 60, totalSlots: 8, availableSlots: 5,
-      amenities: ['Covered', 'CCTV', 'Car Wash', 'Valet', 'Restroom', 'AC Lounge'],
+      amenities: ['Covered', 'CCTV', 'Valet', 'Restroom'],
       vehicleTypes: ['car', 'suv'], status: 'approved', isActive: true,
       averageRating: 4.8, totalReviews: 25
     },
     {
-      owner: owner2._id, title: 'HSR Layout Budget Parking',
-      description: 'Budget-friendly parking near HSR Layout main road. Great for daily commuters. Easy access from Outer Ring Road.',
-      address: '27th Main, HSR Layout Sector 1, Bangalore 560102',
-      location: { type: 'Point', coordinates: [77.6369, 12.9116] },
+      owner: owner2._id, title: 'Batmaloo Budget Parking',
+      description: 'Budget-friendly parking near Batmaloo. Great for daily commuters heading to the city center.',
+      address: 'Batmaloo, Srinagar, J&K 190009',
+      location: { type: 'Point', coordinates: [74.7820, 34.0750] },
       pricePerHour: 20, totalSlots: 20, availableSlots: 18,
       amenities: ['Open Air', 'Easy Access'],
       vehicleTypes: ['car', 'bike', 'suv', 'truck'], status: 'approved', isActive: true,
       averageRating: 3.8, totalReviews: 6
     },
     {
-      owner: owner1._id, title: 'Whitefield IT Park Parking',
-      description: 'Multi-level parking structure near ITPL. Ideal for office goers with monthly pass options. Shuttle service to nearby tech parks.',
-      address: 'ITPL Main Road, Whitefield, Bangalore 560066',
-      location: { type: 'Point', coordinates: [77.7480, 12.9698] },
-      pricePerHour: 35, totalSlots: 50, availableSlots: 35,
-      amenities: ['Covered', 'CCTV', 'Elevator', 'Security Guard', 'Shuttle'],
+      owner: owner1._id, title: 'Hazratbal Parking Zone',
+      description: 'Spacious parking near Hazratbal Shrine and University of Kashmir campus. Perfect for visitors and students.',
+      address: 'Hazratbal, Srinagar, J&K 190006',
+      location: { type: 'Point', coordinates: [74.8393, 34.1260] },
+      pricePerHour: 25, totalSlots: 30, availableSlots: 25,
+      amenities: ['Open Air', 'Security Guard', 'Night Lights'],
       vehicleTypes: ['car', 'bike'], status: 'approved', isActive: true,
       averageRating: 4.2, totalReviews: 18
     },
     {
-      owner: owner2._id, title: 'Jayanagar Residential Parking',
-      description: 'Quiet residential parking in Jayanagar 4th Block. Perfect for overnight stays. Gated with individual key access.',
-      address: '11th Cross, 4th Block Jayanagar, Bangalore 560041',
-      location: { type: 'Point', coordinates: [77.5820, 12.9250] },
-      pricePerHour: 25, totalSlots: 6, availableSlots: 4,
+      owner: owner2._id, title: 'Sonwar Bagh Parking',
+      description: 'Quiet residential parking in Sonwar area near Shankaracharya Hill. Perfect for overnight stays.',
+      address: 'Sonwar Bagh, Srinagar, J&K 190001',
+      location: { type: 'Point', coordinates: [74.8156, 34.0850] },
+      pricePerHour: 30, totalSlots: 6, availableSlots: 4,
       amenities: ['Covered', 'Gate Lock', 'Overnight'],
       vehicleTypes: ['car', 'bike'], status: 'approved', isActive: true,
       averageRating: 4.0, totalReviews: 3
     },
     {
-      owner: owner1._id, title: 'Electronic City Phase 1',
-      description: 'Large open parking space near Infosys campus. Ideal for tech professionals.',
-      address: 'Electronic City Phase 1, Bangalore 560100',
-      location: { type: 'Point', coordinates: [77.6600, 12.8500] },
-      pricePerHour: 15, totalSlots: 30, availableSlots: 28,
+      owner: owner1._id, title: 'Parimpora Commercial Parking',
+      description: 'Large open parking space near Parimpora fruit market. Ideal for commercial visitors.',
+      address: 'Parimpora, Srinagar, J&K 190015',
+      location: { type: 'Point', coordinates: [74.7470, 34.0980] },
+      pricePerHour: 15, totalSlots: 40, availableSlots: 35,
       amenities: ['Open Air', 'Night Lights', 'Security Guard'],
-      vehicleTypes: ['car', 'bike', 'suv'], status: 'pending', isActive: true
+      vehicleTypes: ['car', 'bike', 'suv', 'truck'], status: 'pending', isActive: true
     }
   ]);
 
@@ -153,21 +155,21 @@ export const seedData = async () => {
       booking: booking1._id, user: user1._id, owner: owner1._id,
       amount: 40, ownerShare: 24, platformShare: 16,
       type: 'booking', status: 'completed', month,
-      description: 'Parking at MG Road Secure Parking - 60 mins'
+      description: 'Parking at Lal Chowk Secure Parking - 60 mins'
     },
     {
       booking: booking2._id, user: user2._id, owner: owner2._id,
       amount: 180, ownerShare: 108, platformShare: 72,
       type: 'booking', status: 'completed', month,
-      description: 'Parking at Indiranagar Premium Garage - 150 mins'
+      description: 'Parking at Rajbagh Premium Garage - 150 mins'
     }
   ]);
 
   await Review.insertMany([
     { user: user1._id, spot: spots[0]._id, rating: 5, comment: 'Great parking spot! Well maintained and secure. Will use again.' },
-    { user: user2._id, spot: spots[0]._id, rating: 4, comment: 'Good location, easy to find. Slightly narrow entrance.' },
-    { user: user1._id, spot: spots[2]._id, rating: 5, comment: 'Premium service, totally worth the price. Car wash was a bonus!' },
-    { user: user2._id, spot: spots[1]._id, rating: 4, comment: 'Decent open parking. Very affordable for daily use.' }
+    { user: user2._id, spot: spots[0]._id, rating: 4, comment: 'Good location, easy to find. Close to Lal Chowk market.' },
+    { user: user1._id, spot: spots[2]._id, rating: 5, comment: 'Premium service, totally worth the price. Very safe area.' },
+    { user: user2._id, spot: spots[1]._id, rating: 4, comment: 'Decent parking near Dal Gate. Very affordable for daily use.' }
   ]);
 
   console.log('  📧 Test Accounts:');

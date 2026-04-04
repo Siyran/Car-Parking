@@ -60,7 +60,7 @@ function MapEventHandler({ onMoveEnd }) {
 export default function Search() {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([12.9716, 77.5946]); // Bangalore default
+  const [mapCenter, setMapCenter] = useState([34.0837, 74.7973]); // Srinagar default
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('map');
@@ -274,7 +274,7 @@ export default function Search() {
           <div className="absolute bottom-8 right-8 z-[1000] flex flex-col gap-4">
              <button onClick={() => {
                  setIsManual(true);
-                 setMapCenter(userLocation || [12.9716, 77.5946]);
+                 setMapCenter(userLocation || [34.0837, 74.7973]);
                }}
                className="p-5 glass-dark rounded-[1.5rem] border border-white/20 shadow-glow text-primary-400 hover:text-white transition-all transform hover:scale-110 active:scale-95">
                <Navigation className="w-7 h-7" />

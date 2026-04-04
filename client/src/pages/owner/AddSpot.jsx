@@ -140,7 +140,7 @@ export default function AddSpot() {
             <div className="p-8 space-y-6">
               <h2 className="text-xs font-black text-surface-500 uppercase tracking-[0.4em] mb-2">Coordinate Calibration (Click to drop pin)</h2>
               <div className="h-80 rounded-[2rem] overflow-hidden border border-white/10 relative shadow-inner">
-                <MapContainer center={[12.9716, 77.5946]} zoom={13} className="h-full w-full dark-map-tiles">
+                <MapContainer center={[34.0837, 74.7973]} zoom={13} className="h-full w-full dark-map-tiles">
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <LocationPicker position={position} setPosition={setPosition} />
                   <MapRecenter position={position} />

@@ -3,6 +3,9 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
+# Database persistent storage
+server/.data/
+
 # Environment Variables
 .env
 client/.env
