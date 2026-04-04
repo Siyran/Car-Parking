@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, MapPin, Calendar, User, Wallet, BarChart3, Menu, X, ParkingCircle, CreditCard, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -8,8 +8,14 @@ import Button from '../ui/Button';
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -122,7 +128,7 @@ export default function Navbar() {
                     </div>
                   </Link>
                   <button 
-                    onClick={logout} 
+                    onClick={handleLogout} 
                     className="h-10 px-4 rounded-xl glass-dark hover:bg-danger-500/10 text-surface-500 hover:text-danger-500 transition-all duration-500 border border-white/5 flex items-center gap-2 group/logout"
                   >
                     <LogOut className="w-4 h-4 transition-transform group-hover/logout:-translate-x-1" />
@@ -211,7 +217,7 @@ export default function Navbar() {
                   <Button 
                     variant="danger" 
                     className="w-full rounded-[1.75rem] py-6 text-lg font-black uppercase tracking-widest italic flex items-center justify-center gap-3"
-                    onClick={() => { logout(); setIsOpen(false); }}
+                    onClick={() => { handleLogout(); setIsOpen(false); }}
                   >
                     <LogOut className="w-6 h-6" /> Exit Hub
                   </Button>
