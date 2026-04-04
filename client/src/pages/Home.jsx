@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Zap, Target, Shield, MapPin, ParkingCircle, CreditCard, Star, Clock, Info } from 'lucide-react';
-import HeroCar from '../components/animations/HeroCar';
+import ThreeCar from '../components/animations/ThreeCar';
+import Tilt from 'react-parallax-tilt';
 import Button from '../components/ui/Button';
 
 export default function Home() {
@@ -30,7 +31,7 @@ export default function Home() {
   };
 
   return (
-    <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
+    <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col perspective-1000" style={{ transformStyle: 'preserve-3d' }}>
       
       {/* Hero Section */}
       <section className="relative min-h-[100vh] flex items-center justify-center pt-40 pb-20 mesh-bg-dark border-b border-white/5">
@@ -101,13 +102,13 @@ export default function Home() {
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, scale: 0.8, x: 100 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-            className="relative h-[600px] flex items-center justify-center"
+            className="relative h-[650px] w-full xl:w-[120%] xl:-ml-[10%] flex items-center justify-center p-8 glass-dark rounded-[3.5rem] border border-white/10 shadow-2xl overflow-hidden"
           >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary-500/10 blur-[120px] pointer-events-none rounded-full" />
-            <HeroCar />
+            <div className="absolute inset-0 bg-primary-500/5 blur-[120px] pointer-events-none rounded-full" />
+            <ThreeCar />
           </motion.div>
         </div>
       </section>
@@ -121,20 +122,29 @@ export default function Home() {
               { icon: Shield, title: "INFRASTRUCTURE TRUST", desc: "Every spot in our network undergoes rigorous physical and digital security verification before listing.", accent: "accent" },
               { icon: Zap, title: "REAL-TIME SYNC", desc: "Experience zero latency. Find, reserve, and park with instant synchronization across the entire network.", accent: "emerald" }
             ].map((feature, i) => (
-              <motion.div
+              <Tilt
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="glass-dark p-10 rounded-[2.5rem] border border-white/5 hover:border-primary-500/20 group transition-all duration-700"
+                tiltMaxAngleX={10}
+                tiltMaxAngleY={10}
+                perspective={1000}
+                scale={1.02}
+                transitionSpeed={1500}
+                className="h-full"
               >
-                <div className={`w-16 h-16 rounded-3xl mb-8 flex items-center justify-center transition-transform group-hover:scale-110 duration-500 bg-${feature.accent}-500/10`}>
-                  <feature.icon className={`w-8 h-8 text-${feature.accent}-500`} />
-                </div>
-                <h3 className="text-3xl font-black mb-4 tracking-tighter italic uppercase">{feature.title}</h3>
-                <p className="text-surface-400 font-medium leading-relaxed">{feature.desc}</p>
-              </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  viewport={{ once: true }}
+                  className="h-full glass-dark p-10 rounded-[2.5rem] border border-white/5 hover:border-primary-500/20 group transition-all duration-700 shadow-xl"
+                >
+                  <div className={`w-16 h-16 rounded-3xl mb-8 flex items-center justify-center transition-transform group-hover:scale-110 duration-500 bg-${feature.accent}-500/10 shadow-inner`}>
+                    <feature.icon className={`w-8 h-8 text-${feature.accent}-500`} />
+                  </div>
+                  <h3 className="text-3xl font-black mb-4 tracking-tighter italic uppercase">{feature.title}</h3>
+                  <p className="text-surface-400 font-medium leading-relaxed">{feature.desc}</p>
+                </motion.div>
+              </Tilt>
             ))}
           </div>
         </div>
