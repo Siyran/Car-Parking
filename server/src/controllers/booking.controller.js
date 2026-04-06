@@ -1,10 +1,11 @@
 import Booking from '../models/Booking.js';
 import ParkingSpot from '../models/ParkingSpot.js';
 import Transaction from '../models/Transaction.js';
+import User from '../models/User.js';
 
 export const startSession = async (req, res, next) => {
   try {
-    const { spotId } = req.body;
+    const { spotId, paymentMethod = 'wallet', hours = 1 } = req.body;
 
     const spot = await ParkingSpot.findById(spotId);
     if (!spot) return res.status(404).json({ error: 'Parking spot not found' });
@@ -15,6 +16,26 @@ export const startSession = async (req, res, next) => {
     const activeBooking = await Booking.findOne({ user: req.user._id, status: 'active' });
     if (activeBooking) return res.status(400).json({ error: 'You already have an active parking session' });
 
+    // Calculate prepaid amount
+    const prepaidHours = Math.max(1, Math.ceil(hours));
+    const prepaidAmount = prepaidHours * spot.pricePerHour;
+
+    // Process payment
+    if (paymentMethod === 'wallet') {
+      const user = await User.findById(req.user._id);
+      if (user.walletBalance < prepaidAmount) {
+        return res.status(400).json({ 
+          error: 'Insufficient wallet balance',
+          required: prepaidAmount,
+          available: user.walletBalance
+        });
+      }
+      // Deduct from wallet
+      user.walletBalance -= prepaidAmount;
+      await user.save();
+    }
+    // For 'upi' and 'card', we simulate payment (assume success)
+
     // Decrease available slots
     spot.availableSlots -= 1;
     await spot.save();
@@ -24,8 +45,28 @@ export const startSession = async (req, res, next) => {
       user: req.user._id,
       spot: spot._id,
       startTime: now,
+      paymentMethod,
+      prepaidAmount,
+      isPaid: true,
       billingMonth: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     });
+
+    // Record wallet debit transaction
+    if (paymentMethod === 'wallet') {
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        owner: spot.owner,
+        amount: prepaidAmount,
+        ownerShare: 0,
+        platformShare: 0,
+        type: 'wallet_debit',
+        status: 'completed',
+        month: booking.billingMonth,
+        description: `Prepaid ${prepaidHours}h parking at ${spot.title}`,
+        paymentMethod: 'wallet'
+      });
+    }
 
     await booking.populate('spot', 'title address pricePerHour location photos');
 
@@ -56,6 +97,55 @@ export const endSession = async (req, res, next) => {
     booking.duration = durationMinutes;
     booking.totalAmount = totalAmount;
     booking.status = 'completed';
+
+    // Handle refund or extra charge
+    if (booking.prepaidAmount > totalAmount) {
+      // Refund excess to wallet
+      const refundAmount = booking.prepaidAmount - totalAmount;
+      booking.refundAmount = refundAmount;
+
+      const user = await User.findById(req.user._id);
+      user.walletBalance += refundAmount;
+      await user.save();
+
+      // Record refund transaction
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        amount: refundAmount,
+        ownerShare: 0,
+        platformShare: 0,
+        type: 'refund',
+        status: 'completed',
+        month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+        description: `Refund for unused time at ${spot?.title || 'parking spot'}`,
+        paymentMethod: 'wallet'
+      });
+    } else if (totalAmount > booking.prepaidAmount && booking.paymentMethod === 'wallet') {
+      // Deduct extra from wallet
+      const extraCharge = totalAmount - booking.prepaidAmount;
+      const user = await User.findById(req.user._id);
+      
+      if (user.walletBalance >= extraCharge) {
+        user.walletBalance -= extraCharge;
+        await user.save();
+        
+        await Transaction.create({
+          booking: booking._id,
+          user: req.user._id,
+          owner: spot?.owner,
+          amount: extraCharge,
+          ownerShare: 0,
+          platformShare: 0,
+          type: 'wallet_debit',
+          status: 'completed',
+          month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+          description: `Extra charge for overtime at ${spot?.title || 'parking spot'}`,
+          paymentMethod: 'wallet'
+        });
+      }
+    }
+
     await booking.save();
 
     // Increase available slots if spot exists
@@ -64,7 +154,7 @@ export const endSession = async (req, res, next) => {
       await spot.save();
     }
 
-    // Create transaction if spot exists
+    // Create booking transaction (revenue split)
     if (spot) {
       await Transaction.create({
         booking: booking._id,
@@ -138,6 +228,52 @@ export const endActiveSession = async (req, res, next) => {
     booking.duration = durationMinutes;
     booking.totalAmount = totalAmount;
     booking.status = 'completed';
+
+    // Handle refund or extra charge
+    if (booking.prepaidAmount > totalAmount) {
+      const refundAmount = booking.prepaidAmount - totalAmount;
+      booking.refundAmount = refundAmount;
+
+      const user = await User.findById(req.user._id);
+      user.walletBalance += refundAmount;
+      await user.save();
+
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        amount: refundAmount,
+        ownerShare: 0,
+        platformShare: 0,
+        type: 'refund',
+        status: 'completed',
+        month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+        description: `Refund for unused time at ${spot?.title || 'parking spot'}`,
+        paymentMethod: 'wallet'
+      });
+    } else if (totalAmount > booking.prepaidAmount && booking.paymentMethod === 'wallet') {
+      const extraCharge = totalAmount - booking.prepaidAmount;
+      const user = await User.findById(req.user._id);
+      
+      if (user.walletBalance >= extraCharge) {
+        user.walletBalance -= extraCharge;
+        await user.save();
+
+        await Transaction.create({
+          booking: booking._id,
+          user: req.user._id,
+          owner: spot?.owner,
+          amount: extraCharge,
+          ownerShare: 0,
+          platformShare: 0,
+          type: 'wallet_debit',
+          status: 'completed',
+          month: booking.billingMonth || `${endTime.getFullYear()}-${String(endTime.getMonth() + 1).padStart(2, '0')}`,
+          description: `Extra charge for overtime at ${spot?.title || 'parking spot'}`,
+          paymentMethod: 'wallet'
+        });
+      }
+    }
+
     await booking.save();
 
     // Increase available slots
@@ -146,7 +282,7 @@ export const endActiveSession = async (req, res, next) => {
       await spot.save();
     }
 
-    // Create transaction with 60/40 split
+    // Create booking transaction
     if (spot) {
       await Transaction.create({
         booking: booking._id,
@@ -179,6 +315,29 @@ export const cancelBooking = async (req, res, next) => {
     const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id, status: 'active' });
     if (!booking) return res.status(404).json({ error: 'Active booking not found' });
 
+    // Refund prepaid amount to wallet
+    if (booking.prepaidAmount > 0 && booking.paymentMethod === 'wallet') {
+      const user = await User.findById(req.user._id);
+      user.walletBalance += booking.prepaidAmount;
+      await user.save();
+
+      booking.refundAmount = booking.prepaidAmount;
+
+      const now = new Date();
+      await Transaction.create({
+        booking: booking._id,
+        user: req.user._id,
+        amount: booking.prepaidAmount,
+        ownerShare: 0,
+        platformShare: 0,
+        type: 'refund',
+        status: 'completed',
+        month: booking.billingMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+        description: 'Full refund for cancelled booking',
+        paymentMethod: 'wallet'
+      });
+    }
+
     booking.status = 'cancelled';
     booking.endTime = new Date();
     await booking.save();
@@ -192,7 +351,7 @@ export const cancelBooking = async (req, res, next) => {
       }
     }
 
-    res.json({ message: 'Booking cancelled', booking });
+    res.json({ message: 'Booking cancelled and refunded', booking });
   } catch (error) {
     next(error);
   }

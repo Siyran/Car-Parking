@@ -11,6 +11,7 @@ import Search from './pages/user/Search';
 import SpotDetail from './pages/user/SpotDetail';
 import MyBookings from './pages/user/MyBookings';
 import Billing from './pages/user/Billing';
+import Wallet from './pages/user/Wallet';
 import OwnerDashboard from './pages/owner/Dashboard';
 import AddSpot from './pages/owner/AddSpot';
 import MyListings from './pages/owner/MyListings';
@@ -42,6 +43,7 @@ function AppRoutes() {
 
       {/* User (formerly Driver) */}
       <Route path="/bookings" element={<ProtectedRoute roles={['user']}><MyBookings /></ProtectedRoute>} />
+      <Route path="/wallet" element={<ProtectedRoute roles={['user']}><Wallet /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute roles={['user']}><Billing /></ProtectedRoute>} />
 
       {/* Owner */}

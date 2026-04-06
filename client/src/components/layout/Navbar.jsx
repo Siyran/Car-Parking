@@ -27,6 +27,7 @@ export default function Navbar() {
     user: [
       { name: 'Find Parking', path: '/search', icon: MapPin },
       { name: 'My Bookings', path: '/bookings', icon: Calendar },
+      { name: 'Wallet', path: '/wallet', icon: Wallet },
       { name: 'Billing', path: '/billing', icon: CreditCard },
     ],
     owner: [

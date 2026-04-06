@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { spotAPI, bookingAPI } from '../../api';
+import { spotAPI, bookingAPI, walletAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -10,7 +10,7 @@ import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import RoutingMachine from '../../components/map/RoutingMachine';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu } from 'lucide-react';
+import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu, Wallet, CreditCard, Smartphone, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
@@ -43,8 +43,11 @@ export default function SpotDetail() {
   const [starting, setStarting] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [userLocation, setUserLocation] = useState(null);
   const [showRoute, setShowRoute] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedHours, setSelectedHours] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState('wallet');
+  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     loadSpot();
@@ -66,15 +69,25 @@ export default function SpotDetail() {
     setLoading(false);
   };
 
-  const handleStartParking = async () => {
+  const openPaymentModal = async () => {
     if (!user) { navigate('/login'); return; }
+    try {
+      const { data } = await walletAPI.getBalance();
+      setWalletBalance(data.balance);
+    } catch (err) {
+      setWalletBalance(0);
+    }
+    setShowPayment(true);
+  };
+
+  const handleStartParking = async () => {
     setStarting(true);
     try {
-      await bookingAPI.start({ spotId: id });
-      toast.success('Parking session initialized!');
+      await bookingAPI.start({ spotId: id, paymentMethod, hours: selectedHours });
+      toast.success('Parking session started!');
       navigate('/bookings');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Initialization failed');
+      toast.error(err.response?.data?.error || 'Payment failed');
     }
     setStarting(false);
   };
@@ -331,11 +344,11 @@ export default function SpotDetail() {
                    </div>
 
                    <div className="space-y-4">
-                     {user?.role === 'user' && spot.availableSlots > 0 && (
-                       <Button onClick={handleStartParking} loading={starting} variant="primary" className="w-full !rounded-[2rem] py-10 text-lg font-black uppercase tracking-[0.3em] shadow-glow" size="lg">
-                         <Zap className="w-6 h-6 mr-3 fill-white" /> Execute Entry
-                       </Button>
-                     )}
+                      {user?.role === 'user' && spot.availableSlots > 0 && (
+                        <Button onClick={openPaymentModal} loading={starting} variant="primary" className="w-full !rounded-[2rem] py-10 text-lg font-black uppercase tracking-[0.3em] shadow-glow" size="lg">
+                          <Zap className="w-6 h-6 mr-3 fill-white" /> Execute Entry
+                        </Button>
+                      )}
                      {(!user || !['user'].includes(user.role)) && spot.availableSlots > 0 && (
                        <Button onClick={() => navigate('/login')} variant="primary" className="w-full !rounded-[2rem] py-10 text-lg font-black uppercase tracking-[0.3em] shadow-glow" size="lg">
                          Initialize Node
@@ -389,6 +402,101 @@ export default function SpotDetail() {
           <div className="flex gap-4">
              <Button variant="ghost" onClick={() => setShowReview(false)} className="flex-1 !rounded-[1.5rem] font-black text-xs uppercase tracking-widest border border-white/5">Decline</Button>
              <Button onClick={submitReview} className="flex-2 !rounded-[1.5rem] py-6 font-black text-sm uppercase tracking-[0.2em] shadow-glow"><Send className="w-4 h-4 mr-3" /> Commit Log</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Payment Modal */}
+      <Modal isOpen={showPayment} onClose={() => setShowPayment(false)} title="Payment Terminal">
+        <div className="space-y-8 p-4">
+          {/* Duration Selector */}
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.4em] ml-2">Parking Duration</label>
+            <div className="grid grid-cols-4 gap-3">
+              {[1, 2, 3, 4].map(h => (
+                <button
+                  key={h}
+                  onClick={() => setSelectedHours(h)}
+                  className={`py-5 rounded-2xl text-center font-black transition-all border ${
+                    selectedHours === h
+                      ? 'bg-primary-600 text-white border-primary-500 shadow-glow'
+                      : 'bg-white/5 text-surface-300 border-white/10 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <div className="text-2xl italic tracking-tighter">{h}H</div>
+                  <div className="text-[9px] uppercase tracking-widest mt-1 opacity-60">₹{h * (spot?.pricePerHour || 0)}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="glass-dark rounded-[2rem] border border-white/10 p-6 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em]">Total Charge</p>
+              <p className="text-xs text-surface-400 mt-1">Refund for unused time</p>
+            </div>
+            <div className="text-4xl font-black text-white italic tracking-tighter text-glow">
+              ₹{selectedHours * (spot?.pricePerHour || 0)}
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.4em] ml-2">Payment Method</label>
+            <div className="space-y-3">
+              {[
+                { id: 'wallet', label: 'Wallet', icon: Wallet, sub: `Balance: ₹${walletBalance.toLocaleString('en-IN')}`, insufficient: walletBalance < selectedHours * (spot?.pricePerHour || 0) },
+                { id: 'upi', label: 'UPI', icon: Smartphone, sub: 'Google Pay / PhonePe' },
+                { id: 'card', label: 'Card', icon: CreditCard, sub: 'Debit / Credit Card' }
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setPaymentMethod(m.id)}
+                  className={`w-full flex items-center gap-4 p-5 rounded-2xl border transition-all ${
+                    paymentMethod === m.id
+                      ? 'bg-primary-600/10 border-primary-500/30 text-white'
+                      : 'bg-white/5 border-white/10 text-surface-400 hover:text-white'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    paymentMethod === m.id ? 'bg-primary-500/20 border border-primary-500/30' : 'bg-white/5 border border-white/10'
+                  }`}>
+                    <m.icon className={`w-6 h-6 ${paymentMethod === m.id ? 'text-primary-400' : ''}`} />
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-sm font-black uppercase tracking-wider">{m.label}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${
+                      m.insufficient ? 'text-red-400' : 'text-surface-500'
+                    }`}>{m.sub}</p>
+                  </div>
+                  {m.insufficient && m.id === 'wallet' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate('/wallet'); }}
+                      className="text-[10px] font-black text-primary-400 uppercase tracking-widest hover:text-white transition-colors px-3 py-2 rounded-xl bg-primary-500/10 border border-primary-500/20"
+                    >
+                      Top Up
+                    </button>
+                  )}
+                  {paymentMethod === m.id && (
+                    <div className="w-3 h-3 rounded-full bg-primary-500 shadow-glow" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Confirm */}
+          <div className="flex gap-4">
+            <Button variant="ghost" onClick={() => setShowPayment(false)} className="flex-1 !rounded-[1.5rem] font-black text-xs uppercase tracking-widest border border-white/5">Cancel</Button>
+            <Button
+              onClick={handleStartParking}
+              loading={starting}
+              disabled={paymentMethod === 'wallet' && walletBalance < selectedHours * (spot?.pricePerHour || 0)}
+              className="flex-2 !rounded-[1.5rem] py-6 font-black text-sm uppercase tracking-[0.2em] shadow-glow disabled:opacity-40"
+            >
+              <IndianRupee className="w-4 h-4 mr-2" /> Pay & Start
+            </Button>
           </div>
         </div>
       </Modal>

@@ -17,6 +17,7 @@ import authRoutes from './routes/auth.routes.js';
 import parkingRoutes from './routes/parking.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
 import billingRoutes from './routes/billing.routes.js';
+import walletRoutes from './routes/wallet.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
 dotenv.config();
@@ -53,6 +54,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spots', parkingRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {

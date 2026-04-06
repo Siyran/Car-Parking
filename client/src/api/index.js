@@ -65,6 +65,13 @@ export const billingAPI = {
   withdraw: (data) => api.post('/billing/owner/withdraw', data)
 };
 
+// Wallet
+export const walletAPI = {
+  getBalance: () => api.get('/wallet'),
+  topUp: (data) => api.post('/wallet/topup', data),
+  getHistory: (params) => api.get('/wallet/history', { params })
+};
+
 // Admin
 export const adminAPI = {
   getUsers: (params) => api.get('/admin/users', { params }),

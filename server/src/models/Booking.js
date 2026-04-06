@@ -8,6 +8,9 @@ const bookingSchema = new mongoose.Schema({
   duration: { type: Number, default: 0 }, // in minutes
   totalAmount: { type: Number, default: 0 },
   status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
+  paymentMethod: { type: String, enum: ['wallet', 'upi', 'card'], default: 'wallet' },
+  prepaidAmount: { type: Number, default: 0 },
+  refundAmount: { type: Number, default: 0 },
   isPaid: { type: Boolean, default: false },
   billingMonth: { type: String } // format: "2026-03"
 }, { timestamps: true });

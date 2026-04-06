@@ -7,7 +7,7 @@ const transactionSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   ownerShare: { type: Number, required: true }, // 60%
   platformShare: { type: Number, required: true }, // 40%
-  type: { type: String, enum: ['booking', 'payout', 'withdrawal'], required: true },
+  type: { type: String, enum: ['booking', 'payout', 'withdrawal', 'wallet_topup', 'wallet_debit', 'refund'], required: true },
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
   month: { type: String }, // "2026-03"
   description: { type: String, trim: true },
