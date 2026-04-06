@@ -40,26 +40,49 @@ export default function HeroCar({ progress = 0 }) {
         />
       </div>
 
-      {/* 2. Top-Down Automated Smart Barrier */}
+      {/* 2. Top-Down Automated Smart Barrier Assembly */}
       <motion.div 
         style={{ opacity: gateOpacity }}
         className="absolute inset-x-0 top-[30%] z-30 h-1 flex items-center justify-center"
       >
-        <div className="w-full max-w-[600px] h-3 bg-surface-900 border border-white/10 relative rounded-full flex items-center">
-           <motion.div 
-             style={{ 
-               rotate: gateRotate,
-               transformOrigin: 'left center' 
-             }}
-             className="absolute left-0 w-full h-full bg-linear-to-r from-primary-600 to-primary-900 rounded-full border border-primary-500/30"
-           >
-              <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff_10px,#fff_20px)]" />
-           </motion.div>
-           {/* Terminal Scanning Light */}
-           <div className="absolute left-1/2 -translate-x-1/2 -top-6">
-              <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center border border-primary-500/30 shadow-glow">
-                 <div className="w-4 h-4 rounded-full bg-primary-500 animate-pulse" />
+        <div className="w-full max-w-[600px] relative flex items-center">
+           {/* THE PILLAR (Grounded Terminal) */}
+           <div className="absolute left-[-20px] z-40 w-16 h-16 bg-surface-900 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center p-2 relative group overflow-hidden">
+                 <div className="absolute inset-0 bg-primary-500/5 animate-pulse" />
+                 <Cpu className="w-full h-full text-primary-500 opacity-60" />
+                 
+                 {/* Internal Status Indicator */}
+                 <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
               </div>
+
+              {/* External Terminal Scanning Light (Attached to Pillar) */}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2">
+                <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center border border-primary-500/20 shadow-glow relative">
+                   <div className="w-3 h-3 rounded-full bg-primary-500 animate-ping" />
+                   <div className="absolute inset-0 w-full h-full border border-primary-500/30 rounded-full animate-pulse" />
+                </div>
+              </div>
+           </div>
+
+           {/* THE ROTATING BARRIER ARM */}
+           <div className="w-full h-4 bg-transparent relative ml-8 flex items-center">
+              <motion.div 
+                style={{ 
+                  rotate: gateRotate,
+                  transformOrigin: 'left center' 
+                }}
+                className="w-full h-3 bg-linear-to-r from-surface-800 via-primary-600 to-primary-900 rounded-full border border-primary-500/30 relative shadow-2xl overflow-hidden"
+              >
+                 {/* Industrial Warning Tape Pattern */}
+                 <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff_10px,#fff_20px)]" />
+                 
+                 {/* LED Strip along the Arm */}
+                 <div className="absolute top-1/2 -translate-y-1/2 right-4 w-1/2 h-[1px] bg-primary-400 opacity-40 blur-[1px]" />
+                 
+                 {/* Mechanical Pivot Joint */}
+                 <div className="absolute left-[-2px] inset-y-0 w-4 bg-surface-950 border-r border-white/10" />
+              </motion.div>
            </div>
         </div>
       </motion.div>

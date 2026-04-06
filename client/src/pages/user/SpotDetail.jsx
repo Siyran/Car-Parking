@@ -51,6 +51,7 @@ export default function SpotDetail() {
 
   const [showQR, setShowQR] = useState(false);
   const [upiLink, setUpiLink] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     loadSpot();
