@@ -65,10 +65,13 @@ export const billingAPI = {
   withdraw: (data) => api.post('/billing/owner/withdraw', data)
 };
 
-// Wallet
+// Wallet (Razorpay)
 export const walletAPI = {
   getBalance: () => api.get('/wallet'),
-  topUp: (data) => api.post('/wallet/topup', data),
+  getKeyId: () => api.get('/wallet/key'),
+  createOrder: (data) => api.post('/wallet/create-order', data),
+  verifyPayment: (data) => api.post('/wallet/verify-payment', data),
+  createParkingOrder: (data) => api.post('/wallet/create-parking-order', data),
   getHistory: (params) => api.get('/wallet/history', { params })
 };
 

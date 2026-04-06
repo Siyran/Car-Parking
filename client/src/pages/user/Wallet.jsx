@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { walletAPI } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw, IndianRupee, Zap, History, CreditCard, Smartphone, ChevronRight } from 'lucide-react';
-import { formatCurrency } from '../../lib/utils';
+import { Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw, IndianRupee, Zap, History, CreditCard, Smartphone, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Wallet() {
+  const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [topUpAmount, setTopUpAmount] = useState('');
-  const [topUpMethod, setTopUpMethod] = useState('upi');
   const [showTopUp, setShowTopUp] = useState(false);
   const [processing, setProcessing] = useState(false);
 
@@ -43,16 +43,68 @@ export default function Wallet() {
       toast.error('Maximum top-up is ₹10,000');
       return;
     }
+
     setProcessing(true);
     try {
-      const { data } = await walletAPI.topUp({ amount, method: topUpMethod });
-      setBalance(data.balance);
-      toast.success(data.message);
-      setTopUpAmount('');
-      setShowTopUp(false);
-      loadData();
+      // Step 1: Create Razorpay order on backend
+      const { data: orderData } = await walletAPI.createOrder({ amount });
+
+      // Step 2: Get Razorpay key
+      const { data: keyData } = await walletAPI.getKeyId();
+
+      // Step 3: Open Razorpay Checkout
+      const options = {
+        key: keyData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'ParkFlow',
+        description: `Wallet Top-Up: ₹${amount}`,
+        order_id: orderData.orderId,
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || ''
+        },
+        theme: {
+          color: '#3b82f6',
+          backdrop_color: 'rgba(2, 6, 23, 0.9)'
+        },
+        handler: async (response) => {
+          // Step 4: Verify payment on backend
+          try {
+            const { data: verifyData } = await walletAPI.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: orderData.amount
+            });
+            setBalance(verifyData.balance);
+            toast.success(verifyData.message);
+            setTopUpAmount('');
+            setShowTopUp(false);
+            loadData();
+          } catch (err) {
+            toast.error('Payment verification failed');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+            toast.error('Payment cancelled');
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response) => {
+        toast.error(`Payment failed: ${response.error.description}`);
+        setProcessing(false);
+      });
+      rzp.open();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Top-up failed');
+      toast.error(err.response?.data?.error || 'Failed to initiate payment');
+      setProcessing(false);
+      return;
     }
     setProcessing(false);
   };
@@ -119,6 +171,12 @@ export default function Wallet() {
                 Add Funds
               </button>
             </div>
+
+            {/* Security Badge */}
+            <div className="flex items-center gap-2 mt-6 pt-6 border-t border-white/5">
+              <Shield className="w-4 h-4 text-emerald-500" />
+              <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Secured by Razorpay · UPI · Cards · Netbanking</p>
+            </div>
           </div>
         </motion.div>
 
@@ -137,8 +195,8 @@ export default function Wallet() {
                     <Zap className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Quick Top-Up</h3>
-                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Select amount or enter custom</p>
+                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Add Funds</h3>
+                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Pay via UPI, Card, or Netbanking</p>
                   </div>
                 </div>
 
@@ -167,40 +225,13 @@ export default function Wallet() {
                       type="number"
                       value={topUpAmount}
                       onChange={(e) => setTopUpAmount(e.target.value)}
-                      placeholder="Custom amount"
+                      placeholder="Enter amount"
                       className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 px-12 text-xl font-black text-white placeholder:text-surface-600 focus:outline-none focus:border-primary-500/50 transition-colors"
                     />
                   </div>
                 </div>
 
-                {/* Payment Method */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em]">Payment Method</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { id: 'upi', label: 'UPI', icon: Smartphone, sub: 'Google Pay / PhonePe' },
-                      { id: 'card', label: 'Card', icon: CreditCard, sub: 'Debit / Credit Card' }
-                    ].map(m => (
-                      <button
-                        key={m.id}
-                        onClick={() => setTopUpMethod(m.id)}
-                        className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                          topUpMethod === m.id
-                            ? 'bg-primary-600/10 border-primary-500/30 text-white'
-                            : 'bg-white/5 border-white/10 text-surface-400 hover:text-white'
-                        }`}
-                      >
-                        <m.icon className={`w-6 h-6 ${topUpMethod === m.id ? 'text-primary-400' : ''}`} />
-                        <div className="text-left">
-                          <p className="text-sm font-black uppercase tracking-wider">{m.label}</p>
-                          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-widest">{m.sub}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Confirm */}
+                {/* Pay Button */}
                 <button
                   onClick={handleTopUp}
                   disabled={processing || !topUpAmount}
@@ -210,11 +241,15 @@ export default function Wallet() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <IndianRupee className="w-5 h-5" />
-                      {topUpAmount ? `Add ₹${parseFloat(topUpAmount).toLocaleString()} to Wallet` : 'Enter Amount'}
+                      <Shield className="w-5 h-5" />
+                      {topUpAmount ? `Pay ₹${parseFloat(topUpAmount).toLocaleString()} via Razorpay` : 'Enter Amount'}
                     </>
                   )}
                 </button>
+
+                <p className="text-[9px] font-medium text-surface-600 uppercase tracking-widest text-center">
+                  You'll be redirected to Razorpay's secure payment gateway
+                </p>
               </div>
             </motion.div>
           )}

@@ -82,12 +82,74 @@ export default function SpotDetail() {
 
   const handleStartParking = async () => {
     setStarting(true);
+
+    const totalAmount = selectedHours * (spot?.pricePerHour || 0);
+
+    if (paymentMethod === 'wallet') {
+      // Direct wallet payment — handled by backend
+      try {
+        await bookingAPI.start({ spotId: id, paymentMethod: 'wallet', hours: selectedHours });
+        toast.success('Parking session started!');
+        navigate('/bookings');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Payment failed');
+      }
+      setStarting(false);
+      return;
+    }
+
+    // UPI / Card — use Razorpay
     try {
-      await bookingAPI.start({ spotId: id, paymentMethod, hours: selectedHours });
-      toast.success('Parking session started!');
-      navigate('/bookings');
+      const { data: orderData } = await walletAPI.createParkingOrder({ 
+        amount: totalAmount, spotId: id, hours: selectedHours 
+      });
+      const { data: keyData } = await walletAPI.getKeyId();
+
+      const options = {
+        key: keyData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'ParkFlow',
+        description: `Parking: ${spot?.title} (${selectedHours}h)`,
+        order_id: orderData.orderId,
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+        },
+        theme: { color: '#3b82f6', backdrop_color: 'rgba(2, 6, 23, 0.9)' },
+        handler: async (response) => {
+          // Payment succeeded — verify and start session
+          try {
+            await walletAPI.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: orderData.amount
+            });
+            // Now start the parking session (already paid via Razorpay)
+            await bookingAPI.start({ spotId: id, paymentMethod, hours: selectedHours });
+            toast.success('Payment verified — parking started!');
+            navigate('/bookings');
+          } catch (err) {
+            toast.error('Payment verified but session start failed');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setStarting(false);
+            toast.error('Payment cancelled');
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (resp) => {
+        toast.error(`Payment failed: ${resp.error.description}`);
+        setStarting(false);
+      });
+      rzp.open();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Payment failed');
+      toast.error(err.response?.data?.error || 'Failed to create payment');
     }
     setStarting(false);
   };
