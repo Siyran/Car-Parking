@@ -14,7 +14,8 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    toast.success('Session Terminated. Redirecting...');
+    navigate('/login');
   };
 
   useEffect(() => {
