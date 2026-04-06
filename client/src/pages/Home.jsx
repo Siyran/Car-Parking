@@ -1,7 +1,8 @@
 import { motion, useMotionValue, useTransform, useSpring, useScroll } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, Target, Shield, MapPin, ParkingCircle, CreditCard, Star, Clock, Info, ShieldCheck, Globe, Cpu, Smartphone, BarChart3, ChevronDown, History, Activity, Radio, Cpu as Chip } from 'lucide-react';
+import { ArrowRight, Zap, Target, Shield, MapPin, ParkingCircle, CreditCard, Star, Clock, Info, ShieldCheck, Globe, Cpu, Smartphone, BarChart3, ChevronDown, History, Activity, Radio, Cpu as Chip, Lock, Signal } from 'lucide-react';
 import HeroCar from '../components/animations/HeroCar';
+import MobileInterface from '../components/animations/MobileInterface';
 import Button from '../components/ui/Button';
 import { useRef, useMemo } from 'react';
 
@@ -38,17 +39,23 @@ export default function Home() {
   // Scanning Line Position
   const scanY = useTransform(experienceProgress, [0, 1], ["0%", "100%"]);
 
-  // Text Chapter Fades (Opacity & Y)
-  const createChapterStyle = (start, end) => {
-    const opacity = useTransform(experienceProgress, [start, start + 0.05, end - 0.05, end], [0, 1, 1, 0]);
-    const y = useTransform(experienceProgress, [start, start + 0.05, end - 0.05, end], [60, 0, 0, -60]);
-    return { opacity, y };
-  };
+  // Text Chapter Fades (Opacity & Y) - FIXED: Hooks must be at top-level
+  const ch1Opacity = useTransform(experienceProgress, [0.05, 0.1, 0.2, 0.25], [0, 1, 1, 0]);
+  const ch1Y = useTransform(experienceProgress, [0.05, 0.1, 0.2, 0.25], [60, 0, 0, -60]);
 
-  const ch1 = createChapterStyle(0.05, 0.25);
-  const ch2 = createChapterStyle(0.3, 0.5);
-  const ch3 = createChapterStyle(0.55, 0.75);
-  const ch4 = createChapterStyle(0.8, 0.95);
+  const ch2Opacity = useTransform(experienceProgress, [0.3, 0.35, 0.45, 0.5], [0, 1, 1, 0]);
+  const ch2Y = useTransform(experienceProgress, [0.3, 0.35, 0.45, 0.5], [60, 0, 0, -60]);
+
+  const ch3Opacity = useTransform(experienceProgress, [0.55, 0.6, 0.7, 0.75], [0, 1, 1, 0]);
+  const ch3Y = useTransform(experienceProgress, [0.55, 0.6, 0.7, 0.75], [60, 0, 0, -60]);
+
+  const ch4Opacity = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [0, 1, 1, 0]);
+  const ch4Y = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [60, 0, 0, -60]);
+
+  const revealVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -89,11 +96,11 @@ export default function Home() {
              NODE_INITIALIZED :: SYSTEM_ACTIVE
           </motion.div>
           
-          <div className="space-y-4">
-             <motion.h1 variants={itemVariants} className="text-8xl md:text-[10rem] font-black tracking-tighter leading-[0.85] italic uppercase text-white drop-shadow-2xl">
+          <div className="space-y-4 flex flex-col items-center">
+             <motion.h1 variants={itemVariants} className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] italic uppercase text-white drop-shadow-2xl">
                PARKFLOW
              </motion.h1>
-             <motion.h1 variants={itemVariants} className="text-8xl md:text-[10rem] font-black tracking-tighter leading-[0.85] italic uppercase">
+             <motion.h1 variants={itemVariants} className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] italic uppercase">
                <span className="gradient-text italic text-glow pr-8 pb-4 inline-block">PRO</span>
              </motion.h1>
           </div>
@@ -129,7 +136,7 @@ export default function Home() {
              <div className="max-w-[1440px] w-full h-full relative">
                 
                 {/* Chapter 1: The Descent (0.05 - 0.25) */}
-                <motion.div style={ch1} className="absolute top-[20%] left-[10%] max-w-md space-y-6">
+                <motion.div style={{ opacity: ch1Opacity, y: ch1Y }} className="absolute top-[20%] left-[10%] max-w-md space-y-6">
                    <div className="flex items-center gap-4 text-primary-500 mb-2">
                      <Radio className="w-5 h-5 animate-pulse" />
                      <span className="text-[10px] font-black tracking-widest uppercase">Detection Active</span>
@@ -139,7 +146,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Chapter 2: The Scan (0.3 - 0.5) */}
-                <motion.div style={ch2} className="absolute bottom-[20%] right-[10%] max-w-md text-right space-y-6">
+                <motion.div style={{ opacity: ch2Opacity, y: ch2Y }} className="absolute bottom-[20%] right-[10%] max-w-md text-right space-y-6">
                    <div className="flex items-center gap-4 text-accent-500 mb-2 justify-end">
                      <span className="text-[10px] font-black tracking-widest uppercase">Identity Verified</span>
                      <Chip className="w-5 h-5 " />
@@ -149,7 +156,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Chapter 3: The Gate (0.55 - 0.75) */}
-                <motion.div style={ch3} className="absolute top-[25%] right-[12%] max-w-md text-right space-y-6">
+                <motion.div style={{ opacity: ch3Opacity, y: ch3Y }} className="absolute top-[25%] right-[12%] max-w-md text-right space-y-6">
                    <div className="flex items-center gap-4 text-teal-400 mb-2 justify-end">
                      <span className="text-[10px] font-black tracking-widest uppercase">System Unlocked</span>
                      <Activity className="w-5 h-5" />
@@ -159,7 +166,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Chapter 4: The Settlement (0.8 - 0.95) */}
-                <motion.div style={ch4} className="absolute bottom-[15%] left-[8%] max-w-md space-y-6">
+                <motion.div style={{ opacity: ch4Opacity, y: ch4Y }} className="absolute bottom-[15%] left-[8%] max-w-md space-y-6">
                    <div className="flex items-center gap-4 text-orange-400 mb-2">
                      <Smartphone className="w-5 h-5" />
                      <span className="text-[10px] font-black tracking-widest uppercase">Trust Secured</span>
@@ -173,6 +180,68 @@ export default function Home() {
         </div>
       </section>
 
+      {/* NEW: THE INTELLIGENT TERMINAL SHOWCASE */}
+      <section className="py-48 px-6 bg-surface-950 relative z-40 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-32 items-center">
+           
+           {/* LEFT: THE INTERFACE */}
+           <motion.div 
+             initial={{ opacity: 0, x: -60 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 1, ease: "easeOut" }}
+             className="flex justify-center"
+           >
+              <MobileInterface />
+           </motion.div>
+
+           {/* RIGHT: THE INTELLIGENCE SPECS */}
+           <div className="space-y-16">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="space-y-8"
+              >
+                 <div className="inline-flex items-center gap-4 px-6 py-2 rounded-full glass-dark border border-white/5 text-primary-400 text-[10px] font-black tracking-[0.4em] uppercase">
+                    Digital Infrastructure_v7.4
+                 </div>
+                 <h2 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">
+                    THE UNIVERSAL <br />
+                    <span className="gradient-text">TERMINAL.</span>
+                 </h2>
+                 <p className="text-xl text-surface-400 font-medium leading-relaxed max-w-xl opacity-70">
+                    A millisecond-precision interface designed for absolute earning transparency and autonomous node management.
+                 </p>
+              </motion.div>
+
+              <div className="grid sm:grid-cols-2 gap-12 pt-8">
+                 {[
+                   { icon: Lock, title: "AES-256 SYNC", desc: "Military-grade encryption for every P2P handshake protocol." },
+                   { icon: Activity, title: "12MS LATENCY", desc: "Ultra-low response time across our entire nationwide node network." },
+                   { icon: Radio, title: "P2P LEDGER", desc: "Real-time settlement directly to host UPI IDs with zero commission leakage." },
+                   { icon: Signal, title: "99.9% INTEGRITY", desc: "Advanced detection nodes verify vehicle presence with extreme precision." }
+                 ].map((spec, i) => (
+                   <motion.div
+                     key={i}
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ delay: i * 0.1, duration: 0.8 }}
+                     viewport={{ once: true }}
+                     className="space-y-4 group"
+                   >
+                     <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:border-primary-500/40 group-hover:bg-primary-500/5">
+                       <spec.icon className="w-6 h-6 text-white opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                     </div>
+                     <h4 className="text-lg font-black text-white italic uppercase tracking-tighter leading-none">{spec.title}</h4>
+                     <p className="text-sm text-surface-500 font-medium leading-relaxed">{spec.desc}</p>
+                   </motion.div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      </section>
+
       {/* 3. THE INFRASTRUCTURE (Image Glass Grid) */}
       <section className="py-48 px-6 bg-surface-950/90 backdrop-blur-3xl z-40 border-t border-white/5">
         <div className="max-w-[1440px] mx-auto">
@@ -181,13 +250,13 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={revealVariants}
-            className="text-center max-w-4xl mx-auto mb-32 space-y-8"
+            className="text-center max-w-4xl mx-auto mb-24 space-y-8"
           >
-            <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[1] italic uppercase text-white">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-[1] italic uppercase text-white">
               Intelligent <span className="gradient-text">Hardware</span>. <br />
               Verified <span className="underline decoration-primary-500/30 decoration-8 underline-offset-8">Trust</span>.
             </h2>
-            <p className="text-xl text-surface-400 font-medium leading-relaxed max-w-3xl mx-auto opacity-70">Powering India's smartest parking network with autonomous node distribution.</p>
+            <p className="text-lg text-surface-400 font-medium leading-relaxed max-w-2xl mx-auto opacity-70">Powering India's smartest parking network with autonomous node distribution.</p>
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-10">
@@ -256,16 +325,15 @@ export default function Home() {
            viewport={{ once: true }}
            className="relative z-10 space-y-16"
         >
-          <div className="space-y-8">
-             <h2 className="text-8xl md:text-[12rem] font-black tracking-tighter leading-[0.75] italic uppercase text-white">
-               READY FOR <br />
-               <span className="gradient-text italic text-glow pb-8 inline-block pr-6">DEPARTURE?</span>
+          <div className="space-y-12 flex flex-col items-center">
+             <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight italic uppercase text-white max-w-4xl mx-auto">
+               READY FOR <span className="gradient-text italic text-glow pb-4 inline-block pr-4">DEPARTURE?</span>
              </h2>
              <p className="text-xl text-surface-400 max-w-2xl mx-auto font-medium leading-relaxed opacity-60">Join 5,000+ nodes already active in the network.</p>
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-center gap-14">
-            <Button size="lg" className="!rounded-full px-20 py-12 text-2xl font-black italic uppercase tracking-[0.25em] shadow-glow transform hover:scale-105 active:scale-95 transition-all" onClick={() => navigate('/search')}>
+            <Button size="lg" className="!rounded-full px-12 py-6 text-lg font-black italic uppercase tracking-[0.25em] shadow-glow transform hover:scale-105 active:scale-95 transition-all" onClick={() => navigate('/search')}>
               Launch Finder.
             </Button>
             

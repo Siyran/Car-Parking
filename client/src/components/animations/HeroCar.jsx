@@ -64,61 +64,6 @@ export default function HeroCar({ progress = 0 }) {
         </div>
       </motion.div>
 
-      {/* 3. iPhone 17 Pro Max: Aerial GPS Sync */}
-      <motion.div
-        style={{ 
-          opacity: iphoneOpacity, 
-          x: iphoneX, 
-          rotate: iphoneRotate,
-          scale: useTransform(smoothProgress, [0.1, 0.9], [0.95, 1])
-        }}
-        className="absolute right-[-40px] top-[140px] z-[60] w-[260px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)]"
-      >
-        <div className="relative aspect-[9/19.5] w-full glass-dark rounded-[3.5rem] border-[4px] border-surface-800 p-2 shadow-2xl">
-            <div className="h-full w-full rounded-[3rem] bg-black overflow-hidden flex flex-col relative px-6 py-12">
-               {/* Aerial Map Layer */}
-               <div className="absolute inset-0 opacity-20">
-                  <svg viewBox="0 0 200 400" className="w-full h-full text-white">
-                     <path d="M0 80 L200 80 M0 200 L200 200 M60 0 L60 400 M140 0 L140 400" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" />
-                     <motion.path 
-                        animate={{ strokeDashoffset: [0, -100] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                        d="M100 400 L100 100" 
-                        stroke="var(--color-primary-500)" strokeWidth="3" fill="none" strokeDasharray="10 5"
-                     />
-                     <MapPin cx="100" cy="80" className="w-8 h-8 text-primary-500 fill-primary-500/20" x="90" y="60" />
-                  </svg>
-               </div>
-
-               <div className="relative z-10 flex flex-col h-full pt-4">
-                  <div className="flex justify-between items-start mb-10">
-                     <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Navigation2 className="w-6 h-6 text-primary-400 rotate-45" />
-                     </div>
-                     <div className="text-right">
-                        <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest leading-none mb-1">Target Dock</p>
-                        <h4 className="text-base font-black text-white italic uppercase tracking-tighter">NODE_42</h4>
-                     </div>
-                  </div>
-
-                  <div className="mt-auto space-y-6">
-                     <motion.div 
-                        style={{ opacity: useTransform(smoothProgress, [0.2, 0.4, 0.8, 0.9], [0, 1, 1, 0]) }}
-                        className="glass-dark border border-white/10 rounded-2xl p-5 space-y-3"
-                     >
-                        <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Docking Sync Protocol</p>
-                        <p className="text-sm font-black text-white italic uppercase tracking-widest leading-none">Initialize Approach</p>
-                     </motion.div>
-
-                     <div className="w-full h-12 rounded-xl bg-primary-600 flex items-center justify-center text-xs font-black text-white uppercase tracking-[0.2em] shadow-glow">
-                        Active Session
-                     </div>
-                  </div>
-               </div>
-            </div>
-        </div>
-      </motion.div>
-
       {/* 4. Top-Down Car (The Controller Car) */}
       <motion.div
         style={{ 
