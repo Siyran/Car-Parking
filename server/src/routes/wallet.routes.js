@@ -7,6 +7,7 @@ const router = Router();
 
 router.get('/', verifyToken, requireRole('user'), getBalance);
 router.get('/key', verifyToken, getKeyId);
+router.post('/verify-manual', verifyToken, requireRole('user'), verifyManual);
 router.post('/create-order', verifyToken, requireRole('user'), createOrder);
 router.post('/verify-payment', verifyToken, requireRole('user'), verifyPayment);
 router.post('/create-parking-order', verifyToken, requireRole('user'), createParkingOrder);

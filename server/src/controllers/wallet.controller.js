@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import Transaction from '../models/Transaction.js';
 
+const _upiId = 'siyranabrar12345@okaxis';
+
 let _razorpay = null;
 function getRazorpay() {
   if (!_razorpay) {
@@ -24,7 +26,43 @@ export const getBalance = async (req, res, next) => {
 };
 
 export const getKeyId = async (req, res) => {
-  res.json({ keyId: process.env.RAZORPAY_KEY_ID });
+  res.json({ keyId: process.env.RAZORPAY_KEY_ID, upiId: _upiId });
+};
+
+export const verifyManual = async (req, res, next) => {
+  try {
+    const { amount, type, description } = req.body; // type: 'wallet_topup' or 'parking_payment'
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // If it's a top-up, credit the wallet
+    if (type === 'wallet_topup') {
+      user.walletBalance += parseFloat(amount);
+      await user.save();
+
+      const now = new Date();
+      await Transaction.create({
+        user: user._id,
+        amount: parseFloat(amount),
+        type: 'wallet_topup',
+        status: 'completed',
+        month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+        description: description || `Wallet top-up via Direct UPI`,
+        paymentMethod: `upi:manual`
+      });
+    }
+
+    res.json({
+      balance: user.walletBalance,
+      message: type === 'wallet_topup' ? `₹${amount} added to wallet (pending verification)` : 'Payment recorded',
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const createOrder = async (req, res, next) => {

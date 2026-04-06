@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { walletAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw, IndianRupee, Zap, History, CreditCard, Smartphone, Shield } from 'lucide-react';
+import { Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw, IndianRupee, Zap, History, Shield, Smartphone, QrCode, CheckCircle2, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Modal from '../../components/ui/Modal';
 
 export default function Wallet() {
   const { user } = useAuth();
@@ -12,6 +13,8 @@ export default function Wallet() {
   const [loading, setLoading] = useState(true);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [showTopUp, setShowTopUp] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [upiLink, setUpiLink] = useState('');
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -33,78 +36,50 @@ export default function Wallet() {
     setLoading(false);
   };
 
-  const handleTopUp = async () => {
+  const initiateUPI = async () => {
     const amount = parseFloat(topUpAmount);
     if (!amount || amount <= 0) {
       toast.error('Enter a valid amount');
       return;
     }
-    if (amount > 10000) {
-      toast.error('Maximum top-up is ₹10,000');
-      return;
-    }
 
+    const { data: keyData } = await walletAPI.getKeyId();
+    const upiId = keyData.upiId || 'siyranabrar12345@okaxis';
+    
+    // Generate UPI URI
+    const uri = `upi://pay?pa=${upiId}&pn=ParkFlow&am=${amount}&cu=INR&tn=ParkFlow_TopUp_${user?._id}`;
+    setUpiLink(uri);
+
+    // Detect if mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Direct redirect for mobile
+      window.location.href = uri;
+      // Slight delay then show manual confirmation
+      setTimeout(() => setShowQR(true), 1500);
+    } else {
+      // Show QR for desktop
+      setShowQR(true);
+    }
+  };
+
+  const handleManualVerify = async () => {
     setProcessing(true);
     try {
-      // Step 1: Create Razorpay order on backend
-      const { data: orderData } = await walletAPI.createOrder({ amount });
-
-      // Step 2: Get Razorpay key
-      const { data: keyData } = await walletAPI.getKeyId();
-
-      // Step 3: Open Razorpay Checkout
-      const options = {
-        key: keyData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'ParkFlow',
-        description: `Wallet Top-Up: ₹${amount}`,
-        order_id: orderData.orderId,
-        prefill: {
-          name: user?.name || '',
-          email: user?.email || '',
-          contact: user?.phone || ''
-        },
-        theme: {
-          color: '#3b82f6',
-          backdrop_color: 'rgba(2, 6, 23, 0.9)'
-        },
-        handler: async (response) => {
-          // Step 4: Verify payment on backend
-          try {
-            const { data: verifyData } = await walletAPI.verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: orderData.amount
-            });
-            setBalance(verifyData.balance);
-            toast.success(verifyData.message);
-            setTopUpAmount('');
-            setShowTopUp(false);
-            loadData();
-          } catch (err) {
-            toast.error('Payment verification failed');
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setProcessing(false);
-            toast.error('Payment cancelled');
-          }
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response) => {
-        toast.error(`Payment failed: ${response.error.description}`);
-        setProcessing(false);
+      const { data } = await walletAPI.verifyManual({
+        amount: topUpAmount,
+        type: 'wallet_topup',
+        description: 'Wallet top-up via Direct UPI (GPay)'
       });
-      rzp.open();
+      setBalance(data.balance);
+      toast.success(data.message);
+      setShowQR(false);
+      setShowTopUp(false);
+      setTopUpAmount('');
+      loadData();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to initiate payment');
-      setProcessing(false);
-      return;
+      toast.error('Verification failed');
     }
     setProcessing(false);
   };
@@ -175,7 +150,7 @@ export default function Wallet() {
             {/* Security Badge */}
             <div className="flex items-center gap-2 mt-6 pt-6 border-t border-white/5">
               <Shield className="w-4 h-4 text-emerald-500" />
-              <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Secured by Razorpay · UPI · Cards · Netbanking</p>
+              <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Direct UPI Transfer · Peer-to-Peer Secured</p>
             </div>
           </div>
         </motion.div>
@@ -195,8 +170,8 @@ export default function Wallet() {
                     <Zap className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Add Funds</h3>
-                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Pay via UPI, Card, or Netbanking</p>
+                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Quick Top-Up</h3>
+                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Pay via UPI (Google Pay, PhonePe)</p>
                   </div>
                 </div>
 
@@ -233,23 +208,13 @@ export default function Wallet() {
 
                 {/* Pay Button */}
                 <button
-                  onClick={handleTopUp}
-                  disabled={processing || !topUpAmount}
+                  onClick={initiateUPI}
+                  disabled={!topUpAmount}
                   className="w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-black uppercase tracking-[0.2em] transition-all shadow-glow flex items-center justify-center gap-3"
                 >
-                  {processing ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Shield className="w-5 h-5" />
-                      {topUpAmount ? `Pay ₹${parseFloat(topUpAmount).toLocaleString()} via Razorpay` : 'Enter Amount'}
-                    </>
-                  )}
+                  <Smartphone className="w-5 h-5" />
+                  {topUpAmount ? `Pay ₹${parseFloat(topUpAmount).toLocaleString()} via UPI` : 'Enter Amount'}
                 </button>
-
-                <p className="text-[9px] font-medium text-surface-600 uppercase tracking-widest text-center">
-                  You'll be redirected to Razorpay's secure payment gateway
-                </p>
               </div>
             </motion.div>
           )}
@@ -257,6 +222,7 @@ export default function Wallet() {
 
         {/* Transaction History */}
         <div className="space-y-6">
+          {/* ... (Existing transaction history code) ... */}
           <div className="flex items-center gap-4 px-2">
             <div className="h-px flex-1 bg-white/5" />
             <span className="flex items-center gap-3 text-[10px] font-black text-surface-400 uppercase tracking-[0.5em] opacity-80">
@@ -264,14 +230,6 @@ export default function Wallet() {
             </span>
             <div className="h-px flex-1 bg-white/5" />
           </div>
-
-          {history.length === 0 && !loading && (
-            <div className="text-center py-24 glass-dark border border-white/5 rounded-[3rem] relative overflow-hidden">
-              <WalletIcon className="w-16 h-16 mx-auto mb-6 opacity-20 text-white" />
-              <p className="text-xl font-black text-white italic uppercase tracking-tighter">No Transactions Yet</p>
-              <p className="text-sm font-medium text-surface-400 mt-2 opacity-70">Add funds to your wallet to begin.</p>
-            </div>
-          )}
 
           <div className="space-y-3">
             {history.map((tx, i) => {
@@ -303,6 +261,58 @@ export default function Wallet() {
           </div>
         </div>
       </div>
+
+      {/* UPI QR Modal */}
+      <Modal isOpen={showQR} onClose={() => setShowQR(false)} title="UPI Payment Terminal">
+        <div className="text-center space-y-8 p-6">
+          <div className="relative inline-block group">
+            <div className="absolute -inset-4 bg-linear-to-r from-primary-500 to-accent-500 rounded-[3rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative glass-dark p-6 rounded-[2.5rem] border border-white/10">
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`}
+                alt="Payment QR"
+                className="w-64 h-64 mx-auto rounded-2xl border-4 border-white/5 shadow-2xl"
+              />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-primary-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-glow">
+                  Scalable QR
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+              <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase underline decoration-primary-500/50 underline-offset-8 decoration-4">
+                Scan & Pay ₹{parseFloat(topUpAmount).toLocaleString()}
+              </h3>
+              <p className="text-xs text-surface-400 font-medium max-w-xs mx-auto">
+                Open any UPI app (GPay, PhonePe, Paytm) and scan this QR code to initiate the transfer.
+              </p>
+          </div>
+
+          <div className="h-px bg-white/5 max-w-[200px] mx-auto" />
+
+          <div className="space-y-4">
+             <button
+               onClick={handleManualVerify}
+               disabled={processing}
+               className="w-full py-6 rounded-2xl bg-primary-600 hover:bg-primary-500 text-white text-sm font-black uppercase tracking-[0.2em] transition-all shadow-glow flex items-center justify-center gap-3 group"
+             >
+               {processing ? (
+                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+               ) : (
+                 <>
+                   <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                   I Have Paid
+                 </>
+               )}
+             </button>
+             <p className="text-[10px] font-black text-surface-600 uppercase tracking-widest">
+               Click only AFTER completing the transaction
+             </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

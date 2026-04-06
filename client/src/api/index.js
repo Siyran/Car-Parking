@@ -69,6 +69,7 @@ export const billingAPI = {
 export const walletAPI = {
   getBalance: () => api.get('/wallet'),
   getKeyId: () => api.get('/wallet/key'),
+  verifyManual: (data) => api.post('/wallet/verify-manual', data),
   createOrder: (data) => api.post('/wallet/create-order', data),
   verifyPayment: (data) => api.post('/wallet/verify-payment', data),
   createParkingOrder: (data) => api.post('/wallet/create-parking-order', data),

@@ -49,6 +49,9 @@ export default function SpotDetail() {
   const [paymentMethod, setPaymentMethod] = useState('wallet');
   const [walletBalance, setWalletBalance] = useState(0);
 
+  const [showQR, setShowQR] = useState(false);
+  const [upiLink, setUpiLink] = useState('');
+
   useEffect(() => {
     loadSpot();
     navigator.geolocation?.getCurrentPosition(
@@ -82,11 +85,9 @@ export default function SpotDetail() {
 
   const handleStartParking = async () => {
     setStarting(true);
-
     const totalAmount = selectedHours * (spot?.pricePerHour || 0);
 
     if (paymentMethod === 'wallet') {
-      // Direct wallet payment — handled by backend
       try {
         await bookingAPI.start({ spotId: id, paymentMethod: 'wallet', hours: selectedHours });
         toast.success('Parking session started!');
@@ -98,58 +99,41 @@ export default function SpotDetail() {
       return;
     }
 
-    // UPI / Card — use Razorpay
+    // Direct UPI Flow
     try {
-      const { data: orderData } = await walletAPI.createParkingOrder({ 
-        amount: totalAmount, spotId: id, hours: selectedHours 
-      });
       const { data: keyData } = await walletAPI.getKeyId();
+      const upiId = keyData.upiId || 'siyranabrar12345@okaxis';
+      const uri = `upi://pay?pa=${upiId}&pn=ParkFlow&am=${totalAmount}&cu=INR&tn=ParkFlow_Booking_${id}`;
+      setUpiLink(uri);
 
-      const options = {
-        key: keyData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'ParkFlow',
-        description: `Parking: ${spot?.title} (${selectedHours}h)`,
-        order_id: orderData.orderId,
-        prefill: {
-          name: user?.name || '',
-          email: user?.email || '',
-        },
-        theme: { color: '#3b82f6', backdrop_color: 'rgba(2, 6, 23, 0.9)' },
-        handler: async (response) => {
-          // Payment succeeded — verify and start session
-          try {
-            await walletAPI.verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: orderData.amount
-            });
-            // Now start the parking session (already paid via Razorpay)
-            await bookingAPI.start({ spotId: id, paymentMethod, hours: selectedHours });
-            toast.success('Payment verified — parking started!');
-            navigate('/bookings');
-          } catch (err) {
-            toast.error('Payment verified but session start failed');
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setStarting(false);
-            toast.error('Payment cancelled');
-          }
-        }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (resp) => {
-        toast.error(`Payment failed: ${resp.error.description}`);
-        setStarting(false);
-      });
-      rzp.open();
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = uri;
+        setTimeout(() => setShowQR(true), 1500);
+      } else {
+        setShowQR(true);
+      }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to create payment');
+      toast.error('Failed to initiate UPI payment');
+    }
+    setStarting(false);
+  };
+
+  const handleManualVerifyBooking = async () => {
+    setStarting(true);
+    try {
+      // Record manual payment on backend (placeholder)
+      await walletAPI.verifyManual({
+        amount: selectedHours * (spot?.pricePerHour || 0),
+        type: 'parking_payment',
+        description: `Direct UPI for Spot: ${spot?.title}`
+      });
+      // Start the actual session
+      await bookingAPI.start({ spotId: id, paymentMethod: 'upi', hours: selectedHours });
+      toast.success('Payment recorded — parking started!');
+      navigate('/bookings');
+    } catch (err) {
+      toast.error('Session start failed');
     }
     setStarting(false);
   };
@@ -508,9 +492,8 @@ export default function SpotDetail() {
             <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.4em] ml-2">Payment Method</label>
             <div className="space-y-3">
               {[
-                { id: 'wallet', label: 'Wallet', icon: Wallet, sub: `Balance: ₹${walletBalance.toLocaleString('en-IN')}`, insufficient: walletBalance < selectedHours * (spot?.pricePerHour || 0) },
-                { id: 'upi', label: 'UPI', icon: Smartphone, sub: 'Google Pay / PhonePe' },
-                { id: 'card', label: 'Card', icon: CreditCard, sub: 'Debit / Credit Card' }
+                { id: 'wallet', label: 'Wallet Balance', icon: Wallet, sub: `Available: ₹${walletBalance.toLocaleString('en-IN')}`, insufficient: walletBalance < selectedHours * (spot?.pricePerHour || 0) },
+                { id: 'upi', label: 'UPI / Google Pay', icon: Smartphone, sub: 'Direct P2P Transfer' },
               ].map(m => (
                 <button
                   key={m.id}
@@ -557,8 +540,53 @@ export default function SpotDetail() {
               disabled={paymentMethod === 'wallet' && walletBalance < selectedHours * (spot?.pricePerHour || 0)}
               className="flex-2 !rounded-[1.5rem] py-6 font-black text-sm uppercase tracking-[0.2em] shadow-glow disabled:opacity-40"
             >
-              <IndianRupee className="w-4 h-4 mr-2" /> Pay & Start
+              <Smartphone className="w-4 h-4 mr-2" /> Pay & Start
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* UPI QR Modal */}
+      <Modal isOpen={showQR} onClose={() => setShowQR(false)} title="UPI Payment Terminal">
+        <div className="text-center space-y-8 p-6">
+          <div className="relative inline-block group">
+            <div className="absolute -inset-4 bg-linear-to-r from-primary-500 to-accent-500 rounded-[3rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative glass-dark p-6 rounded-[2.5rem] border border-white/10">
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`}
+                alt="Payment QR"
+                className="w-64 h-64 mx-auto rounded-2xl border-4 border-white/5 shadow-2xl"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+              <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase underline decoration-primary-500/50 underline-offset-8 decoration-4">
+                Scan & Pay ₹{(selectedHours * (spot?.pricePerHour || 0)).toLocaleString()}
+              </h3>
+              <p className="text-xs text-surface-400 font-medium max-w-xs mx-auto">
+                Open GPay, PhonePe, or any UPI app to complete the transfer to the host.
+              </p>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-white/5">
+             <button
+               onClick={handleManualVerifyBooking}
+               disabled={starting}
+               className="w-full py-6 rounded-2xl bg-primary-600 hover:bg-primary-500 text-white text-sm font-black uppercase tracking-[0.2em] transition-all shadow-glow flex items-center justify-center gap-3"
+             >
+               {starting ? (
+                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+               ) : (
+                 <>
+                   <Zap className="w-5 h-5" />
+                   I Have Paid
+                 </>
+               )}
+             </button>
+             <p className="text-[10px] font-black text-surface-600 uppercase tracking-widest italic">
+               Confirm only after successful transaction
+             </p>
           </div>
         </div>
       </Modal>
