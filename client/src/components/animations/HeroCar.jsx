@@ -87,7 +87,7 @@ export default function HeroCar({ progress = 0 }) {
                                <ArrowUp className="w-4 h-4 text-emerald-500" />
                             </motion.div>
                          </motion.div>
-                         <motion.span style={{ color: entryLightColor }} className="text-[8px] font-bold uppercase transition-colors">Entry</motion.span>
+                         <motion.span style={{ color: entryLightColor }} className="text-[8px] font-bold uppercase transition-colors">Enter</motion.span>
                       </motion.div>
 
                       <motion.div 
