@@ -1,5 +1,5 @@
 import { motion, AnimatePresence, useTransform, useSpring } from 'framer-motion';
-import { Shield, Zap, Search, CheckCircle2, Navigation, Smartphone, MapPin, Star, Activity, Cpu, LocateFixed, Navigation2, ArrowUp } from 'lucide-react';
+import { Shield, Zap, Search, CheckCircle2, Navigation, Smartphone, MapPin, Star, Activity, Cpu, LocateFixed, Navigation2, ArrowUp, Circle } from 'lucide-react';
 
 export default function HeroCar({ progress = 0 }) {
   // Smooth out the incoming raw progress - optimized parameters for better performance
@@ -24,6 +24,12 @@ export default function HeroCar({ progress = 0 }) {
   const iphoneX = useTransform(smoothProgress, [0, 0.15, 0.85, 1], [150, 0, 0, 150]);
   const iphoneOpacity = useTransform(smoothProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
   const iphoneRotate = useTransform(smoothProgress, [0.1, 0.9], [10, 5]);
+ 
+  // 5. Barrier Indicator Logic (STOP vs ENTRY)
+  const stopLightOpacity = useTransform(smoothProgress, [0.4, 0.45], [1, 0]);
+  const entryLightOpacity = useTransform(smoothProgress, [0.4, 0.45], [0, 1]);
+  const stopLightColor = useTransform(smoothProgress, [0, 0.45], ['#ef4444', '#1e293b']);
+  const entryLightColor = useTransform(smoothProgress, [0, 0.45], ['#1e293b', '#10b981']);
 
   return (
     <div className="relative w-full max-w-[1200px] h-[750px] flex items-center justify-center overflow-visible bg-surface-950 rounded-[3rem] shadow-2xl border border-white/5">
@@ -60,28 +66,49 @@ export default function HeroCar({ progress = 0 }) {
                <div className="w-full h-12 bg-linear-to-b from-surface-800 to-surface-950 border-x border-t border-white/10 rounded-t-xl shadow-2xl flex items-center justify-between px-10 relative overflow-hidden">
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
                   
-                  {/* Digital Signage */}
-                  <div className="flex flex-col items-start">
-                     <span className="text-[10px] font-bold text-primary-400 tracking-[0.2em] uppercase leading-none mb-1">ParkFlow Hub</span>
-                     <span className="text-[14px] font-black text-white tracking-widest uppercase leading-none">Intelligent Entry</span>
-                  </div>
+                   {/* Digital Signage Removed for Realism */}
+                   <div className="flex flex-col items-start" />
 
-                  {/* Lane Status Indicators */}
-                  <div className="flex gap-12 items-center">
-                     <div className="flex flex-col items-center gap-1">
-                        <div className="w-6 h-6 rounded-lg bg-black border border-emerald-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                           <ArrowUp className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        <span className="text-[8px] font-bold text-emerald-500/60 uppercase">Entry</span>
-                     </div>
-                     <div className="flex flex-col items-center gap-1 opacity-40">
-                        <div className="w-6 h-6 rounded-lg bg-black border border-white/10 flex items-center justify-center">
-                           <div className="w-3 h-0.5 bg-white/40 rotate-45 absolute" />
-                           <div className="w-3 h-0.5 bg-white/40 -rotate-45 absolute" />
-                        </div>
-                        <span className="text-[8px] font-bold text-white/40 uppercase">Exit</span>
-                     </div>
-                  </div>
+                   {/* Lane Status Indicators - Dynamic STOP/ENTRY */}
+                   <div className="flex gap-12 items-center">
+                      <motion.div 
+                        style={{ opacity: useTransform(smoothProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]) }}
+                        className="flex flex-col items-center gap-1"
+                      >
+                         <motion.div 
+                            style={{ 
+                               borderColor: useTransform(smoothProgress, [0.4, 0.45], ['rgba(16,185,129,0.1)', 'rgba(16,185,129,0.5)']),
+                               backgroundColor: useTransform(smoothProgress, [0.4, 0.45], ['#000', '#064e3b']),
+                               boxShadow: useTransform(smoothProgress, [0.4, 0.45], ['none', '0 0 15px rgba(16,185,129,0.3)'])
+                            }}
+                            className="w-6 h-6 rounded-lg bg-black border border-emerald-500/30 flex items-center justify-center"
+                         >
+                            <motion.div style={{ opacity: entryLightOpacity }}>
+                               <ArrowUp className="w-4 h-4 text-emerald-500" />
+                            </motion.div>
+                         </motion.div>
+                         <motion.span style={{ color: entryLightColor }} className="text-[8px] font-bold uppercase transition-colors">Entry</motion.span>
+                      </motion.div>
+
+                      <motion.div 
+                        style={{ opacity: useTransform(smoothProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]) }}
+                        className="flex flex-col items-center gap-1"
+                      >
+                         <motion.div 
+                            style={{ 
+                               borderColor: useTransform(smoothProgress, [0.4, 0.45], ['rgba(239,68,68,0.5)', 'rgba(239,68,68,0.1)']),
+                               backgroundColor: useTransform(smoothProgress, [0.4, 0.45], ['#450a0a', '#000']),
+                               boxShadow: useTransform(smoothProgress, [0.4, 0.45], ['0 0 15px rgba(239,68,68,0.3)', 'none'])
+                            }}
+                            className="w-6 h-6 rounded-lg bg-black border flex items-center justify-center"
+                         >
+                            <motion.div style={{ opacity: stopLightOpacity }}>
+                               <Circle className="w-3 h-3 fill-red-500 text-red-500" />
+                            </motion.div>
+                         </motion.div>
+                         <motion.span style={{ color: stopLightColor }} className="text-[8px] font-bold uppercase transition-colors">Stop</motion.span>
+                      </motion.div>
+                   </div>
                </div>
 
                {/* The Vertical Supporting Column & Pivot Base */}
