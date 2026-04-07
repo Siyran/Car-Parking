@@ -2,8 +2,8 @@ import { motion, AnimatePresence, useTransform, useSpring } from 'framer-motion'
 import { Shield, Zap, Search, CheckCircle2, Navigation, Smartphone, MapPin, Star, Activity, Cpu, LocateFixed, Navigation2, ArrowUp } from 'lucide-react';
 
 export default function HeroCar({ progress = 0 }) {
-  // Smooth out the incoming raw progress for high-fidelity 'weighted' transitions
-  const smoothProgress = useSpring(progress, { damping: 40, stiffness: 100 });
+  // Smooth out the incoming raw progress - optimized parameters for better performance
+  const smoothProgress = useSpring(progress, { damping: 50, stiffness: 90, restDelta: 0.001 });
 
   // 1. Car Movement (Y mapping)
   // Progress 0 -> 0.2: Drive to Gate
@@ -40,50 +40,102 @@ export default function HeroCar({ progress = 0 }) {
         />
       </div>
 
-      {/* 2. Top-Down Automated Smart Barrier Assembly */}
+      {/* 2. Intelligent Architectural Entry Portal & Environment */}
       <motion.div 
         style={{ opacity: gateOpacity }}
-        className="absolute inset-x-0 top-[30%] z-30 h-1 flex items-center justify-center"
+        className="absolute inset-0 z-30 pointer-events-none"
       >
-        <div className="w-full max-w-[600px] relative flex items-center">
-           {/* THE PILLAR (Grounded Terminal) */}
-           <div className="absolute left-[-20px] z-40 w-16 h-16 bg-surface-900 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl">
-              <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center p-2 relative group overflow-hidden">
-                 <div className="absolute inset-0 bg-primary-500/5 animate-pulse" />
-                 <Cpu className="w-full h-full text-primary-500 opacity-60" />
-                 
-                 {/* Internal Status Indicator */}
-                 <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-              </div>
+        {/* Road Infrastructure & Lane Markings */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+            {/* Lane Separator / Yellow Markings */}
+            <div className="absolute top-[30%] -translate-y-1/2 w-[800px] h-[6px] flex justify-between px-12">
+               <div className="w-[120px] h-full bg-yellow-500/30 rounded-full blur-[1px]" />
+               <div className="w-[120px] h-full bg-yellow-500/30 rounded-full blur-[1px]" />
+            </div>
+            
+            {/* Architectural Entry Gantry - Shrunk from 800px to 700px for HUD clearance */}
+            <div className="relative w-full max-w-[700px] flex flex-col items-center">
+               
+               {/* Overhead Beam (The Gantry) - Adjusted padding */}
+               <div className="w-full h-12 bg-linear-to-b from-surface-800 to-surface-950 border-x border-t border-white/10 rounded-t-xl shadow-2xl flex items-center justify-between px-10 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                  
+                  {/* Digital Signage */}
+                  <div className="flex flex-col items-start">
+                     <span className="text-[10px] font-bold text-primary-400 tracking-[0.2em] uppercase leading-none mb-1">ParkFlow Hub</span>
+                     <span className="text-[14px] font-black text-white tracking-widest uppercase leading-none">Intelligent Entry</span>
+                  </div>
 
-              {/* External Terminal Scanning Light (Attached to Pillar) */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2">
-                <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center border border-primary-500/20 shadow-glow relative">
-                   <div className="w-3 h-3 rounded-full bg-primary-500 animate-ping" />
-                   <div className="absolute inset-0 w-full h-full border border-primary-500/30 rounded-full animate-pulse" />
-                </div>
-              </div>
-           </div>
+                  {/* Lane Status Indicators */}
+                  <div className="flex gap-12 items-center">
+                     <div className="flex flex-col items-center gap-1">
+                        <div className="w-6 h-6 rounded-lg bg-black border border-emerald-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                           <ArrowUp className="w-4 h-4 text-emerald-500" />
+                        </div>
+                        <span className="text-[8px] font-bold text-emerald-500/60 uppercase">Entry</span>
+                     </div>
+                     <div className="flex flex-col items-center gap-1 opacity-40">
+                        <div className="w-6 h-6 rounded-lg bg-black border border-white/10 flex items-center justify-center">
+                           <div className="w-3 h-0.5 bg-white/40 rotate-45 absolute" />
+                           <div className="w-3 h-0.5 bg-white/40 -rotate-45 absolute" />
+                        </div>
+                        <span className="text-[8px] font-bold text-white/40 uppercase">Exit</span>
+                     </div>
+                  </div>
+               </div>
 
-           {/* THE ROTATING BARRIER ARM */}
-           <div className="w-full h-4 bg-transparent relative ml-8 flex items-center">
-              <motion.div 
-                style={{ 
-                  rotate: gateRotate,
-                  transformOrigin: 'left center' 
-                }}
-                className="w-full h-3 bg-linear-to-r from-surface-800 via-primary-600 to-primary-900 rounded-full border border-primary-500/30 relative shadow-2xl overflow-hidden"
-              >
-                 {/* Industrial Warning Tape Pattern */}
-                 <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff_10px,#fff_20px)]" />
-                 
-                 {/* LED Strip along the Arm */}
-                 <div className="absolute top-1/2 -translate-y-1/2 right-4 w-1/2 h-[1px] bg-primary-400 opacity-40 blur-[1px]" />
-                 
-                 {/* Mechanical Pivot Joint */}
-                 <div className="absolute left-[-2px] inset-y-0 w-4 bg-surface-950 border-r border-white/10" />
-              </motion.div>
-           </div>
+               {/* The Vertical Supporting Column & Pivot Base */}
+               <div className="w-full flex items-center justify-start relative h-4 top-[-2px]">
+                  
+                  {/* Heavy Duty Pillar */}
+                  <div className="absolute left-[80px] z-40 w-16 h-32 bg-linear-to-b from-surface-700 via-surface-900 to-black border border-white/10 rounded-lg shadow-[20px_0_40px_rgba(0,0,0,0.5)] flex flex-col items-center pt-2">
+                     {/* Pivot Cap */}
+                     <div className="w-12 h-12 rounded-full bg-linear-to-br from-surface-600 to-surface-950 border border-white/5 shadow-inner flex items-center justify-center mb-4">
+                        <div className="w-6 h-6 rounded-full bg-black border border-primary-500/40 animate-pulse-slow" />
+                     </div>
+
+                     {/* Status OLED */}
+                     <div className="w-10 h-6 bg-black border border-white/5 rounded-sm flex items-center justify-center p-1">
+                        <div className="w-full h-1 bg-primary-500/20 rounded-full overflow-hidden">
+                           <motion.div 
+                              style={{ width: useTransform(smoothProgress, [0, 0.4, 0.6, 1], ['0%', '100%', '100%', '0%']) }}
+                              className="h-full bg-primary-500 shadow-[0_0_10px_#3b82f6]"
+                           />
+                        </div>
+                     </div>
+
+                     {/* Support Leg Shadow */}
+                     <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[120%] h-[110%] bg-black/40 blur-xl -z-10 rounded-full rotate-12" />
+                  </div>
+
+                  {/* THE ROTATING BARRIER ARM */}
+                  <div className="w-[340px] h-6 bg-transparent relative ml-[130px] flex items-center z-50">
+                     <motion.div 
+                       style={{ 
+                         rotate: gateRotate,
+                         transformOrigin: 'left center',
+                         willChange: 'transform'
+                       }}
+                       className="w-full h-full bg-linear-to-r from-surface-800 via-primary-500 to-primary-800 rounded-r-full border border-primary-400/40 relative shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center"
+                     >
+                        {/* High-Reflective Warning Pattern (More visible) */}
+                        <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(45deg,transparent,transparent_15px,#fff_15px,#fff_30px)]" />
+                        
+                        {/* Integrated LED Safety Strip (Thicker) */}
+                        <motion.div 
+                           style={{ 
+                              backgroundColor: useTransform(smoothProgress, [0, 0.42, 0.48], ['#ef4444', '#ef4444', '#10b981']),
+                              boxShadow: useTransform(smoothProgress, [0, 0.42, 0.48], ['0 0 20px #ef4444', '0 0 20px #ef4444', '0 0 20px #10b981']),
+                           }}
+                           className="absolute left-10 top-1/2 -translate-y-1/2 w-4/5 h-[4px] rounded-full z-10"
+                        />
+                        
+                        {/* Mechanical Connection Cap */}
+                        <div className="absolute left-0 inset-y-0 w-10 bg-black border-r border-white/20 shadow-xl" />
+                     </motion.div>
+                  </div>
+               </div>
+            </div>
         </div>
       </motion.div>
 
@@ -92,7 +144,8 @@ export default function HeroCar({ progress = 0 }) {
         style={{ 
           y: carY,
           scale: carScale,
-          transformPerspective: 1000
+          transformPerspective: 1000,
+          willChange: 'transform'
         }}
         className="relative z-20 w-[140px] h-[260px] pointer-events-none"
       >
@@ -100,32 +153,75 @@ export default function HeroCar({ progress = 0 }) {
            {/* Shadow */}
            <div className="absolute inset-0 bg-black/40 blur-2xl rounded-[3rem] transform translate-y-4 scale-110" />
 
-           {/* Sleek Top-Down Sedan SVG */}
-           <svg viewBox="0 0 140 260" className="w-full h-full drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
-              <defs>
-                 <linearGradient id="bodyTop" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#1e293b" />
-                    <stop offset="50%" stopColor="#334155" />
-                    <stop offset="100%" stopColor="#1e293b" />
-                 </linearGradient>
-              </defs>
+            {/* Sleek Intelligent Sedan (Upgraded) */}
+            <svg viewBox="0 0 140 260" className="w-full h-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.9)] scale-110">
+               <defs>
+                  {/* Body Paint Gradient */}
+                  <linearGradient id="bodyTop" x1="0%" y1="0%" x2="100%" y2="0%">
+                     <stop offset="0%" stopColor="#0f172a" />
+                     <stop offset="50%" stopColor="#334155" />
+                     <stop offset="100%" stopColor="#0f172a" />
+                  </linearGradient>
 
-              <rect x="10" y="10" width="120" height="240" rx="40" fill="url(#bodyTop)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-              <rect x="25" y="70" width="90" height="120" rx="20" fill="#0f172a" stroke="rgba(59,130,246,0.3)" strokeWidth="0.5" />
-              <path d="M30 75 Q 70 65, 110 75 L110 90 L30 90 Z" fill="rgba(255,255,255,0.05)" />
-              <path d="M30 185 Q 70 195, 110 185 L110 170 L30 170 Z" fill="rgba(255,255,255,0.05)" />
+                  {/* Windshield Reflection */}
+                  <linearGradient id="glassReflect" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(59,130,246,0.1)" />
+                    <stop offset="50%" stopColor="rgba(59,130,246,0.02)" />
+                    <stop offset="100%" stopColor="rgba(59,130,246,0.05)" />
+                  </linearGradient>
+                  
+                  {/* Optimized Glow Filter */}
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+               </defs>
 
-              <path d="M10 60 L130 60" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-              <path d="M10 200 L130 200" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+               {/* Main Body Chassis */}
+               <rect x="5" y="5" width="130" height="250" rx="45" fill="#020617" />
+               <rect x="8" y="8" width="124" height="244" rx="42" fill="url(#bodyTop)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+               
+               {/* Roof & Pillars */}
+               <rect x="22" y="65" width="96" height="130" rx="24" fill="#020617" stroke="rgba(59,130,246,0.2)" strokeWidth="0.5" />
+               <rect x="25" y="68" width="90" height="124" rx="22" fill="url(#glassReflect)" />
 
-              <rect x="25" y="10" width="30" height="5" rx="2" fill="white" />
-              <rect x="85" y="10" width="30" height="5" rx="2" fill="white" />
-              <rect x="25" y="245" width="25" height="5" rx="2" fill="#ef4444" />
-              <rect x="90" y="245" width="25" height="5" rx="2" fill="#ef4444" />
+               {/* Character Lines & Panels */}
+               <path d="M10 60 Q 70 55, 130 60" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+               <path d="M10 200 Q 70 205, 130 200" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+               <rect x="68" y="15" width="4" height="20" rx="2" fill="rgba(255,255,255,0.1)" />
 
-              <rect x="-2" y="75" width="12" height="20" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.1)" />
-              <rect x="130" y="75" width="12" height="20" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.1)" />
-           </svg>
+               {/* ACTIVE INTELLIGENT HEADLIGHTS */}
+               <g filter="url(#glow)">
+                  <motion.rect 
+                    style={{ opacity: useTransform(smoothProgress, [0, 0.4, 0.6], [1, 0.6, 1]) }}
+                    x="22" y="10" width="32" height="8" rx="4" fill="#fff" 
+                  />
+                  <motion.rect 
+                    style={{ opacity: useTransform(smoothProgress, [0, 0.4, 0.6], [1, 0.6, 1]) }}
+                    x="86" y="10" width="32" height="8" rx="4" fill="#fff" 
+                  />
+               </g>
+
+               {/* ADAPTIVE REAR LIGHTS */}
+               <rect x="25" y="242" width="28" height="6" rx="3" fill="#991b1b" />
+               <rect x="87" y="242" width="28" height="6" rx="3" fill="#991b1b" />
+               
+               {/* Active Braking Glow */}
+               <motion.rect 
+                style={{ opacity: useTransform(smoothProgress, [0.15, 0.25, 0.55, 0.65], [0, 1, 1, 0]) }}
+                x="25" y="242" width="28" height="6" rx="3" fill="#ef4444" filter="url(#glow)" 
+               />
+               <motion.rect 
+                style={{ opacity: useTransform(smoothProgress, [0.15, 0.25, 0.55, 0.65], [0, 1, 1, 0]) }}
+                x="87" y="242" width="28" height="6" rx="3" fill="#ef4444" filter="url(#glow)" 
+               />
+
+               {/* Side Mirrors */}
+               <rect x="-4" y="80" width="14" height="24" rx="6" fill="#020617" stroke="rgba(255,255,255,0.1)" />
+               <rect x="130" y="80" width="14" height="24" rx="6" fill="#020617" stroke="rgba(255,255,255,0.1)" />
+            </svg>
 
            {/* HUD Scanning Reticle (Aerial) */}
            <motion.div 

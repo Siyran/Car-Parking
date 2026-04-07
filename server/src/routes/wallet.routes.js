@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getBalance, getKeyId, createOrder, verifyPayment, createParkingOrder, getHistory } from '../controllers/wallet.controller.js';
+import { getBalance, getKeyId, verifyManual, createOrder, verifyPayment, createParkingOrder, getHistory } from '../controllers/wallet.controller.js';
 import verifyToken from '../middleware/verifyToken.js';
 import requireRole from '../middleware/requireRole.js';
 

@@ -67,11 +67,13 @@
 
 @layer components {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
+    @apply bg-white/70 backdrop-blur-sm border border-white/20;
+    will-change: backdrop-filter;
   }
   
   .glass-dark {
-    @apply bg-surface-950/40 backdrop-blur-xl border border-white/5;
+    @apply bg-surface-950/40 backdrop-blur-md border border-white/5;
+    will-change: backdrop-filter;
   }
 
   .mesh-bg-dark {
@@ -145,6 +147,7 @@
   animation: spin-wheel 0.8s linear infinite;
   transform-origin: center;
   transform-box: fill-box;
+  will-change: transform;
 }
 
 @keyframes spin-wheel {

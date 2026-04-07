@@ -23,18 +23,12 @@ export default function Home() {
     offset: ["start start", "end end"]
   });
 
-  // Dynamic Background Hue Shift (Blue -> Purple -> Teal -> Orange)
-  const bgHue = useTransform(
-    experienceProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [
-      "radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%)",
-      "radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 0% 100%, rgba(249, 115, 22, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 50% 50%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)"
-    ]
-  );
+  // 3. OPTIMIZED BACKGROUND LAYERS (Replacing expensive string interpolation)
+  const bgOpacity1 = useTransform(experienceProgress, [0, 0.25], [1, 0]);
+  const bgOpacity2 = useTransform(experienceProgress, [0.15, 0.25, 0.5], [0, 1, 0]);
+  const bgOpacity3 = useTransform(experienceProgress, [0.4, 0.5, 0.75], [0, 1, 0]);
+  const bgOpacity4 = useTransform(experienceProgress, [0.65, 0.75, 1], [0, 1, 0.5]);
+  const bgOpacity5 = useTransform(experienceProgress, [0.85, 1], [0, 1]);
 
   // Scanning Line Position
   const scanY = useTransform(experienceProgress, [0, 1], ["0%", "100%"]);
@@ -52,36 +46,42 @@ export default function Home() {
   const ch4Opacity = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [0, 1, 1, 0]);
   const ch4Y = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [60, 0, 0, -60]);
 
-  const revealVariants = {
+  const revealVariants = useMemo(() => ({
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
-  };
-
-  const containerVariants = {
+  }), []);
+ 
+  const containerVariants = useMemo(() => ({
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.3 } }
-  };
-
-  const itemVariants = {
+  }), []);
+ 
+  const itemVariants = useMemo(() => ({
     hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
     visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
-  };
+  }), []);
 
   return (
     <div ref={containerRef} className="bg-surface-950 selection:bg-primary-500 relative flex flex-col">
       
-      {/* GLOBAL BACKGROUND INFRASTRUCTURE */}
-      <motion.div style={{ backgroundImage: bgHue }} className="fixed inset-0 z-0 pointer-events-none transition-colors duration-[1.5s]">
-        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '100px 100px' }}></div>
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary-600/5 blur-[200px] rounded-full" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] bg-accent-600/5 blur-[180px] rounded-full" />
-        
-        {/* Dynamic Scanning Line */}
-        <motion.div 
-           style={{ top: scanY }}
-           className="absolute left-0 w-full h-[2px] bg-linear-to-r from-transparent via-primary-500/20 to-transparent z-10 blur-[1px]"
-        />
-      </motion.div>
+      {/* GLOBAL BACKGROUND INFRASTRUCTURE - Optimized with layers */}
+      <div className="fixed inset-0 z-0 pointer-events-none transition-colors duration-[1.5s]">
+         <motion.div style={{ opacity: bgOpacity1 }} className="absolute inset-0 bg-[radial-gradient(at_0%_0%,rgba(59,130,246,0.1)_0px,transparent_50%)]" />
+         <motion.div style={{ opacity: bgOpacity2 }} className="absolute inset-0 bg-[radial-gradient(at_100%_0%,rgba(139,92,246,0.12)_0px,transparent_50%)]" />
+         <motion.div style={{ opacity: bgOpacity3 }} className="absolute inset-0 bg-[radial-gradient(at_100%_100%,rgba(20,184,166,0.1)_0px,transparent_50%)]" />
+         <motion.div style={{ opacity: bgOpacity4 }} className="absolute inset-0 bg-[radial-gradient(at_0%_100%,rgba(249,115,22,0.1)_0px,transparent_50%)]" />
+         <motion.div style={{ opacity: bgOpacity5 }} className="absolute inset-0 bg-[radial-gradient(at_50%_50%,rgba(59,130,246,0.1)_0px,transparent_50%)]" />
+ 
+         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '100px 100px' }}></div>
+         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary-600/5 blur-[200px] rounded-full" />
+         <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] bg-accent-600/5 blur-[180px] rounded-full" />
+         
+         {/* Dynamic Scanning Line */}
+         <motion.div 
+            style={{ top: scanY, willChange: 'top' }}
+            className="absolute left-0 w-full h-[2px] bg-linear-to-r from-transparent via-primary-500/20 to-transparent z-10 blur-[1px]"
+         />
+      </div>
 
       {/* 1. INITIAL LANDING (System Boot Style) */}
       <section className="relative h-[95vh] flex flex-col items-center justify-center px-6 z-20 overflow-hidden">
@@ -131,48 +131,48 @@ export default function Home() {
              <HeroCar progress={experienceProgress} />
           </div>
 
-          {/* TEXT CHAPTER OVERLAYS (Floating) */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+          {/* TEXT CHAPTER OVERLAYS (Floating HUD Interface) */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-[100]">
              <div className="max-w-[1440px] w-full h-full relative">
                 
-                {/* Chapter 1: The Descent (0.05 - 0.25) */}
-                <motion.div style={{ opacity: ch1Opacity, y: ch1Y }} className="absolute top-[20%] left-[10%] max-w-md space-y-6">
+                {/* Chapter 1: The Descent (Top-Left HUD) */}
+                <motion.div style={{ opacity: ch1Opacity, y: ch1Y }} className="absolute top-[10%] left-8 max-w-[280px] space-y-6 glass-dark p-6 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
                    <div className="flex items-center gap-4 text-primary-500 mb-2">
-                     <Radio className="w-5 h-5 animate-pulse" />
+                     <Radio className="w-4 h-4 animate-pulse" />
                      <span className="text-[10px] font-black tracking-widest uppercase">Detection Active</span>
                    </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none">THE <br /> DESCENT.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-l-2 border-primary-500/40 pl-8 ml-2 py-2">Our modular dock nodes identify your vehicle identity at 150m, prepping the bay for immediate entry.</p>
+                   <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">THE <br /> DESCENT.</h2>
+                   <p className="text-sm text-surface-400 font-medium border-l-2 border-primary-500/40 pl-4 ml-1 py-1">Our modular dock nodes identify your vehicle identity at 150m, prepping the bay.</p>
                 </motion.div>
 
-                {/* Chapter 2: The Scan (0.3 - 0.5) */}
-                <motion.div style={{ opacity: ch2Opacity, y: ch2Y }} className="absolute bottom-[20%] right-[10%] max-w-md text-right space-y-6">
+                {/* Chapter 2: The Scan (Bottom-Right HUD) */}
+                <motion.div style={{ opacity: ch2Opacity, y: ch2Y }} className="absolute bottom-[10%] right-8 max-w-[280px] text-right space-y-6 glass-dark p-6 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
                    <div className="flex items-center gap-4 text-accent-500 mb-2 justify-end">
                      <span className="text-[10px] font-black tracking-widest uppercase">Identity Verified</span>
-                     <Chip className="w-5 h-5 " />
+                     <Chip className="w-4 h-4 " />
                    </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none">NODE <br /> SYNC.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-r-2 border-accent-500/40 pr-8 mr-2 py-2">Every slot is cryptographically verified. Real-time scanning ensures 100% security for your node allocation.</p>
+                   <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">NODE <br /> SYNC.</h2>
+                   <p className="text-sm text-surface-400 font-medium border-r-2 border-accent-500/40 pr-4 mr-1 py-1">Every slot is cryptographically verified. Real-time scanning ensures 100% security.</p>
                 </motion.div>
 
-                {/* Chapter 3: The Gate (0.55 - 0.75) */}
-                <motion.div style={{ opacity: ch3Opacity, y: ch3Y }} className="absolute top-[25%] right-[12%] max-w-md text-right space-y-6">
+                {/* Chapter 3: The Gate (Top-Right HUD) */}
+                <motion.div style={{ opacity: ch3Opacity, y: ch3Y }} className="absolute top-[10%] right-8 max-w-[280px] text-right space-y-6 glass-dark p-6 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
                    <div className="flex items-center gap-4 text-teal-400 mb-2 justify-end">
                      <span className="text-[10px] font-black tracking-widest uppercase">System Unlocked</span>
-                     <Activity className="w-5 h-5" />
+                     <Activity className="w-4 h-4" />
                    </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none">PRO <br /> ACCESS.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-r-2 border-teal-500/40 pr-8 mr-2 py-2">Automated barriers lift via seamless digital handshake. No cards. No wait times. Just flow.</p>
+                   <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">PRO <br /> ACCESS.</h2>
+                   <p className="text-sm text-surface-400 font-medium border-r-2 border-teal-500/40 pr-4 mr-1 py-1">Automated barriers lift via seamless digital handshake. Just flow.</p>
                 </motion.div>
 
-                {/* Chapter 4: The Settlement (0.8 - 0.95) */}
-                <motion.div style={{ opacity: ch4Opacity, y: ch4Y }} className="absolute bottom-[15%] left-[8%] max-w-md space-y-6">
+                {/* Chapter 4: The Settlement (Bottom-Left HUD) */}
+                <motion.div style={{ opacity: ch4Opacity, y: ch4Y }} className="absolute bottom-[10%] left-8 max-w-[280px] space-y-6 glass-dark p-6 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
                    <div className="flex items-center gap-4 text-orange-400 mb-2">
-                     <Smartphone className="w-5 h-5" />
+                     <Smartphone className="w-4 h-4" />
                      <span className="text-[10px] font-black tracking-widest uppercase">Trust Secured</span>
                    </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none">P2P <br /> WEALTH.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-l-2 border-orange-500/40 pl-8 ml-2 py-2">Transactions settle directly to host VPAs. Zero commission leakage. Maximum liquidity via Direct UPI.</p>
+                   <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">P2P <br /> WEALTH.</h2>
+                   <p className="text-sm text-surface-400 font-medium border-l-2 border-orange-500/40 pl-4 ml-1 py-1">Transactions settle directly to host VPAs. Zero commission leakage.</p>
                 </motion.div>
 
              </div>
