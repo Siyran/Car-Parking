@@ -97,23 +97,7 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-              {navLinks.length === 0 && (
-                <div className="flex items-center gap-8 px-6 py-2">
-                  {[
-                    { name: 'Reserve', path: '/search' },
-                    { name: 'Partner', path: '/register?role=owner' },
-                    { name: 'Network', path: '/' },
-                  ].map((link) => (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-500 hover:text-primary-400 transition-all duration-300"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {/* Unauthenticated Nav links removed as per instructions */}
             </div>
 
             <div className="flex items-center gap-8 ml-6 shrink-0 h-10">
@@ -146,7 +130,7 @@ export default function Navbar() {
                     Sign In
                   </Link>
                   <Button size="sm" onClick={() => (window.location.href = '/register')} className="!rounded-xl px-10 h-11 text-xs uppercase tracking-widest font-black shadow-glow">
-                     Launch App
+                     Sign Up
                   </Button>
                 </div>
               )}
@@ -177,7 +161,7 @@ export default function Navbar() {
             className="lg:hidden absolute top-full left-6 right-6 mt-4 p-2 glass-dark rounded-[2.5rem] shadow-2xl overflow-hidden pointer-events-auto border border-white/10"
           >
             <div className="p-4 flex flex-col gap-2">
-              {navLinks.length > 0 ? (
+              {navLinks.length > 0 && (
                 navLinks.map((link) => {
                   const Icon = link.icon;
                   return (
@@ -195,12 +179,6 @@ export default function Navbar() {
                     </Link>
                   );
                 })
-              ) : (
-                ['Home', 'Search', 'Partners', 'About'].map(link => (
-                  <Link key={link} to={link === 'Home' ? '/' : `/${link.toLowerCase()}`} onClick={() => setIsOpen(false)} className="px-8 py-5 rounded-[1.75rem] text-surface-400 hover:bg-white/5 hover:text-white transition-all font-black italic uppercase tracking-wider text-xl">
-                    {link}
-                  </Link>
-                ))
               )}
               
               <div className="h-[1px] bg-white/5 mx-6 my-2" />
@@ -227,7 +205,7 @@ export default function Navbar() {
               ) : (
                 <div className="p-4 space-y-4">
                   <Link to="/login" onClick={() => setIsOpen(false)} className="block w-full text-center py-6 rounded-[1.75rem] glass-dark text-white font-black italic uppercase tracking-[0.2em] text-lg border border-white/5">Sign In</Link>
-                  <Button className="w-full rounded-[1.75rem] py-6 text-lg font-black italic uppercase tracking-[0.2em]" onClick={() => (window.location.href = '/register')}>Get Started</Button>
+                  <Button className="w-full rounded-[1.75rem] py-6 text-lg font-black italic uppercase tracking-[0.2em]" onClick={() => (window.location.href = '/register')}>Sign Up</Button>
                 </div>
               )}
             </div>
