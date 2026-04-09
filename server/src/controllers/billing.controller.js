@@ -29,7 +29,8 @@ export const getMonthlyBill = async (req, res, next) => {
       totalDuration,
       totalSessions: bookings.length,
       bookings,
-      isPaid
+      isPaid,
+      walletBalance: req.user.walletBalance || 0
     });
   } catch (error) {
     next(error);
@@ -38,12 +39,20 @@ export const getMonthlyBill = async (req, res, next) => {
 
 export const simulatePayment = async (req, res, next) => {
   try {
-    const { month, amount } = req.body;
+    const { month, amount, paymentMethod = 'simulated' } = req.body;
+
+    if (paymentMethod === 'wallet') {
+      if ((req.user.walletBalance || 0) < amount) {
+        return res.status(400).json({ error: 'Insufficient wallet balance' });
+      }
+      req.user.walletBalance -= amount;
+      await req.user.save();
+    }
 
     // Mark all pending transactions for this month as completed
     await Transaction.updateMany(
       { user: req.user._id, month, status: 'pending' },
-      { status: 'completed', paymentMethod: 'simulated' }
+      { status: 'completed', paymentMethod }
     );
 
     // Mark bookings as paid
@@ -52,7 +61,23 @@ export const simulatePayment = async (req, res, next) => {
       { isPaid: true }
     );
 
-    res.json({ message: 'Payment simulated successfully', month, amount });
+    res.json({ message: 'Payment processed successfully', month, amount, paymentMethod, walletBalance: req.user.walletBalance });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addFunds = async (req, res, next) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+    
+    req.user.walletBalance = (req.user.walletBalance || 0) + Number(amount);
+    await req.user.save();
+    
+    res.json({ message: 'Funds added successfully', walletBalance: req.user.walletBalance });
   } catch (error) {
     next(error);
   }

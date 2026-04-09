@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   walletBalance: { type: Number, default: 0 },
   isVerified: { type: Boolean, default: false },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  walletBalance: { type: Number, default: 0 }
 }, { timestamps: true });
 
 userSchema.index({ role: 1 });

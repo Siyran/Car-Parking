@@ -3,14 +3,16 @@ import { billingAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { CreditCard, Calendar, Clock, Receipt } from 'lucide-react';
+import { CreditCard, Calendar, Clock, Receipt, Wallet, Plus } from 'lucide-react';
 import { formatCurrency, formatDate, formatTime, formatDuration } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 export default function Billing() {
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
+  const [paying, setPaying] = useState(null);
+  const [addingFunds, setAddingFunds] = useState(false);
+  const [fundAmount, setFundAmount] = useState('');
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -29,16 +31,30 @@ export default function Billing() {
     setLoading(false);
   };
 
-  const handlePay = async () => {
-    setPaying(true);
+  const handleAddFunds = async () => {
+    if (!fundAmount || isNaN(fundAmount) || Number(fundAmount) <= 0) return;
+    setAddingFunds(true);
     try {
-      await billingAPI.pay({ month, amount: bill.totalAmount });
-      toast.success('Payment simulated successfully!');
+      await billingAPI.addFunds({ amount: Number(fundAmount) });
+      toast.success('Funds added to wallet!');
+      setFundAmount('');
       loadBill();
     } catch (err) {
-      toast.error('Payment failed');
+      toast.error('Failed to add funds');
     }
-    setPaying(false);
+    setAddingFunds(false);
+  };
+
+  const handlePay = async (method) => {
+    setPaying(method);
+    try {
+      await billingAPI.pay({ month, amount: bill.totalAmount, paymentMethod: method });
+      toast.success(`Payment successful via ${method}!`);
+      loadBill();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Payment failed');
+    }
+    setPaying(null);
   };
 
   return (
@@ -55,6 +71,35 @@ export default function Billing() {
           <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>
         ) : bill && (
           <>
+            {/* Wallet Section */}
+            <Card className="mb-6 bg-surface-900/50 border-white/5 backdrop-blur-sm p-6 overflow-visible">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center relative group">
+                    <Wallet className="w-6 h-6 text-primary-400 relative z-10" />
+                  </div>
+                  <div>
+                    <div className="text-surface-400 text-[10px] font-black uppercase tracking-widest">My Wallet Balance</div>
+                    <div className="text-3xl font-black text-white italic tracking-tighter mt-1">{formatCurrency(bill.walletBalance || 0)}</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <input 
+                    type="number" 
+                    placeholder="Amount" 
+                    value={fundAmount}
+                    onChange={(e) => setFundAmount(e.target.value)}
+                    className="flex-1 md:w-32 px-4 py-2 rounded-xl bg-surface-950 border border-white/10 text-white focus:ring-2 focus:ring-primary-500/30 outline-none font-black tracking-widest placeholder:text-surface-600 transition-all text-xs"
+                  />
+                  <Button onClick={handleAddFunds} loading={addingFunds} className="whitespace-nowrap flex-shrink-0 relative group overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md pointer-events-none"></div>
+                    <Plus className="w-4 h-4 mr-2 relative z-10" /> <span className="relative z-10">Add Funds</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
             {/* Summary */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
@@ -74,16 +119,36 @@ export default function Billing() {
 
             {/* Pay button */}
             {bill.totalAmount > 0 && !bill.isPaid && (
-              <Card className="mb-6 bg-linear-to-r from-primary-600 to-accent-500 text-white border-white/20 shadow-glow relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/5 opacity-20 pointer-events-none" />
-                <div className="p-6 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg">Payment Due</h3>
-                    <p className="text-white/70 text-sm mt-1">Pay your monthly parking bill</p>
+              <Card className="mb-6 bg-linear-to-r from-surface-900 to-surface-800 border-white/10 relative overflow-hidden">
+                <div className="p-6">
+                  <div className="mb-4">
+                    <h3 className="font-black text-white italic uppercase tracking-widest text-lg">Payment Due: <span className="text-primary-400">{formatCurrency(bill.totalAmount)}</span></h3>
+                    <p className="text-surface-400 text-[10px] font-black uppercase tracking-widest mt-1">Select a payment method to settle your bill</p>
                   </div>
-                  <Button onClick={handlePay} loading={paying} variant="secondary" size="lg" className="bg-white text-primary-600 hover:bg-surface-50">
-                    Pay {formatCurrency(bill.totalAmount)}
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                    <Button 
+                      onClick={() => handlePay('wallet')} 
+                      loading={paying === 'wallet'} 
+                      disabled={(bill.walletBalance || 0) < bill.totalAmount || paying !== null}
+                      variant="primary" 
+                      className="flex-1 relative overflow-hidden group"
+                    >
+                      <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md pointer-events-none"></div>
+                      <Wallet className="w-4 h-4 mr-2 relative z-10" /> <span className="relative z-10 font-bold tracking-widest">Pay with Wallet</span>
+                    </Button>
+                    <Button 
+                      onClick={() => handlePay('simulated')} 
+                      loading={paying === 'simulated'} 
+                      disabled={paying !== null}
+                      variant="secondary" 
+                      className="flex-1 group hover:border-white/20 transition-colors font-bold tracking-widest bg-surface-900 border-white/10"
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" /> Pay with Card 
+                    </Button>
+                  </div>
+                  {(bill.walletBalance || 0) < bill.totalAmount && (
+                    <p className="text-error-500 text-[10px] uppercase font-black tracking-widest mt-3 flex items-center gap-1"><Wallet className="w-3 h-3" /> Insufficient wallet balance</p>
+                  )}
                 </div>
               </Card>
             )}

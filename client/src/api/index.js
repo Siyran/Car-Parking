@@ -59,6 +59,7 @@ export const bookingAPI = {
 export const billingAPI = {
   getMonthly: (params) => api.get('/billing/monthly', { params }),
   pay: (data) => api.post('/billing/pay', data),
+  addFunds: (data) => api.post('/billing/wallet/add', data),
   getOwnerDashboard: () => api.get('/billing/owner/dashboard'),
   getOwnerEarnings: (params) => api.get('/billing/owner/earnings', { params }),
   getSpotBookings: (spotId) => api.get(`/billing/owner/spots/${spotId}/bookings`),
