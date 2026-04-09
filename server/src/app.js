@@ -12,6 +12,8 @@ import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
 import { setupSocket } from './socket/availability.socket.js';
 
+// Trigger commit for contribution heatmap
+
 // Routes
 import authRoutes from './routes/auth.routes.js';
 import parkingRoutes from './routes/parking.routes.js';
