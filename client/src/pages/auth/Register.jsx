@@ -133,29 +133,29 @@ export default function Register() {
                       className={`flex-1 flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${form.role === role ? 'bg-primary-600 text-white shadow-glow' : 'text-surface-500 hover:text-white'}`}
                     >
                       {role === 'user' ? <Car className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
-                      {role}
+                      {role === 'user' ? 'Car Driver' : 'Parking Owner'}
                     </button>
                   ))}
                 </div>
 
                 <div className="space-y-6">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Operator Name</label>
+                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Name</label>
                       <Input type="text" icon={User} placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required className="!bg-white/[0.03] !border-white/10 !rounded-2xl h-14" />
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Network Endpoint</label>
+                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Email</label>
                       <Input type="email" icon={Mail} placeholder="name@domain.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="!bg-white/[0.03] !border-white/10 !rounded-2xl h-14" />
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Access Key Override</label>
+                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.3em] ml-2">Password</label>
                       <Input type="password" icon={Lock} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required className="!bg-white/[0.03] !border-white/10 !rounded-2xl h-14" />
                    </div>
                 </div>
 
                 <Button type="submit" loading={loading} className="w-full !rounded-2xl py-6 text-sm font-black uppercase tracking-widest shadow-glow group overflow-hidden relative group" size="lg">
                    <span className="relative z-10 flex items-center justify-center gap-3">
-                      {loading ? 'Initializing Core...' : 'Authorize Registration'}
+                      {loading ? 'Signing Up...' : 'Sign Up'}
                       {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                    </span>
                    <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
@@ -164,8 +164,8 @@ export default function Register() {
 
              <div className="mt-10 pt-8 border-t border-white/5 text-center">
                 <p className="text-xs font-bold text-surface-500">
-                   Already In Grid?
-                   <Link to="/login" className="text-primary-400 hover:text-white ml-2 transition-colors">Resume Session</Link>
+                   Already a user?
+                   <Link to="/login" className="text-primary-400 hover:text-white ml-2 transition-colors">Login</Link>
                 </p>
              </div>
           </div>

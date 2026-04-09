@@ -115,11 +115,11 @@ export default function Login() {
              <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
                 <div className="space-y-6">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-2">Email Address</label>
+                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-2">Email</label>
                       <Input type="email" icon={Mail} placeholder="name@domain.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required className="!bg-white/[0.03] !border-white/10 !rounded-2xl h-14" />
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-2">Access Key</label>
+                      <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-2">Password</label>
                       <Input type="password" icon={Lock} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required className="!bg-white/[0.03] !border-white/10 !rounded-2xl h-14" />
                    </div>
                 </div>
@@ -134,7 +134,7 @@ export default function Login() {
 
                 <Button type="submit" loading={loading} className="w-full !rounded-2xl py-6 text-sm font-black uppercase tracking-widest shadow-glow group overflow-hidden relative" size="lg">
                    <span className="relative z-10 flex items-center justify-center gap-3">
-                      Authenticate Session
+                      Login
                       <ShieldCheck className="w-5 h-5" />
                    </span>
                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
@@ -143,8 +143,8 @@ export default function Login() {
 
              <div className="mt-10 pt-8 border-t border-white/5 flex flex-col items-center gap-6">
                 <p className="text-xs font-bold text-surface-500">
-                   New Operator?
-                   <Link to="/register" className="text-primary-400 hover:text-primary-300 ml-2 transition-colors">Deploy Account</Link>
+                   New User?
+                   <Link to="/register" className="text-primary-400 hover:text-primary-300 ml-2 transition-colors">Sign up</Link>
                 </p>
 
                 {/* Quick Access Demo (Visibility Optimized) */}
