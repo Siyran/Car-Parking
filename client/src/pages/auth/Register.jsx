@@ -115,10 +115,6 @@ export default function Register() {
              <div className="absolute -bottom-1 -left-1 w-24 h-24 border-b-2 border-l-2 border-primary-500/20 rounded-bl-3xl" />
 
              <div className="mb-10 text-center lg:text-left">
-                <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent-500/10 border border-accent-500/20 text-xs font-black text-accent-400 uppercase tracking-widest mb-6">
-                   <Cpu className="w-3.5 h-3.5" />
-                   New Node Registration
-                </div>
                 <h3 className="text-4xl font-black text-white italic uppercase tracking-tight leading-none mb-4">Initialize <span className="gradient-text italic">Account</span></h3>
                 <p className="text-sm font-medium text-surface-500 italic">Select your operational role to begin session.</p>
              </div>

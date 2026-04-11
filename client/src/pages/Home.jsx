@@ -91,11 +91,6 @@ export default function Home() {
           animate="visible"
           className="text-center space-y-12"
         >
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-4 px-6 py-2 rounded-full glass-dark border border-white/5 text-primary-400 text-[10px] font-black tracking-[0.5em] uppercase mx-auto relative group">
-             <span className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-primary-500 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
-             NODE_INITIALIZED :: SYSTEM_ACTIVE
-          </motion.div>
-          
           <div className="space-y-4 flex flex-col items-center">
              <motion.h1 variants={itemVariants} className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] italic uppercase text-white drop-shadow-2xl">
                PARKFLOW
@@ -203,9 +198,6 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="space-y-8"
               >
-                 <div className="inline-flex items-center gap-4 px-6 py-2 rounded-full glass-dark border border-white/5 text-primary-400 text-[10px] font-black tracking-[0.4em] uppercase">
-                    Digital Infrastructure_v7.4
-                 </div>
                  <h2 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">
                     THE UNIVERSAL <br />
                     <span className="gradient-text">TERMINAL.</span>

@@ -54,10 +54,6 @@ export default function OwnerDashboard() {
         {/* Futuristic Provider Header */}
         <div className="mb-14 pt-12 flex flex-col md:flex-row md:items-end justify-between gap-10 border-b border-white/5 pb-12">
            <div className="space-y-4">
-              <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent-600/10 border border-accent-500/20 text-[10px] font-black text-accent-400 uppercase tracking-[0.3em] w-fit">
-                 <Cpu className="w-3.5 h-3.5" />
-                 Space Management Center
-              </div>
               <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
                  Owner <span className="gradient-text italic text-glow">Dashboard</span>.
               </h1>

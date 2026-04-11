@@ -104,10 +104,6 @@ export default function Login() {
              <div className="absolute -bottom-1 -left-1 w-20 h-20 border-b-2 border-l-2 border-accent-500/20 rounded-bl-3xl" />
 
              <div className="mb-12 text-center lg:text-left">
-                <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-xs font-black text-primary-400 uppercase tracking-widest mb-6">
-                   <KeyRound className="w-3.5 h-3.5" />
-                   Session Protocol
-                </div>
                 <h3 className="text-4xl font-black text-white italic uppercase tracking-tight leading-none mb-4">Initialize <span className="gradient-text">Identity</span></h3>
                 <p className="text-sm font-medium text-surface-500">Provide encrypted credentials to begin.</p>
              </div>

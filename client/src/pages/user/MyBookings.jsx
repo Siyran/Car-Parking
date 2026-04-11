@@ -93,11 +93,7 @@ export default function MyBookings() {
         {/* Futuristic Dashboard Header */}
         <div className="mb-12 pt-10 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-10">
            <div className="space-y-4">
-              <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary-600/10 border border-primary-500/20 text-[10px] font-black text-primary-400 uppercase tracking-[0.3em] w-fit">
-                 <History className="w-3.5 h-3.5" />
-                 Reservation Telemetry
-              </div>
-              <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+               <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
                  My <span className="gradient-text italic text-glow">Bookings</span>.
               </h1>
            </div>
