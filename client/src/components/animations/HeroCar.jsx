@@ -28,114 +28,93 @@ export default function HeroCar({ progress = 0 }) {
   return (
     <div className="relative w-full max-w-[1200px] h-[750px] flex items-center justify-center overflow-visible bg-surface-950 rounded-[3rem] shadow-2xl border border-white/5">
       
-      {/* 1. Inferno Gradient Background (Inspired by User Image) */}
+      {/* 1. Dynamic Ambience (Mesh Glow) */}
       <div className="absolute inset-0 z-0 overflow-hidden rounded-[3rem]">
-        <div className="absolute inset-0 bg-linear-to-t from-black via-surface-950 to-[#ff4d00]/30 opacity-60" />
+        <div className="absolute inset-0 bg-linear-to-t from-black via-surface-950 to-primary-600/10 opacity-60" />
         <div className="absolute inset-0 map-grid opacity-10" />
         
-        {/* Glowing Orange Orbs (Top-Down Ambience) */}
+        {/* Pulsing Core Glow */}
         <motion.div 
-           style={{ opacity: useTransform(smoothProgress, [0, 0.5, 1], [0.3, 0.5, 0.3]) }}
-           className="absolute -top-1/4 left-1/4 w-[600px] h-[600px] bg-[#ff4d00]/20 rounded-full blur-[120px]"
+           animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.1, 1] }}
+           transition={{ duration: 4, repeat: Infinity }}
+           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[120px]"
         />
       </div>
 
-      {/* 2. Top-Down Automated Smart Barrier Assembly */}
+      {/* 2. Automated Smart Barrier */}
       <motion.div 
         style={{ opacity: gateOpacity }}
-        className="absolute inset-x-0 top-[30%] z-30 h-1 flex items-center justify-center"
+        className="absolute inset-x-0 top-[35%] z-30 h-1 flex items-center justify-center"
       >
         <div className="w-full max-w-[600px] relative flex items-center">
-           {/* THE PILLAR (Grounded Terminal) */}
-           <div className="absolute left-[-20px] z-40 w-16 h-16 bg-surface-900 border border-white/10 rounded-2xl flex items-center justify-center shadow-xl">
-              <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center p-2 relative group overflow-hidden">
-                 <div className="absolute inset-0 bg-primary-500/5 animate-pulse" />
+           <div className="absolute left-[-20px] z-40 w-16 h-16 glass-dark border border-white/10 rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center p-2 relative">
                  <Cpu className="w-full h-full text-primary-500 opacity-60" />
-                 
-                 {/* Internal Status Indicator */}
                  <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-              </div>
-
-              {/* External Terminal Scanning Light (Attached to Pillar) */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2">
-                <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center border border-primary-500/20 shadow-glow relative">
-                   <div className="w-3 h-3 rounded-full bg-primary-500 animate-ping" />
-                   <div className="absolute inset-0 w-full h-full border border-primary-500/30 rounded-full animate-pulse" />
-                </div>
               </div>
            </div>
 
-           {/* THE ROTATING BARRIER ARM */}
-           <div className="w-full h-4 bg-transparent relative ml-8 flex items-center">
+           <div className="w-full h-4 relative ml-8 flex items-center">
               <motion.div 
-                style={{ 
-                  rotate: gateRotate,
-                  transformOrigin: 'left center' 
-                }}
-                className="w-full h-3 bg-linear-to-r from-surface-800 via-primary-600 to-primary-900 rounded-full border border-primary-500/30 relative shadow-2xl overflow-hidden"
+                style={{ rotate: gateRotate, transformOrigin: 'left center' }}
+                className="w-full h-2 bg-linear-to-r from-surface-800 via-primary-500 to-primary-900 rounded-full border border-primary-500/20 relative shadow-2xl"
               >
-                 {/* Industrial Warning Tape Pattern */}
-                 <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#fff_10px,#fff_20px)]" />
-                 
-                 {/* LED Strip along the Arm */}
-                 <div className="absolute top-1/2 -translate-y-1/2 right-4 w-1/2 h-[1px] bg-primary-400 opacity-40 blur-[1px]" />
-                 
-                 {/* Mechanical Pivot Joint */}
-                 <div className="absolute left-[-2px] inset-y-0 w-4 bg-surface-950 border-r border-white/10" />
+                  <div className="absolute top-1/2 -translate-y-1/2 right-4 w-1/2 h-[1px] bg-white opacity-20 blur-[1px]" />
               </motion.div>
            </div>
         </div>
       </motion.div>
 
-      {/* 4. Top-Down Car (The Controller Car) */}
+      {/* 3. The Pro-Logic Vehicle (Redesigned) */}
       <motion.div
-        style={{ 
-          y: carY,
-          scale: carScale,
-          transformPerspective: 1000
-        }}
+        style={{ y: carY, scale: carScale, transformPerspective: 1200 }}
         className="relative z-20 w-[140px] h-[260px] pointer-events-none"
       >
         <div className="w-full h-full relative">
-           {/* Shadow */}
-           <div className="absolute inset-0 bg-black/40 blur-2xl rounded-[3rem] transform translate-y-4 scale-110" />
+           <div className="absolute inset-0 bg-black/60 blur-3xl rounded-[3.5rem] transform translate-y-8 scale-110" />
 
-           {/* Sleek Top-Down Sedan SVG */}
-           <svg viewBox="0 0 140 260" className="w-full h-full drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
+           {/* High-Fidelity Car Body */}
+           <svg viewBox="0 0 140 260" className="w-full h-full drop-shadow-[0_40px_60px_rgba(0,0,0,0.9)]">
               <defs>
-                 <linearGradient id="bodyTop" x1="0%" y1="0%" x2="100%" y2="0%">
+                 <linearGradient id="bodyMesh" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#1e293b" />
-                    <stop offset="50%" stopColor="#334155" />
+                    <stop offset="50%" stopColor="#0f172a" />
                     <stop offset="100%" stopColor="#1e293b" />
                  </linearGradient>
+                 <mask id="carMask">
+                    <rect width="140" height="260" rx="45" fill="white" />
+                 </mask>
               </defs>
 
-              <rect x="10" y="10" width="120" height="240" rx="40" fill="url(#bodyTop)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-              <rect x="25" y="70" width="90" height="120" rx="20" fill="#0f172a" stroke="rgba(59,130,246,0.3)" strokeWidth="0.5" />
-              <path d="M30 75 Q 70 65, 110 75 L110 90 L30 90 Z" fill="rgba(255,255,255,0.05)" />
-              <path d="M30 185 Q 70 195, 110 185 L110 170 L30 170 Z" fill="rgba(255,255,255,0.05)" />
+              <rect width="140" height="260" rx="45" fill="url(#bodyMesh)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+              
+              {/* Windshield & Roof */}
+              <rect x="25" y="75" width="90" height="110" rx="20" fill="#020617" stroke="rgba(59,130,246,0.2)" strokeWidth="0.5" />
+              <path d="M30 80 Q 70 70, 110 80 L110 95 L30 95 Z" fill="rgba(255,255,255,0.03)" />
+              
+              {/* Headlights (Neon Glow) */}
+              <motion.rect 
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                x="20" y="10" width="30" height="6" rx="3" fill="#3b82f6" className="shadow-glow" 
+              />
+              <motion.rect 
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                x="90" y="10" width="30" height="6" rx="3" fill="#3b82f6" className="shadow-glow" 
+              />
 
-              <path d="M10 60 L130 60" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-              <path d="M10 200 L130 200" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-
-              <rect x="25" y="10" width="30" height="5" rx="2" fill="white" />
-              <rect x="85" y="10" width="30" height="5" rx="2" fill="white" />
-              <rect x="25" y="245" width="25" height="5" rx="2" fill="#ef4444" />
-              <rect x="90" y="245" width="25" height="5" rx="2" fill="#ef4444" />
-
-              <rect x="-2" y="75" width="12" height="20" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.1)" />
-              <rect x="130" y="75" width="12" height="20" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.1)" />
+              {/* Taillights */}
+              <rect x="25" y="244" width="25" height="6" rx="3" fill="#ef4444" opacity="0.8" />
+              <rect x="90" y="244" width="25" height="6" rx="3" fill="#ef4444" opacity="0.8" />
            </svg>
 
-           {/* HUD Scanning Reticle (Aerial) */}
+           {/* Interactive Sensing HUD */}
            <motion.div 
-             style={{ 
-               opacity: scannerOpacity, 
-               scale: scannerScale 
-             }}
-             className="absolute inset-[-40px] border-2 border-primary-500/30 rounded-[4rem] z-50 pointer-events-none flex items-center justify-center backdrop-blur-[2px]"
+             style={{ opacity: scannerOpacity, scale: scannerScale }}
+             className="absolute inset-[-60px] border border-primary-500/20 rounded-[5rem] z-50 pointer-events-none flex items-center justify-center backdrop-blur-[1px]"
            >
-              <div className="w-full h-px bg-primary-500 absolute hud-scan-top shadow-glow" />
+              <div className="w-full h-[1px] bg-primary-400 absolute top-[20%] animate-scan shadow-[0_0_20px_#3b82f6]" />
            </motion.div>
         </div>
       </motion.div>

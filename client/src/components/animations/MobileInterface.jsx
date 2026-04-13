@@ -33,11 +33,11 @@ export default function MobileInterface() {
       >
         <div className="flex items-center gap-3 text-primary-400">
           <Activity className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Latency: 12ms</span>
+          <span className="text-[10px] font-black tracking-widest uppercase">Secure Network</span>
         </div>
         <div className="flex items-center gap-3 text-emerald-400">
           <ShieldCheck className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">AES-256 Active</span>
+          <span className="text-[10px] font-black tracking-widest uppercase">Bank Security</span>
         </div>
       </motion.div>
 
@@ -48,11 +48,11 @@ export default function MobileInterface() {
       >
         <div className="flex items-center gap-3 text-orange-400">
           <Radio className="w-4 h-4 animate-pulse" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Node_42 Syncing</span>
+          <span className="text-[10px] font-black tracking-widest uppercase">Spot Linked</span>
         </div>
         <div className="flex items-center gap-3 text-surface-400">
           <Signal className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">99.9% Integrity</span>
+          <span className="text-[10px] font-black tracking-widest uppercase">Verified</span>
         </div>
       </motion.div>
 
