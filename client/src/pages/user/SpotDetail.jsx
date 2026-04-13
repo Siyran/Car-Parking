@@ -141,18 +141,56 @@ export default function SpotDetail() {
     setStarting(false);
   };
 
-  const handleNavigate = () => {
-    if (!userLocation) {
-      toast.error('GPS Lock Required');
-      return;
+  const requestUserLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = [pos.coords.latitude, pos.coords.longitude];
+          setUserLocation(loc);
+          resolve(loc);
+        },
+        (err) => {
+          let msg = 'GPS Lock Failed';
+          if (err.code === 1) msg = 'Location Access Denied. Please enable it in browser settings.';
+          else if (err.code === 3) msg = 'Location Request Timed Out';
+          toast.error(msg);
+          reject(err);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    });
+  };
+
+  const handleNavigate = async () => {
+    let currentPos = userLocation;
+    if (!currentPos) {
+      toast.loading('Acquiring GPS Lock...', { id: 'gps-lock' });
+      try {
+        currentPos = await requestUserLocation();
+        toast.success('GPS Lock Established', { id: 'gps-lock' });
+      } catch (err) {
+        toast.dismiss('gps-lock');
+        return;
+      }
     }
     setShowRoute(!showRoute);
   };
 
-  const handleLiveTrack = () => {
-    if (!userLocation) {
-      toast.error('GPS Lock Required');
-      return;
+  const handleLiveTrack = async () => {
+    let currentPos = userLocation;
+    if (!currentPos) {
+      toast.loading('Acquiring GPS Lock...', { id: 'gps-lock' });
+      try {
+        currentPos = await requestUserLocation();
+        toast.success('GPS Lock Established', { id: 'gps-lock' });
+      } catch (err) {
+        toast.dismiss('gps-lock');
+        return;
+      }
     }
     setShowLiveNav(true);
   };

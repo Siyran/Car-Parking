@@ -112,6 +112,47 @@ export default function MyBookings() {
     }
   };
 
+  const requestUserLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = [pos.coords.latitude, pos.coords.longitude];
+          setUserLocation(loc);
+          resolve(loc);
+        },
+        (err) => {
+          let msg = 'GPS Lock Failed';
+          if (err.code === 1) msg = 'Location Access Denied. Please enable it in browser settings.';
+          else if (err.code === 3) msg = 'Location Request Timed Out';
+          toast.error(msg);
+          reject(err);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    });
+  };
+
+  const handleOpenLiveMap = async () => {
+    if (!activeSession) return;
+    
+    let currentPos = userLocation;
+    if (!currentPos) {
+      toast.loading('Acquiring GPS Lock...', { id: 'gps-lock' });
+      try {
+        currentPos = await requestUserLocation();
+        toast.success('GPS Lock Established', { id: 'gps-lock' });
+      } catch (err) {
+        toast.dismiss('gps-lock');
+        return;
+      }
+    }
+    setShowLiveMap(true);
+  };
+
   const fmtElapsed = () => {
     const h = Math.floor(elapsed / 3600);
     const m = Math.floor((elapsed % 3600) / 60);
@@ -231,7 +272,7 @@ export default function MyBookings() {
                  <div className="flex flex-col sm:flex-row gap-5 mt-10">
                     {/* Track Live Button */}
                     <Button 
-                      onClick={() => setShowLiveMap(true)} 
+                      onClick={handleOpenLiveMap} 
                       variant="primary" 
                       className="flex-1 !rounded-2xl py-6 text-sm font-black uppercase tracking-[0.2em] shadow-glow" 
                       size="lg"
