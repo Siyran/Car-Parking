@@ -1,206 +1,23 @@
-import { motion, useMotionValue, useTransform, useSpring, useScroll } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, Target, Shield, MapPin, ParkingCircle, CreditCard, Star, Clock, Info, ShieldCheck, Globe, Cpu, Smartphone, BarChart3, ChevronDown, History, Activity, Radio, Cpu as Chip, Lock, Signal } from 'lucide-react';
-import HeroCar from '../components/animations/HeroCar';
-import MobileInterface from '../components/animations/MobileInterface';
+import { Lock, Activity, Radio, Signal, Globe, ShieldCheck, Zap } from 'lucide-react';
+import { useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import VibeHero from '../components/animations/VibeHero';
+import VibeNavbar from '../components/layout/VibeNavbar';
 import Button from '../components/ui/Button';
-import { useRef, useMemo, useState, useEffect } from 'react';
+import MobileInterface from '../components/animations/MobileInterface';
 
 export default function Home() {
-  const navigate = useNavigate();
   const containerRef = useRef(null);
-  const experienceRef = useRef(null);
-  const [isBooted, setIsBooted] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
-  useEffect(() => {
-    const timer = setTimeout(() => setIsBooted(true), 800);
-    return () => clearTimeout(timer);
-  }, []);
-  // 1. GLOBAL SCROLL PHYSICS
-  const { scrollYProgress: globalScroll } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  // 2. STICKY EXPERIENCE PHYSICS (AirPods Style)
-  const { scrollYProgress: experienceProgress } = useScroll({
-    target: experienceRef,
-    offset: ["start start", "end end"]
-  });
-
-  // Dynamic Background Hue Shift (Blue -> Purple -> Teal -> Orange)
-  const bgHue = useTransform(
-    experienceProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [
-      "radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%)",
-      "radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 0% 100%, rgba(249, 115, 22, 0.1) 0px, transparent 50%)",
-      "radial-gradient(at 50% 50%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)"
-    ]
-  );
-
-  // Scanning Line Position
-  const scanY = useTransform(experienceProgress, [0, 1], ["0%", "100%"]);
-
-  // Text Chapter Fades (Opacity & Y) - FIXED: Hooks must be at top-level
-  const ch1Opacity = useTransform(experienceProgress, [0.05, 0.1, 0.2, 0.25], [0, 1, 1, 0]);
-  const ch1Y = useTransform(experienceProgress, [0.05, 0.1, 0.2, 0.25], [60, 0, 0, -60]);
-
-  const ch2Opacity = useTransform(experienceProgress, [0.3, 0.35, 0.45, 0.5], [0, 1, 1, 0]);
-  const ch2Y = useTransform(experienceProgress, [0.3, 0.35, 0.45, 0.5], [60, 0, 0, -60]);
-
-  const ch3Opacity = useTransform(experienceProgress, [0.55, 0.6, 0.7, 0.75], [0, 1, 1, 0]);
-  const ch3Y = useTransform(experienceProgress, [0.55, 0.6, 0.7, 0.75], [60, 0, 0, -60]);
-
-  const ch4Opacity = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [0, 1, 1, 0]);
-  const ch4Y = useTransform(experienceProgress, [0.8, 0.85, 0.9, 0.95], [60, 0, 0, -60]);
-
-  const revealVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.3 } }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
-    visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
-  };
-
   return (
-    <div ref={containerRef} className="bg-surface-950 selection:bg-primary-500 relative flex flex-col">
+    <div ref={containerRef} className="bg-[#05070A] selection:bg-primary-vibrant relative flex flex-col">
+      {!user && <VibeNavbar />}
+      <VibeHero />
       
-      {/* GLOBAL BACKGROUND INFRASTRUCTURE */}
-      <motion.div style={{ backgroundImage: bgHue }} className="fixed inset-0 z-0 pointer-events-none transition-colors duration-[1.5s]">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '120px 120px' }}></div>
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary-600/10 blur-[200px] rounded-full" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] bg-accent-600/10 blur-[180px] rounded-full" />
-        
-        {/* Dynamic Scanning Line */}
-        <motion.div 
-           style={{ top: scanY }}
-           className="absolute left-0 w-full h-[1px] bg-linear-to-r from-transparent via-primary-500/40 to-transparent z-10 blur-[1px]"
-        />
-      </motion.div>
-
-      {/* 1. INITIAL LANDING (High-Fidelity Introduction) */}
-      <section className="relative h-screen flex flex-col items-center justify-center px-6 z-20 overflow-hidden">
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate={isBooted ? "visible" : "hidden"}
-          className="text-center space-y-16"
-        >
-          <div className="space-y-4 flex flex-col items-center">
-             <div className="text-mask">
-                <motion.h1 
-                  variants={itemVariants} 
-                  className="text-[12vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] italic uppercase text-white"
-                >
-                  PARKFLOW
-                </motion.h1>
-             </div>
-             <div className="text-mask">
-                <motion.h1 
-                  variants={itemVariants} 
-                  className="text-[12vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] italic uppercase text-outline"
-                >
-                  <span className="gradient-text italic text-glow pb-4 inline-block">THE PRO LOGIC.</span>
-                </motion.h1>
-             </div>
-          </div>
-
-          <motion.div variants={itemVariants} className="space-y-8">
-            <p className="text-lg md:text-xl text-surface-400 max-w-2xl mx-auto font-medium leading-relaxed opacity-80 uppercase tracking-[0.1em]">
-              India's first autonomous parking protocol. <br />
-              Precision finding. Instant earning. Zero friction.
-            </p>
-            
-            <div className="flex flex-col md:flex-row items-center justify-center gap-6 pt-4">
-              <Button size="lg" className="!rounded-full px-12 py-7 text-sm font-black uppercase tracking-[0.2em] shadow-glow" onClick={() => navigate('/search')}>
-                 Launch App
-              </Button>
-              <Button variant="ghost" className="text-[10px] font-black uppercase tracking-[0.4em] text-surface-500 hover:text-white transition-colors">
-                 Explore Network_Report
-              </Button>
-            </div>
-          </motion.div>
-          
-          <motion.div 
-            variants={itemVariants}
-            animate={{ y: [0, 20, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-20 flex flex-col items-center"
-          >
-            <p className="text-[9px] font-black tracking-[0.6em] uppercase mb-4 text-white">Initiate_Scroll</p>
-            <div className="w-[1px] h-20 bg-linear-to-b from-white to-transparent" />
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* 2. THE AIRPODS STYLE STORY (Sticky 3D Experience) */}
-      <section ref={experienceRef} className="relative h-[650vh] z-30">
-        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-          
-          {/* THE CONTROLLED CAR HUB */}
-          <div className="relative w-full max-w-[1440px] px-6 flex items-center justify-center">
-             <HeroCar progress={experienceProgress} />
-          </div>
-
-          {/* TEXT CHAPTER OVERLAYS (Floating) */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-             <div className="max-w-[1440px] w-full h-full relative">
-                
-                {/* Chapter 1: Arrival (0.05 - 0.25) */}
-                <motion.div style={{ opacity: ch1Opacity, y: ch1Y }} className="absolute top-[20%] left-[10%] max-w-md space-y-6">
-                   <div className="flex items-center gap-4 text-primary-500 mb-2">
-                     <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse shadow-glow" />
-                     <span className="text-[10px] font-black tracking-widest uppercase">Arrival_Detection</span>
-                   </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">SEAMLESS <br /> ARRIVAL.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-l border-white/10 pl-8 ml-2 py-2">The system identifies your vehicle identity at 150m, prepping your reserved slot for immediate entry.</p>
-                </motion.div>
-
-                {/* Chapter 2: Finding (0.3 - 0.5) */}
-                <motion.div style={{ opacity: ch2Opacity, y: ch2Y }} className="absolute bottom-[20%] right-[10%] max-w-md text-right space-y-6">
-                   <div className="flex items-center gap-4 text-accent-500 mb-2 justify-end">
-                     <span className="text-[10px] font-black tracking-widest uppercase">Verified_Link</span>
-                     <div className="w-2 h-2 rounded-full bg-accent-500 shadow-glow-accent" />
-                   </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">AUTOMATIC <br /> FINDING.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-r border-white/10 pr-8 mr-2 py-2">Real-time GPS nodes guide you to the exact coordinates of your spot. No more circling the block.</p>
-                </motion.div>
-
-                {/* Chapter 3: Unlocking (0.55 - 0.75) */}
-                <motion.div style={{ opacity: ch3Opacity, y: ch3Y }} className="absolute top-[25%] right-[12%] max-w-md text-right space-y-6">
-                   <div className="flex items-center gap-4 text-teal-400 mb-2 justify-end">
-                     <span className="text-[10px] font-black tracking-widest uppercase">System_Action</span>
-                     <Activity className="w-5 h-5" />
-                   </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">SMART <br /> UNLOCKING.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-r border-white/10 pr-8 mr-2 py-2">Automated barriers lift via a secure digital handshake. No cards. No wait times. Just flow.</p>
-                </motion.div>
-
-                {/* Chapter 4: Earnings (0.8 - 0.95) */}
-                <motion.div style={{ opacity: ch4Opacity, y: ch4Y }} className="absolute bottom-[15%] left-[8%] max-w-md space-y-6">
-                   <div className="flex items-center gap-4 text-orange-400 mb-2">
-                     <Smartphone className="w-5 h-5" />
-                     <span className="text-[10px] font-black tracking-widest uppercase">Direct_Settlement</span>
-                   </div>
-                   <h2 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">DIRECT <br /> EARNINGS.</h2>
-                   <p className="text-lg text-surface-400 font-medium border-l border-white/10 pl-8 ml-2 py-2">Payments settle instantly from user to host. Zero commission leakage. Maximum liquidity via Direct UPI.</p>
-                </motion.div>
-
-             </div>
-          </div>
-        </div>
-      </section>
-
       {/* 2. THE MISSION (About Us / Logic) */}
       <section className="py-48 px-6 bg-surface-950 relative z-40">
         <div className="max-w-[1440px] mx-auto">

@@ -46,6 +46,8 @@ export default function Navbar() {
   const navLinks = (user && links[user.role]) ? links[user.role] : [];
   const isHomePage = pathname === '/';
 
+  if (isHomePage && !user) return null;
+
   return (
     <nav className="fixed top-0 w-full z-50 px-6 py-4 md:py-6 pointer-events-none">
       <div className={`
