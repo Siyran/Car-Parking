@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/layout/Navbar';
 
 // Pages
@@ -66,14 +67,16 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Navbar />
-        <AppRoutes />
-        <Toaster position="top-right" toastOptions={{
-          style: { borderRadius: '12px', background: '#1e293b', color: '#f1f5f9', fontSize: '14px' },
-          duration: 3000
-        }} />
-      </Router>
+      <SocketProvider>
+        <Router>
+          <Navbar />
+          <AppRoutes />
+          <Toaster position="top-right" toastOptions={{
+            style: { borderRadius: '12px', background: '#1e293b', color: '#f1f5f9', fontSize: '14px' },
+            duration: 3000
+          }} />
+        </Router>
+      </SocketProvider>
     </AuthProvider>
   );
 }

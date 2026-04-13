@@ -2,6 +2,7 @@ import Booking from '../models/Booking.js';
 import ParkingSpot from '../models/ParkingSpot.js';
 import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
+import { getActiveDrivers, fetchETAFromOSRM } from '../socket/availability.socket.js';
 
 export const startSession = async (req, res, next) => {
   try {
@@ -374,6 +375,132 @@ export const getOwnerBookings = async (req, res, next) => {
       .limit(parseInt(limit));
 
     res.json({ bookings });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Real-Time GPS: Update driver position ───
+export const updateGPS = async (req, res, next) => {
+  try {
+    const { lat, lng, heading, speed } = req.body;
+    if (lat == null || lng == null) {
+      return res.status(400).json({ error: 'lat and lng are required' });
+    }
+
+    const booking = await Booking.findOne({ user: req.user._id, status: 'active' })
+      .populate('spot', 'location');
+    if (!booking) return res.status(404).json({ error: 'No active booking' });
+
+    const [destLng, destLat] = booking.spot.location.coordinates;
+
+    // Store position in memory
+    const drivers = getActiveDrivers();
+    drivers.set(booking._id.toString(), {
+      lat, lng, heading: heading || 0, speed: speed || 0,
+      userId: req.user._id.toString(),
+      spotId: booking.spot._id.toString(),
+      updatedAt: Date.now()
+    });
+
+    // Broadcast via socket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`booking:${booking._id}`).emit('gps:position', {
+        bookingId: booking._id.toString(), lat, lng, heading: heading || 0, speed: speed || 0
+      });
+      io.to(`spot:${booking.spot._id}`).emit('driver:position', {
+        bookingId: booking._id.toString(), userId: req.user._id.toString(),
+        lat, lng, heading: heading || 0, speed: speed || 0
+      });
+    }
+
+    // Calculate ETA
+    const eta = await fetchETAFromOSRM(lat, lng, destLat, destLng);
+
+    res.json({
+      position: { lat, lng, heading, speed },
+      eta: eta ? { duration: eta.duration, distance: eta.distance } : null
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Real-Time GPS: Get ETA for booking ───
+export const getBookingETA = async (req, res, next) => {
+  try {
+    const { lat, lng } = req.query;
+    const booking = await Booking.findById(req.params.id)
+      .populate('spot', 'location title address');
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    let fromLat, fromLng;
+
+    if (lat && lng) {
+      // Use provided coordinates
+      fromLat = parseFloat(lat);
+      fromLng = parseFloat(lng);
+    } else {
+      // Try to get from in-memory driver positions
+      const drivers = getActiveDrivers();
+      const driverPos = drivers.get(booking._id.toString());
+      if (!driverPos) {
+        return res.status(400).json({ error: 'No GPS position available. Provide lat/lng query params.' });
+      }
+      fromLat = driverPos.lat;
+      fromLng = driverPos.lng;
+    }
+
+    const [destLng, destLat] = booking.spot.location.coordinates;
+    const eta = await fetchETAFromOSRM(fromLat, fromLng, destLat, destLng);
+
+    if (!eta) return res.status(500).json({ error: 'ETA calculation failed' });
+
+    res.json({
+      bookingId: booking._id,
+      spot: { title: booking.spot.title, address: booking.spot.address },
+      eta: {
+        duration: eta.duration,
+        distance: eta.distance,
+        geometry: eta.geometry
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Owner: Get active drivers for their spots ───
+export const getActiveDriversForOwner = async (req, res, next) => {
+  try {
+    const ownerId = req.user._id;
+    const ownerSpots = await ParkingSpot.find({ owner: ownerId }).select('_id title location');
+    const spotIds = ownerSpots.map(s => s._id.toString());
+
+    const drivers = getActiveDrivers();
+    const activeDriversList = [];
+
+    for (const [bookingId, driver] of drivers.entries()) {
+      if (spotIds.includes(driver.spotId)) {
+        const booking = await Booking.findById(bookingId)
+          .populate('user', 'name phone')
+          .populate('spot', 'title address location');
+        if (booking) {
+          const [destLng, destLat] = booking.spot.location.coordinates;
+          const eta = await fetchETAFromOSRM(driver.lat, driver.lng, destLat, destLng);
+          activeDriversList.push({
+            bookingId,
+            user: booking.user,
+            spot: booking.spot,
+            position: { lat: driver.lat, lng: driver.lng, heading: driver.heading, speed: driver.speed },
+            eta: eta ? { duration: eta.duration, distance: eta.distance } : null
+          });
+        }
+      }
+    }
+
+    res.json({ drivers: activeDriversList });
   } catch (error) {
     next(error);
   }

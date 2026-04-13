@@ -4,11 +4,13 @@ import L from 'leaflet';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { spotAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import RoutingMachine from '../../components/map/RoutingMachine';
-import { MapPin, Star, Navigation, List, Map as MapIcon, Filter, X, IndianRupee, ArrowLeft, Search as SearchIcon, SlidersHorizontal, ChevronRight, Activity, Cpu, Shield } from 'lucide-react';
-import { formatCurrency, getDistance, formatDistance } from '../../lib/utils';
+import LiveTrackingMap from '../../components/map/LiveTrackingMap';
+import { MapPin, Star, Navigation, List, Map as MapIcon, Filter, X, IndianRupee, ArrowLeft, Search as SearchIcon, SlidersHorizontal, ChevronRight, Activity, Cpu, Shield, Radio, Globe } from 'lucide-react';
+import { formatCurrency, getDistance, formatDistance, formatETA } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
@@ -30,12 +32,20 @@ const createPriceIcon = (price, available) => {
   });
 };
 
-const userIcon = L.divIcon({
-  className: 'custom-icon',
-  html: '<div style="width:24px;height:24px;background:#3b82f6;border-radius:50%;border:4px solid white;box-shadow:0 0 0 8px rgba(59,130,246,0.1),0 0 30px rgba(59,130,246,0.8)"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
+// Animated user location icon with pulse
+const createUserIcon = () => {
+  return L.divIcon({
+    className: 'custom-icon',
+    html: `
+      <div style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+        <div style="position:absolute;width:32px;height:32px;background:rgba(59,130,246,0.15);border-radius:50%;animation:userPulse 2s ease-in-out infinite;"></div>
+        <div style="width:18px;height:18px;background:#3b82f6;border-radius:50%;border:3px solid white;box-shadow:0 0 20px rgba(59,130,246,0.6);z-index:1;"></div>
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
 
 function MapUpdater({ center, isManual }) {
   const map = useMap();
@@ -57,8 +67,54 @@ function MapEventHandler({ onMoveEnd }) {
   return null;
 }
 
+// ─── Smooth user marker that animates position changes ───
+function AnimatedUserMarker({ position }) {
+  const markerRef = useRef(null);
+  const prevPos = useRef(position);
+
+  useEffect(() => {
+    if (!markerRef.current || !position) return;
+
+    const start = prevPos.current || position;
+    const startTime = performance.now();
+    const duration = 1000;
+    let frameId;
+
+    const animate = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const lat = start[0] + (position[0] - start[0]) * eased;
+      const lng = start[1] + (position[1] - start[1]) * eased;
+
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng]);
+      }
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      } else {
+        prevPos.current = position;
+      }
+    };
+
+    frameId = requestAnimationFrame(animate);
+    return () => { if (frameId) cancelAnimationFrame(frameId); };
+  }, [position]);
+
+  if (!position) return null;
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={position}
+      icon={createUserIcon()}
+    />
+  );
+}
+
 export default function Search() {
   const navigate = useNavigate();
+  const { onSpotUpdate } = useSocket();
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([34.0837, 74.7973]); // Srinagar default
   const [spots, setSpots] = useState([]);
@@ -68,10 +124,26 @@ export default function Search() {
   const [filters, setFilters] = useState({ minPrice: '', maxPrice: '', radius: 5000 });
   const [isManual, setIsManual] = useState(true);
   const [routingTo, setRoutingTo] = useState(null);
+  const [routingSpot, setRoutingSpot] = useState(null); // full spot data for LiveTrackingMap
+  const [showLiveNav, setShowLiveNav] = useState(false);
+  const [routeInfo, setRouteInfo] = useState(null); // route distance/duration from RoutingMachine
   const searchTimeout = useRef(null);
+  const watchIdRef = useRef(null);
 
+  // ─── Inject CSS animation for user marker ───
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
+    const style = document.createElement('style');
+    style.textContent = `@keyframes userPulse { 0%,100% { transform:scale(1); opacity:0.5; } 50% { transform:scale(1.8); opacity:0.1; } }`;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // ─── GPS watch for continuous user location ───
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    // Initial position
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
@@ -81,7 +153,31 @@ export default function Search() {
       () => { fetchSpots(mapCenter[0], mapCenter[1]); },
       { enableHighAccuracy: true }
     );
+
+    // Continuous watch for smooth marker animation
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+    );
+    watchIdRef.current = id;
+
+    return () => {
+      if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current);
+    };
   }, []);
+
+  // ─── Listen for real-time spot availability updates ───
+  useEffect(() => {
+    const unsub = onSpotUpdate((data) => {
+      setSpots(prev => prev.map(s =>
+        s._id === data.spotId ? { ...s, availableSlots: data.availableSlots } : s
+      ));
+    });
+    return unsub;
+  }, [onSpotUpdate]);
 
   useEffect(() => {
     if (mapCenter) fetchSpots(mapCenter[0], mapCenter[1]);
@@ -114,7 +210,13 @@ export default function Search() {
     }
     setIsManual(true);
     setRoutingTo([lat, lng]);
+    setRoutingSpot(spot);
     setView('map');
+  };
+
+  const handleOpenLiveNav = () => {
+    if (!routingSpot || !userLocation) return;
+    setShowLiveNav(true);
   };
 
   const handleMoveEnd = (center) => {
@@ -128,6 +230,21 @@ export default function Search() {
   return (
     <div className="pt-40 h-screen flex flex-col bg-surface-950 selection:bg-primary-500 overflow-hidden relative">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
+
+      {/* Live Navigation Fullscreen Overlay */}
+      {showLiveNav && routingSpot && (
+        <LiveTrackingMap
+          destination={{
+            lat: routingSpot.location.coordinates[1],
+            lng: routingSpot.location.coordinates[0],
+            title: routingSpot.title,
+            address: routingSpot.address
+          }}
+          onClose={() => setShowLiveNav(false)}
+          initialPosition={userLocation ? { lat: userLocation[0], lng: userLocation[1] } : null}
+          isNavigating={true}
+        />
+      )}
 
       {/* High-Fidelity Technical Top Bar */}
       <div className="relative z-[100] px-8 py-5 flex items-center justify-between gap-10 border-b border-white/5 bg-surface-950/80 backdrop-blur-3xl shadow-2xl">
@@ -154,12 +271,21 @@ export default function Search() {
         </div>
 
         {routingTo && (
-           <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-             onClick={() => setRoutingTo(null)} 
-             className="px-6 py-3 rounded-2xl glass-dark border border-primary-500/40 text-primary-400 text-xs font-black uppercase tracking-[0.3em] flex items-center gap-3 hover:bg-primary-500/10 transition-all shadow-glow"
-           >
-              <ArrowLeft className="w-4 h-4" /> Relinquish Path
-           </motion.button>
+          <div className="flex items-center gap-3">
+            {/* Live Navigation Button */}
+            <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              onClick={handleOpenLiveNav}
+              className="px-6 py-3 rounded-2xl bg-primary-600 text-white text-xs font-black uppercase tracking-[0.3em] flex items-center gap-3 hover:bg-primary-500 transition-all shadow-glow"
+            >
+               <Radio className="w-4 h-4 animate-pulse" /> Live Track
+            </motion.button>
+            <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              onClick={() => { setRoutingTo(null); setRoutingSpot(null); setRouteInfo(null); }} 
+              className="px-6 py-3 rounded-2xl glass-dark border border-primary-500/40 text-primary-400 text-xs font-black uppercase tracking-[0.3em] flex items-center gap-3 hover:bg-primary-500/10 transition-all shadow-glow"
+            >
+               <ArrowLeft className="w-4 h-4" /> Cancel Route
+            </motion.button>
+          </div>
         )}
 
         <div className="flex items-center gap-5">
@@ -177,7 +303,7 @@ export default function Search() {
         </div>
       </div>
 
-      {/* Immersive Search Filters Panel */}
+      {/* Search Filters Panel */}
       <AnimatePresence>
         {showFilters && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
@@ -213,8 +339,38 @@ export default function Search() {
         )}
       </AnimatePresence>
 
+      {/* Route info bar when navigating */}
+      <AnimatePresence>
+        {routeInfo && routingTo && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="relative z-50 px-8 py-4 border-b border-white/5 bg-surface-900/60 backdrop-blur-3xl flex items-center justify-between"
+          >
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-3">
+                <Radio className="w-4 h-4 text-primary-400 animate-pulse" />
+                <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest">Route Active</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <div>
+                  <p className="text-[9px] font-black text-surface-500 uppercase tracking-widest">ETA</p>
+                  <p className="text-lg font-black text-white italic tracking-tighter">{formatETA(routeInfo.totalTime)}</p>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
+                <div>
+                  <p className="text-[9px] font-black text-surface-500 uppercase tracking-widest">Distance</p>
+                  <p className="text-lg font-black text-white italic tracking-tighter">{formatDistance(routeInfo.totalDistance)}</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex-1 flex overflow-hidden">
-        {/* Deep Black High-Contrast Map Wrapper */}
+        {/* Map */}
         <div className={`${view === 'map' ? 'flex-1' : 'hidden md:block md:w-1/2'} relative group overflow-hidden`}>
           <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
           <MapContainer center={mapCenter} zoom={14} className="h-full w-full dark-map-tiles" zoomControl={false}>
@@ -225,10 +381,20 @@ export default function Search() {
             <MapUpdater center={mapCenter} isManual={isManual} />
             <MapEventHandler onMoveEnd={handleMoveEnd} />
             
-            {userLocation && <Marker position={userLocation} icon={userIcon} />}
+            {/* Smoothly animated user marker */}
+            {userLocation && <AnimatedUserMarker position={userLocation} />}
             
             {routingTo && userLocation && (
-              <RoutingMachine start={userLocation} end={routingTo} />
+              <RoutingMachine
+                start={userLocation}
+                end={routingTo}
+                onRouteFound={(route) => {
+                  setRouteInfo({
+                    totalTime: route.summary?.totalTime,
+                    totalDistance: route.summary?.totalDistance
+                  });
+                }}
+              />
             )}
             
             {!routingTo && spots.map(spot => (
@@ -282,7 +448,7 @@ export default function Search() {
           </div>
         </div>
 
-        {/* Telemetry Sidebar: High-Visibility Result Stream */}
+        {/* Telemetry Sidebar */}
         <div className={`${view === 'list' ? 'flex-1' : 'hidden md:block md:w-[480px]'} bg-surface-950 border-l border-white/5 overflow-y-auto custom-scrollbar relative z-20`}>
           <div className="p-8 space-y-6">
             <div className="flex items-center justify-between px-2">

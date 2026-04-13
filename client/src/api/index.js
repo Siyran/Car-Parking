@@ -52,7 +52,10 @@ export const bookingAPI = {
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
   getMy: (params) => api.get('/bookings/my', { params }),
   getActive: () => api.get('/bookings/active'),
-  getOwnerBookings: (params) => api.get('/bookings/owner', { params })
+  getOwnerBookings: (params) => api.get('/bookings/owner', { params }),
+  updateGPS: (data) => api.put('/bookings/active/gps', data),
+  getETA: (id, params) => api.get(`/bookings/${id}/eta`, { params }),
+  getOwnerDrivers: () => api.get('/bookings/owner/drivers')
 };
 
 // Billing

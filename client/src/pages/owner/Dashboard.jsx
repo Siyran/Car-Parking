@@ -1,31 +1,135 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import { spotAPI, bookingAPI, billingAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, Plus, MapPin, IndianRupee, Users, ArrowUpRight, 
-  Calendar, Clock, CheckCircle2, Navigation, Activity, Cpu, Shield 
+  Calendar, Clock, CheckCircle2, Navigation, Activity, Cpu, Shield, Radio, Car
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency, formatDate, formatETA, formatDistance } from '../../lib/utils';
 import toast from 'react-hot-toast';
+import 'leaflet/dist/leaflet.css';
+
+// Fix leaflet icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+// ─── Animated car icon for incoming drivers ───
+const createDriverIcon = (heading = 0) => {
+  return L.divIcon({
+    className: 'driver-marker-icon',
+    html: `
+      <div style="transform:rotate(${heading}deg);transition:transform 0.8s ease;width:40px;height:40px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 12px rgba(59,130,246,0.5));">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(59,130,246,0.4);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="transform:rotate(45deg);">
+            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+          </svg>
+        </div>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  });
+};
+
+// ─── Parking spot icon for owner ───
+const createSpotIcon = () => {
+  return L.divIcon({
+    className: 'spot-marker-icon',
+    html: `
+      <div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
+        <div style="position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(16,185,129,0.15);border:2px solid rgba(16,185,129,0.3);animation:spotPulseOwner 2s ease-in-out infinite;"></div>
+        <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);border:2px solid white;box-shadow:0 0 20px rgba(16,185,129,0.5);z-index:1;display:flex;align-items:center;justify-content:center;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          </svg>
+        </div>
+      </div>
+    `,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
+};
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();
+  const { subscribeToDrivers, subscribeToDriverETA, joinSpot, leaveSpot, onGPSStopped } = useSocket();
   const [stats, setStats] = useState({ totalSpots: 0, activeBookings: 0, totalEarnings: 0 });
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeDrivers, setActiveDrivers] = useState([]); // from API
+  const [liveDriverPositions, setLiveDriverPositions] = useState(new Map()); // bookingId -> { lat, lng, heading }
+  const [ownerSpots, setOwnerSpots] = useState([]);
 
   useEffect(() => {
     loadData();
   }, []);
 
+  // ─── Join spot rooms and subscribe to driver positions ───
+  useEffect(() => {
+    if (ownerSpots.length === 0) return;
+
+    // Join all spot rooms
+    ownerSpots.forEach(s => joinSpot(s._id));
+
+    // Subscribe to real-time driver position updates
+    const unsubPos = subscribeToDrivers((data) => {
+      setLiveDriverPositions(prev => {
+        const next = new Map(prev);
+        next.set(data.bookingId, {
+          lat: data.lat, lng: data.lng,
+          heading: data.heading || 0,
+          userId: data.userId
+        });
+        return next;
+      });
+    });
+
+    // Subscribe to ETA updates
+    const unsubETA = subscribeToDriverETA((data) => {
+      setActiveDrivers(prev => prev.map(d =>
+        d.bookingId === data.bookingId
+          ? { ...d, eta: { duration: data.duration, distance: data.distance } }
+          : d
+      ));
+    });
+
+    // Subscribe to GPS stopped
+    const unsubStop = onGPSStopped((data) => {
+      setLiveDriverPositions(prev => {
+        const next = new Map(prev);
+        next.delete(data.bookingId);
+        return next;
+      });
+      setActiveDrivers(prev => prev.filter(d => d.bookingId !== data.bookingId));
+    });
+
+    return () => {
+      ownerSpots.forEach(s => leaveSpot(s._id));
+      unsubPos();
+      unsubETA();
+      unsubStop();
+    };
+  }, [ownerSpots]);
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const { data } = await billingAPI.getOwnerDashboard();
+      const [dashRes, spotsRes] = await Promise.all([
+        billingAPI.getOwnerDashboard(),
+        spotAPI.getMy()
+      ]);
+      const { data } = dashRes;
       
       setStats({
         totalSpots: data.totalSpots || 0,
@@ -33,6 +137,27 @@ export default function OwnerDashboard() {
         totalEarnings: data.totalEarnings || 0
       });
       setRecentBookings(data.recentTransactions || []);
+      setOwnerSpots(spotsRes.data.spots || []);
+
+      // Fetch active drivers
+      try {
+        const driversRes = await bookingAPI.getOwnerDrivers();
+        setActiveDrivers(driversRes.data.drivers || []);
+        // Initialize live positions from fetched data
+        const posMap = new Map();
+        (driversRes.data.drivers || []).forEach(d => {
+          if (d.position) {
+            posMap.set(d.bookingId, {
+              lat: d.position.lat, lng: d.position.lng,
+              heading: d.position.heading || 0,
+              userId: d.user?._id
+            });
+          }
+        });
+        setLiveDriverPositions(posMap);
+      } catch (err) {
+        // No active drivers or endpoint not available
+      }
     } catch (err) {
       toast.error('Provider connectivity failed: Sync required');
     }
@@ -45,13 +170,21 @@ export default function OwnerDashboard() {
     { label: 'Aggregated Revenue', value: formatCurrency(stats.totalEarnings), icon: IndianRupee, color: 'text-accent-400', bg: 'bg-accent-500/10' }
   ];
 
+  // Calculate map center from spots
+  const mapCenter = ownerSpots.length > 0
+    ? [ownerSpots[0].location.coordinates[1], ownerSpots[0].location.coordinates[0]]
+    : [34.0837, 74.7973];
+
   return (
     <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
 
+      {/* Inject pulse animation */}
+      <style>{`@keyframes spotPulseOwner { 0%,100% { transform:scale(1); opacity:0.6; } 50% { transform:scale(1.5); opacity:0.15; } }`}</style>
+
       <div className="max-w-[1240px] mx-auto px-8 w-full pb-24 relative z-10">
         
-        {/* Futuristic Provider Header */}
+        {/* Provider Header */}
         <div className="mb-14 pt-12 flex flex-col md:flex-row md:items-end justify-between gap-10 border-b border-white/5 pb-12">
            <div className="space-y-4">
               <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
@@ -66,7 +199,7 @@ export default function OwnerDashboard() {
            </div>
         </div>
 
-        {/* Real-time Status Stats */}
+        {/* Stats */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
            {statCards.map((stat, i) => (
              <motion.div key={stat.label} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
@@ -84,6 +217,143 @@ export default function OwnerDashboard() {
            ))}
         </div>
 
+        {/* ─── LIVE DRIVER TRACKING MAP ─── */}
+        {ownerSpots.length > 0 && (
+          <div className="mb-16">
+            <div className="flex items-center justify-between px-4 mb-6">
+              <div className="flex items-center gap-3">
+                <Radio className="w-5 h-5 text-emerald-400 animate-pulse" />
+                <h4 className="text-[11px] font-black text-white uppercase tracking-[0.4em] italic">Live Driver Tracking</h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                  {liveDriverPositions.size} Active {liveDriverPositions.size === 1 ? 'Driver' : 'Drivers'}
+                </span>
+              </div>
+            </div>
+
+            <div className="group relative">
+              <div className="absolute -inset-1 bg-linear-to-r from-primary-500 to-emerald-500 rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+              <div className="glass-dark rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl relative">
+                <div className="h-[400px] relative">
+                  <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.7)]" />
+                  <MapContainer center={mapCenter} zoom={14} className="h-full w-full dark-map-tiles" zoomControl={false}>
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+
+                    {/* Owner's parking spots */}
+                    {ownerSpots.map(spot => (
+                      <Marker
+                        key={spot._id}
+                        position={[spot.location.coordinates[1], spot.location.coordinates[0]]}
+                        icon={createSpotIcon()}
+                      >
+                        <Popup>
+                          <div className="p-4 bg-surface-950 border border-white/10 rounded-2xl min-w-[200px]">
+                            <h3 className="text-sm font-black text-white uppercase tracking-tighter mb-1">{spot.title}</h3>
+                            <p className="text-[10px] text-surface-400 uppercase tracking-widest">{spot.address}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="success" className="!rounded-lg px-2 text-[9px] font-black uppercase">
+                                {spot.availableSlots}/{spot.totalSlots} Open
+                              </Badge>
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ))}
+
+                    {/* Live driver markers */}
+                    {Array.from(liveDriverPositions.entries()).map(([bookingId, pos]) => {
+                      const driverInfo = activeDrivers.find(d => d.bookingId === bookingId);
+                      return (
+                        <Marker
+                          key={bookingId}
+                          position={[pos.lat, pos.lng]}
+                          icon={createDriverIcon(pos.heading)}
+                        >
+                          <Popup>
+                            <div className="p-4 bg-surface-950 border border-white/10 rounded-2xl min-w-[220px]">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center">
+                                  <Car className="w-4 h-4 text-primary-400" />
+                                </div>
+                                <div>
+                                  <h3 className="text-sm font-black text-white uppercase tracking-tighter">{driverInfo?.user?.name || 'Driver'}</h3>
+                                  <p className="text-[9px] text-surface-400 uppercase tracking-widest">{driverInfo?.user?.phone || ''}</p>
+                                </div>
+                              </div>
+                              {driverInfo?.eta && (
+                                <div className="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                                  <div>
+                                    <p className="text-[8px] font-black text-surface-500 uppercase tracking-widest">ETA</p>
+                                    <p className="text-lg font-black text-primary-400 italic tracking-tighter">{formatETA(driverInfo.eta.duration)}</p>
+                                  </div>
+                                  <div className="w-px h-8 bg-white/10" />
+                                  <div>
+                                    <p className="text-[8px] font-black text-surface-500 uppercase tracking-widest">Distance</p>
+                                    <p className="text-lg font-black text-white italic tracking-tighter">{formatDistance(driverInfo.eta.distance)}</p>
+                                  </div>
+                                </div>
+                              )}
+                              <p className="text-[9px] text-surface-500 uppercase tracking-widest mt-2">
+                                → {driverInfo?.spot?.title || 'Spot'}
+                              </p>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                  </MapContainer>
+                </div>
+
+                {/* Driver list below map */}
+                {activeDrivers.length > 0 && (
+                  <div className="p-6 bg-surface-950/80 backdrop-blur-2xl border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Car className="w-4 h-4 text-primary-400" />
+                      <span className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Incoming Drivers</span>
+                    </div>
+                    <div className="grid gap-3">
+                      {activeDrivers.map(driver => (
+                        <div key={driver.bookingId} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center">
+                              <Navigation className="w-5 h-5 text-primary-400 rotate-45" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-white uppercase tracking-tighter">{driver.user?.name}</p>
+                              <p className="text-[9px] text-surface-500 uppercase tracking-widest">→ {driver.spot?.title}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {driver.eta ? (
+                              <>
+                                <p className="text-lg font-black text-primary-400 italic tracking-tighter">{formatETA(driver.eta.duration)}</p>
+                                <p className="text-[9px] font-bold text-surface-500 uppercase tracking-widest">{formatDistance(driver.eta.distance)}</p>
+                              </>
+                            ) : (
+                              <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">Awaiting GPS</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {liveDriverPositions.size === 0 && activeDrivers.length === 0 && (
+                  <div className="p-8 bg-surface-950/80 backdrop-blur-2xl border-t border-white/5 text-center">
+                    <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest">No active drivers en route. Map will update in real-time when users start navigating.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-10">
            {/* Primary Feed: Space Activity */}
            <div className="lg:col-span-2 space-y-8">
@@ -92,7 +362,7 @@ export default function OwnerDashboard() {
                     <Activity className="w-5 h-5 text-primary-400 tech-pulse" />
                     <h4 className="text-[11px] font-black text-white uppercase tracking-[0.4em] italic">Live Space Activity</h4>
                  </div>
-                 <Button variant="ghost" className="text-[10px] font-black uppercase text-surface-500" onClick={() => navigate('/owner/my-listings')}>View Full Grid</Button>
+                 <Button variant="ghost" className="text-[10px] font-black uppercase text-surface-500" onClick={() => navigate('/owner/listings')}>View Full Grid</Button>
               </div>
 
               <div className="grid gap-5">
@@ -139,7 +409,7 @@ export default function OwnerDashboard() {
               </div>
            </div>
 
-           {/* Secondary View: System Insights */}
+           {/* Network Health */}
            <div className="space-y-8">
               <div className="flex items-center gap-3 px-4">
                  <Shield className="w-5 h-5 text-accent-400" />
@@ -153,9 +423,9 @@ export default function OwnerDashboard() {
                     <p className="text-sm font-black text-white italic uppercase tracking-widest">Protocol Sync</p>
                     <div className="space-y-6">
                        {[
-                         { label: 'Blockchain Log', val: '99.4%', color: 'bg-primary-500' },
+                         { label: 'Real-Time GPS', val: liveDriverPositions.size > 0 ? 'Active' : 'Idle', color: liveDriverPositions.size > 0 ? 'bg-emerald-500' : 'bg-surface-600' },
                          { label: 'Space Uptime', val: '100%', color: 'bg-emerald-500' },
-                         { label: 'API Latency', val: '12ms', color: 'bg-accent-500' },
+                         { label: 'Socket Status', val: 'Connected', color: 'bg-primary-500' },
                        ].map(node => (
                          <div key={node.label} className="space-y-2">
                             <div className="flex justify-between text-[10px] font-black text-surface-500 uppercase tracking-widest">

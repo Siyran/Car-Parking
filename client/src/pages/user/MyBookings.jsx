@@ -1,22 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookingAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import LiveTrackingMap from '../../components/map/LiveTrackingMap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MapPin, Calendar, Timer, X, Navigation, Activity, History, ChevronRight, Zap } from 'lucide-react';
-import { formatCurrency, formatDate, formatTime, formatDuration } from '../../lib/utils';
+import { Clock, MapPin, Calendar, Timer, X, Navigation, Activity, History, ChevronRight, Zap, Radio, Gauge } from 'lucide-react';
+import { formatCurrency, formatDate, formatTime, formatDuration, formatETA, formatDistance } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 export default function MyBookings() {
   const navigate = useNavigate();
+  const { startGPSBroadcast, stopGPSBroadcast, onETAUpdate, emitGPSStop } = useSocket();
   const [bookings, setBookings] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [showLiveMap, setShowLiveMap] = useState(false);
+  const [liveETA, setLiveETA] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -29,6 +35,38 @@ export default function MyBookings() {
     }, 1000);
     return () => clearInterval(interval);
   }, [activeSession]);
+
+  // Get user location
+  useEffect(() => {
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => {}
+    );
+  }, []);
+
+  // Start GPS broadcast when there's an active session
+  useEffect(() => {
+    if (!activeSession?.spot?.location) return;
+
+    const [lng, lat] = activeSession.spot.location.coordinates;
+    startGPSBroadcast(
+      activeSession._id,
+      activeSession.spot._id,
+      lat, lng
+    );
+
+    return () => stopGPSBroadcast();
+  }, [activeSession?._id]);
+
+  // Listen for ETA updates
+  useEffect(() => {
+    const unsub = onETAUpdate((data) => {
+      if (data.bookingId === activeSession?._id) {
+        setLiveETA(data);
+      }
+    });
+    return unsub;
+  }, [activeSession?._id, onETAUpdate]);
 
   const loadData = async () => {
     setLoading(true);
@@ -49,9 +87,11 @@ export default function MyBookings() {
     if (!activeSession) return;
     setEnding(true);
     try {
+      emitGPSStop(activeSession._id);
       const { data } = await bookingAPI.end(activeSession._id);
       toast.success(`Session Terminated: ${formatCurrency(data.booking.totalAmount)} Charged`);
       setActiveSession(null);
+      setLiveETA(null);
       loadData();
     } catch (err) {
       toast.error('Termination sequence failed');
@@ -61,9 +101,11 @@ export default function MyBookings() {
 
   const handleCancel = async (id) => {
     try {
+      if (activeSession?._id === id) emitGPSStop(id);
       await bookingAPI.cancel(id);
       toast.success('Reservation De-allocated');
       setActiveSession(null);
+      setLiveETA(null);
       loadData();
     } catch (err) {
       toast.error('De-allocation failed');
@@ -84,9 +126,31 @@ export default function MyBookings() {
 
   const statusVariant = { active: 'primary', completed: 'success', cancelled: 'danger' };
 
+  // Get destination for live map
+  const getDestination = () => {
+    if (!activeSession?.spot?.location) return null;
+    const [lng, lat] = activeSession.spot.location.coordinates;
+    return {
+      lat, lng,
+      title: activeSession.spot.title,
+      address: activeSession.spot.address
+    };
+  };
+
   return (
     <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 map-grid opacity-10 pointer-events-none" />
+
+      {/* Live Tracking Map Overlay */}
+      {showLiveMap && activeSession && (
+        <LiveTrackingMap
+          destination={getDestination()}
+          onClose={() => setShowLiveMap(false)}
+          initialPosition={userLocation ? { lat: userLocation[0], lng: userLocation[1] } : null}
+          bookingId={activeSession._id}
+          spotId={activeSession.spot?._id}
+        />
+      )}
 
       <div className="max-w-[1000px] mx-auto px-8 w-full pb-24 relative z-10">
         
@@ -137,22 +201,43 @@ export default function MyBookings() {
                     </button>
                  </div>
 
-                 <div className="grid md:grid-cols-3 gap-8 p-8 bg-black/40 rounded-[2rem] border border-white/5 shadow-inner">
-                    <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-8 md:pb-0">
+                 <div className="grid md:grid-cols-4 gap-6 p-8 bg-black/40 rounded-[2rem] border border-white/5 shadow-inner">
+                    <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-6 md:pb-0">
                        <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Temporal Duration</p>
                        <div className="text-4xl font-mono font-black text-primary-400 italic tracking-widest">{fmtElapsed()}</div>
                     </div>
-                    <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-8 md:pb-0">
+                    <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-6 md:pb-0">
                        <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Accrued Charges</p>
                        <div className="text-4xl font-black text-white italic tracking-tighter">₹{currentCost()}</div>
                     </div>
-                    <div className="text-center space-y-3">
+                    <div className="text-center space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-6 md:pb-0">
                        <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest opacity-80">Unit Base Rate</p>
                        <div className="text-4xl font-black text-accent-500 italic tracking-tighter">₹{activeSession.spot?.pricePerHour}/H</div>
+                    </div>
+                    {/* Live ETA column */}
+                    <div className="text-center space-y-3">
+                       <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest flex items-center justify-center gap-2">
+                         <Radio className="w-3 h-3 animate-pulse" /> Live ETA
+                       </p>
+                       <div className="text-4xl font-black text-emerald-400 italic tracking-tighter">
+                         {liveETA ? formatETA(liveETA.duration) : '—'}
+                       </div>
+                       {liveETA && (
+                         <p className="text-[9px] font-bold text-surface-500 uppercase tracking-widest">{formatDistance(liveETA.distance)}</p>
+                       )}
                     </div>
                  </div>
 
                  <div className="flex flex-col sm:flex-row gap-5 mt-10">
+                    {/* Track Live Button */}
+                    <Button 
+                      onClick={() => setShowLiveMap(true)} 
+                      variant="primary" 
+                      className="flex-1 !rounded-2xl py-6 text-sm font-black uppercase tracking-[0.2em] shadow-glow" 
+                      size="lg"
+                    >
+                       <Navigation className="w-5 h-5 mr-3 rotate-45" /> Track Live
+                    </Button>
                     <Button onClick={handleEnd} loading={ending} variant="danger" className="flex-1 !rounded-2xl py-6 text-sm font-black uppercase tracking-[0.2em] shadow-glow" size="lg">
                        <Timer className="w-5 h-5 mr-3" /> Terminate Node Session
                     </Button>

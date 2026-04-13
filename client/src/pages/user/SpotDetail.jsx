@@ -9,8 +9,9 @@ import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import RoutingMachine from '../../components/map/RoutingMachine';
+import LiveTrackingMap from '../../components/map/LiveTrackingMap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu, Wallet, CreditCard, Smartphone, X } from 'lucide-react';
+import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu, Wallet, CreditCard, Smartphone, X, Radio } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
@@ -51,6 +52,7 @@ export default function SpotDetail() {
 
   const [showQR, setShowQR] = useState(false);
   const [upiLink, setUpiLink] = useState('');
+  const [showLiveNav, setShowLiveNav] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
@@ -147,6 +149,14 @@ export default function SpotDetail() {
     setShowRoute(!showRoute);
   };
 
+  const handleLiveTrack = () => {
+    if (!userLocation) {
+      toast.error('GPS Lock Required');
+      return;
+    }
+    setShowLiveNav(true);
+  };
+
   const submitReview = async () => {
     try {
       const { data } = await spotAPI.addReview(id, reviewForm);
@@ -175,6 +185,21 @@ export default function SpotDetail() {
   return (
     <div className="pt-32 min-h-screen bg-surface-950 selection:bg-primary-500 overflow-x-hidden relative flex flex-col">
       <div className="absolute inset-0 map-grid opacity-[0.07] pointer-events-none" />
+
+      {/* Live Navigation Fullscreen Overlay */}
+      {showLiveNav && spot && (
+        <LiveTrackingMap
+          destination={{
+            lat: spot.location.coordinates[1],
+            lng: spot.location.coordinates[0],
+            title: spot.title,
+            address: spot.address
+          }}
+          onClose={() => setShowLiveNav(false)}
+          initialPosition={userLocation ? { lat: userLocation[0], lng: userLocation[1] } : null}
+          isNavigating={true}
+        />
+      )}
       
       {/* Dynamic Technical Header */}
       <div className="relative z-20 px-8 py-8 md:py-12 border-b border-white/5 bg-surface-950/40 backdrop-blur-3xl">
@@ -263,10 +288,17 @@ export default function SpotDetail() {
                       </div>
                       <p className="text-xs text-surface-500 font-medium leading-relaxed max-w-xl">Precision GPS coordinates locked. Direct routing available via integrated navigation module.</p>
                    </div>
-                   <Button onClick={handleNavigate} variant={showRoute ? 'primary' : 'secondary'} size="lg" className="!rounded-2xl px-12 py-7 font-black uppercase tracking-[0.2em] shadow-glow">
-                    {showRoute ? <ArrowLeft className="w-5 h-5 mr-3" /> : <Navigation className="w-5 h-5 mr-3 rotate-45" />}
-                    {showRoute ? 'Back to Terminal' : 'Execute Guidance'}
-                  </Button>
+                   <div className="flex gap-3">
+                     <Button onClick={handleNavigate} variant={showRoute ? 'primary' : 'secondary'} size="lg" className="!rounded-2xl px-8 py-7 font-black uppercase tracking-[0.2em] shadow-glow">
+                       {showRoute ? <ArrowLeft className="w-5 h-5 mr-3" /> : <Navigation className="w-5 h-5 mr-3 rotate-45" />}
+                       {showRoute ? 'Back to Terminal' : 'Execute Guidance'}
+                     </Button>
+                     {showRoute && (
+                       <Button onClick={handleLiveTrack} variant="primary" size="lg" className="!rounded-2xl px-8 py-7 font-black uppercase tracking-[0.2em] shadow-glow bg-emerald-600 hover:bg-emerald-500">
+                         <Radio className="w-5 h-5 mr-3 animate-pulse" /> Live Track
+                       </Button>
+                     )}
+                   </div>
                 </div>
              </div>
           </div>
