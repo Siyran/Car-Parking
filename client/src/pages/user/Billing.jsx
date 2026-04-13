@@ -11,8 +11,6 @@ export default function Billing() {
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(null);
-  const [addingFunds, setAddingFunds] = useState(false);
-  const [fundAmount, setFundAmount] = useState('');
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -31,19 +29,6 @@ export default function Billing() {
     setLoading(false);
   };
 
-  const handleAddFunds = async () => {
-    if (!fundAmount || isNaN(fundAmount) || Number(fundAmount) <= 0) return;
-    setAddingFunds(true);
-    try {
-      await billingAPI.addFunds({ amount: Number(fundAmount) });
-      toast.success('Funds added to wallet!');
-      setFundAmount('');
-      loadBill();
-    } catch (err) {
-      toast.error('Failed to add funds');
-    }
-    setAddingFunds(false);
-  };
 
   const handlePay = async (method) => {
     setPaying(method);
@@ -71,34 +56,6 @@ export default function Billing() {
           <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>
         ) : bill && (
           <>
-            {/* Wallet Section */}
-            <Card className="mb-6 bg-surface-900/50 border-white/5 backdrop-blur-sm p-6 overflow-visible">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center relative group">
-                    <Wallet className="w-6 h-6 text-primary-400 relative z-10" />
-                  </div>
-                  <div>
-                    <div className="text-surface-400 text-[10px] font-black uppercase tracking-widest">My Wallet Balance</div>
-                    <div className="text-3xl font-black text-white italic tracking-tighter mt-1">{formatCurrency(bill.walletBalance || 0)}</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                  <input 
-                    type="number" 
-                    placeholder="Amount" 
-                    value={fundAmount}
-                    onChange={(e) => setFundAmount(e.target.value)}
-                    className="flex-1 md:w-32 px-4 py-2 rounded-xl bg-surface-950 border border-white/10 text-white focus:ring-2 focus:ring-primary-500/30 outline-none font-black tracking-widest placeholder:text-surface-600 transition-all text-xs"
-                  />
-                  <Button onClick={handleAddFunds} loading={addingFunds} className="whitespace-nowrap flex-shrink-0 relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md pointer-events-none"></div>
-                    <Plus className="w-4 h-4 mr-2 relative z-10" /> <span className="relative z-10">Add Funds</span>
-                  </Button>
-                </div>
-              </div>
-            </Card>
 
             {/* Summary */}
             <div className="grid grid-cols-3 gap-4 mb-6">
