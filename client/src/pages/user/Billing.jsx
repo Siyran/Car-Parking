@@ -3,7 +3,7 @@ import { billingAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { CreditCard, Calendar, Clock, Receipt, Wallet, Plus } from 'lucide-react';
+import { CreditCard, Calendar, Clock, Receipt, Wallet } from 'lucide-react';
 import { formatCurrency, formatDate, formatTime, formatDuration } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
