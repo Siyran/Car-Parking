@@ -37,13 +37,23 @@ export default function VibeHero() {
       
       {/* FIXED 3D VIEWPORT LAYER (REACT THREE FIBER) */}
       <div className="fixed inset-0 pointer-events-none z-0">
-          <Suspense fallback={null}>
+          <Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center bg-[#05070A]">
+              <div className="w-10 h-10 border-2 border-primary-vibrant border-t-transparent rounded-full animate-spin" />
+            </div>
+          }>
             <Canvas 
               shadows 
               dpr={[1, 2]} 
               camera={{ position: [0, 0, 10], fov: 45 }}
-              gl={{ antialias: true, stencil: false, depth: true }}
+              gl={{ antialias: true }}
+              style={{ width: '100vw', height: '100vh' }}
             >
+              {/* PRIMARY LIGHTING RIG (Independent of Environment presets) */}
+              <ambientLight intensity={0.5} />
+              <directionalLight position={[10, 10, 10]} intensity={1.5} castShadow />
+              <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+              
               <IPhoneProMax scrollProgress={smoothProgress} />
             </Canvas>
           </Suspense>
@@ -51,7 +61,7 @@ export default function VibeHero() {
 
       {/* OVERLAY CONTENT SECTIONS */}
       {/* SECTION 1: HERO */}
-      <section className="relative h-screen flex flex-col justify-center px-6 md:px-20 z-10 pointer-events-none">
+      <section className="relative h-screen flex flex-col justify-center px-6 md:px-20 z-10 pointer-events-none text-mask">
         <div className="max-w-[1440px] mx-auto w-full grid lg:grid-cols-2 gap-20 items-center">
           <motion.div 
             variants={containerVariants}
