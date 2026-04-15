@@ -4,8 +4,11 @@ import { Lock, Activity, Radio, Signal, Globe, ShieldCheck, Zap } from 'lucide-r
 import { useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import VibeHero from '../components/animations/VibeHero';
+import HowItWorks from '../components/animations/HowItWorks';
+import LiveMapSection from '../components/animations/LiveMapSection';
+import StatsSection from '../components/animations/StatsSection';
+import FinalCTA from '../components/animations/FinalCTA';
 import VibeNavbar from '../components/layout/VibeNavbar';
-import Button from '../components/ui/Button';
 import MobileInterface from '../components/animations/MobileInterface';
 
 export default function Home() {
@@ -16,116 +19,68 @@ export default function Home() {
   return (
     <div ref={containerRef} className="bg-[#05070A] selection:bg-primary-vibrant relative flex flex-col">
       {!user && <VibeNavbar />}
+
+      {/* 1. HERO SECTION — 3D phone with animated map */}
       <VibeHero />
       
-      {/* 2. THE MISSION (About Us / Logic) */}
-      <section className="py-48 px-6 bg-surface-950 relative z-40">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-32 items-center">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1 }}
-              className="relative aspect-square md:aspect-video rounded-[3rem] overflow-hidden border border-white/10 group"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1573344697920-ca9810842e20?q=80&w=2938&auto=format&fit=crop" 
-                alt="Modern Cityscape" 
-                className="w-full h-full object-cover grayscale opacity-40 group-hover:scale-110 group-hover:grayscale-0 transition-all duration-[4s]" 
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-surface-950 via-transparent to-transparent" />
-              <div className="absolute bottom-12 left-12 space-y-4">
-                 <p className="text-[10px] font-black tracking-[0.4em] uppercase text-primary-400">Our_Core_Mission</p>
-                 <h3 className="text-4xl font-black text-white italic uppercase tracking-tighter">REDESIGNING <br /> URBAN FLOW.</h3>
-              </div>
-            </motion.div>
+      {/* 2. HOW IT WORKS — Animated 4-step flow */}
+      <HowItWorks />
 
-            <div className="space-y-12">
-               <motion.div
-                 initial={{ opacity: 0, x: 30 }}
-                 whileInView={{ opacity: 1, x: 0 }}
-                 viewport={{ once: true }}
-                 className="space-y-6"
-               >
-                 <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-tight">
-                    BUILT FOR THE <br />
-                    <span className="gradient-text italic">NEXT DECADE.</span>
-                 </h2>
-                 <p className="text-xl text-surface-400 font-medium leading-relaxed opacity-70">
-                    We didn't just build a parking app. We built an autonomous protocol that turns unused space into a high-yield asset network.
-                 </p>
-               </motion.div>
+      {/* 3. LIVE MAP — Interactive parking map preview */}
+      <LiveMapSection />
 
-               <div className="grid sm:grid-cols-2 gap-10">
-                  {[
-                    { label: "01", title: "Smart Sourcing", desc: "Finding every hidden space in the city through advanced GPS logic." },
-                    { label: "02", title: "Direct Value", desc: "Eliminating middle-man fees so hosts earn 100% of their space's worth." }
-                  ].map((item, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }} className="space-y-4">
-                       <span className="text-sm font-black text-primary-500 font-mono tracking-widest">{item.label}</span>
-                       <h4 className="text-xl font-black text-white italic uppercase tracking-tighter">{item.title}</h4>
-                       <p className="text-sm text-surface-500 font-medium leading-relaxed">{item.desc}</p>
-                    </motion.div>
-                  ))}
-               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. THE APP SHOWCASE (Interface Terminal) */}
-      <section className="py-48 px-6 bg-surface-950 relative z-40 overflow-hidden border-t border-white/5">
-        <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-32 items-center">
+      {/* 4. THE APP SHOWCASE (Interface Terminal) */}
+      <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
+        <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
            
            {/* LEFT: THE INTERFACE */}
            <motion.div 
              initial={{ opacity: 0, x: -60 }}
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
-             transition={{ duration: 1 }}
+             transition={{ duration: 0.8 }}
              className="flex justify-center"
            >
               <MobileInterface />
            </motion.div>
 
            {/* RIGHT: THE APP FEATURES */}
-           <div className="space-y-16">
+           <div className="space-y-12">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="space-y-8"
+                className="space-y-6"
               >
-                 <h2 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-[0.9]">
-                    THE PRO <br />
-                    <span className="gradient-text">TERMINAL.</span>
+                 <span className="text-xs font-bold text-purple-400 uppercase tracking-[0.3em]">App Preview</span>
+                 <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
+                    The Pro <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Terminal</span>
                  </h2>
-                 <p className="text-xl text-surface-400 font-medium leading-relaxed max-w-xl opacity-70">
-                    A millisecond-precision interface designed for absolute earning transparency and autonomous management.
+                 <p className="text-lg text-white/40 leading-relaxed max-w-xl">
+                    A precision interface designed for transparent earnings and effortless management.
                  </p>
               </motion.div>
 
-              <div className="grid sm:grid-cols-2 gap-12 pt-8">
+              <div className="grid sm:grid-cols-2 gap-8">
                  {[
-                   { icon: Lock, title: "BANK SECURITY", desc: "Encrypted handshake protocols for every peer-to-peer session." },
-                   { icon: Activity, title: "INSTANT SYNC", desc: "Real-time response across our entire city-wide parking network." },
-                   { icon: Radio, title: "UPI SETTLEMENT", desc: "Funds move directly to your account with zero commission leakage." },
-                   { icon: Signal, title: "ACCURATE GPS", desc: "Finding your allocated spot with perfect coordinate precision." }
+                   { icon: Lock, title: 'Bank Security', desc: 'Encrypted protocols for every session.' },
+                   { icon: Activity, title: 'Instant Sync', desc: 'Real-time response across the network.' },
+                   { icon: Radio, title: 'UPI Settlement', desc: 'Direct payments with zero commission.' },
+                   { icon: Signal, title: 'Accurate GPS', desc: 'Centimeter-precise spot location.' }
                  ].map((spec, i) => (
                    <motion.div
                      key={i}
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
-                     transition={{ delay: i * 0.1, duration: 0.8 }}
+                     transition={{ delay: i * 0.1, duration: 0.6 }}
                      viewport={{ once: true }}
-                     className="space-y-4 group"
+                     className="space-y-3 group p-5 rounded-2xl hover:bg-white/[0.03] transition-all duration-300"
                    >
-                     <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:border-primary-500/40 group-hover:bg-primary-500/5">
-                       <spec.icon className="w-6 h-6 text-white opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+                     <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/[0.08] flex items-center justify-center transition-all duration-500 group-hover:border-blue-500/30 group-hover:bg-blue-500/5">
+                       <spec.icon className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-500" />
                      </div>
-                     <h4 className="text-lg font-black text-white italic uppercase tracking-tighter leading-none">{spec.title}</h4>
-                     <p className="text-sm text-surface-500 font-medium leading-relaxed">{spec.desc}</p>
+                     <h4 className="text-base font-bold text-white tracking-tight">{spec.title}</h4>
+                     <p className="text-sm text-white/30 leading-relaxed">{spec.desc}</p>
                    </motion.div>
                  ))}
               </div>
@@ -133,55 +88,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. THE INFRASTRUCTURE (Feature Grid) */}
-      <section className="py-48 px-6 bg-surface-950/90 backdrop-blur-3xl z-40 border-t border-white/5">
-        <div className="max-w-[1440px] mx-auto text-center">
+      {/* 5. FEATURE CARDS */}
+      <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
+        <div className="max-w-[1440px] mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-4xl mx-auto mb-24 space-y-8"
+            className="text-center mb-20 space-y-6"
           >
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter italic uppercase text-white">
-              GLOBAL <span className="gradient-text">COVERAGE</span>. <br />
-              VERIFIED <span className="underline decoration-primary-500/30 decoration-8 underline-offset-8">DEMAND</span>.
+            <span className="text-xs font-bold text-blue-400 uppercase tracking-[0.3em]">Why ParkFlow</span>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white">
+              Global <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Coverage</span>
             </h2>
           </motion.div>
 
-          <div className="grid lg:grid-cols-3 gap-10">
+          <div className="grid lg:grid-cols-3 gap-6">
             {[
               { 
-                icon: Globe, title: "URBAN SCALE", desc: "Our network connects thousands of prime locations in major metro hubs.",
-                img: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2940&auto=format&fit=crop"
+                icon: Globe, title: 'Urban Scale', desc: 'Thousands of spots in major metro hubs.',
+                img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2940&auto=format&fit=crop'
               },
               { 
-                icon: ShieldCheck, title: "IRONCLAD TRUST", desc: "Every spot and vehicle is verified through our proprietary safety logic.",
-                img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2940&auto=format&fit=crop"
+                icon: ShieldCheck, title: 'Ironclad Trust', desc: 'Every spot verified through safety checks.',
+                img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2940&auto=format&fit=crop'
               },
               { 
-                icon: Zap, title: "INSTANT LIQUIDITY", desc: "Earnings are available for withdrawal the moment your session concludes.",
-                img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2940&auto=format&fit=crop"
+                icon: Zap, title: 'Instant Payouts', desc: 'Earnings available immediately after session.',
+                img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2940&auto=format&fit=crop'
               }
             ].map((f, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.1, duration: 0.6 }}
                 viewport={{ once: true }}
-                className="group relative h-[450px] rounded-[3.5rem] overflow-hidden border border-white/5 card-hover-premium"
+                className="group relative h-[420px] rounded-3xl overflow-hidden border border-white/[0.06] hover:border-white/10 hover:-translate-y-2 transition-all duration-500"
               >
                 <div className="absolute inset-0 z-0">
-                  <img src={f.img} alt={f.title} className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-20 grayscale" />
-                  <div className="absolute inset-0 bg-linear-to-t from-surface-950 via-surface-950/40 to-transparent" />
+                  <img src={f.img} alt={f.title} className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-15 grayscale" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
                 </div>
 
-                <div className="h-full flex flex-col justify-end p-12 relative z-10 space-y-6 text-left">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-xl">
-                    <f.icon className="w-6 h-6 text-white opacity-60" />
+                {/* Hover glow border */}
+                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
+                  boxShadow: 'inset 0 0 0 1px rgba(59,130,246,0.2), 0 0 40px -10px rgba(59,130,246,0.15)'
+                }} />
+
+                <div className="h-full flex flex-col justify-end p-10 relative z-10 space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center backdrop-blur-xl group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all duration-500">
+                    <f.icon className="w-5 h-5 text-white/50 group-hover:text-blue-400 transition-colors duration-500" />
                   </div>
-                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">{f.title}</h3>
-                  <p className="text-sm text-surface-400 font-medium leading-relaxed opacity-60">{f.desc}</p>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">{f.title}</h3>
+                  <p className="text-sm text-white/30 leading-relaxed">{f.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -189,44 +149,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. FINAL CALL (Live Network Stats) */}
-      <section className="py-60 px-6 text-center relative overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-radial-at-center from-primary-600/10 to-transparent opacity-40" />
-        
-        <motion.div
-           initial={{ opacity: 0, scale: 0.9 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           className="relative z-10 space-y-16"
-        >
-          <div className="space-y-8 flex flex-col items-center">
-             <h2 className="text-6xl md:text-8xl font-black tracking-tighter italic uppercase text-white">
-                READY TO <span className="gradient-text italic">LAUNCH?</span>
-             </h2>
-             <div className="flex flex-col md:flex-row gap-12 pt-8">
-                {[
-                  { val: "5K+", label: "Verified Nodes" },
-                  { val: "12MS", label: "Network Latency" },
-                  { val: "₹0", label: "Entry Fees" }
-                ].map((s, i) => (
-                  <div key={i} className="text-center">
-                     <p className="text-5xl font-black text-white italic tracking-tighter mb-1">{s.val}</p>
-                     <p className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{s.label}</p>
-                  </div>
-                ))}
-             </div>
-          </div>
+      {/* 6. STATS & TRUST */}
+      <StatsSection />
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <Button size="lg" className="!rounded-full px-16 py-8 text-xl font-black italic uppercase tracking-[0.2em] shadow-glow transform hover:scale-105 transition-all" onClick={() => navigate('/search')}>
-              Find Your Spot
-            </Button>
-            <Button variant="ghost" className="text-sm font-black italic uppercase tracking-[0.2em] text-surface-500 hover:text-white" onClick={() => navigate('/register')}>
-               Become a Host
-            </Button>
-          </div>
-        </motion.div>
-      </section>
+      {/* 7. FINAL CTA */}
+      <FinalCTA />
     </div>
   );
 }
