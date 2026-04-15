@@ -335,3 +335,13 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
 }
+
+@keyframes roadScroll {
+  0% { transform: translateY(-33.33%); }
+  100% { transform: translateY(0%); }
+}
+
+@keyframes btnPulse {
+  0%, 100% { box-shadow: 0 8px 25px -5px rgba(59,130,246,0.45); }
+  50% { box-shadow: 0 12px 40px -5px rgba(59,130,246,0.7); }
+}
