@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Activity, Radio, Signal, Globe, ShieldCheck, Zap } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useAuth } from '../context/AuthContext';
 import VibeHero from '../components/animations/VibeHero';
 import HowItWorks from '../components/animations/HowItWorks';
@@ -11,10 +12,78 @@ import FinalCTA from '../components/animations/FinalCTA';
 import VibeNavbar from '../components/layout/VibeNavbar';
 import MobileInterface from '../components/animations/MobileInterface';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function Home() {
   const containerRef = useRef(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Entrance animations for sections
+      gsap.utils.toArray('.gsap-reveal').forEach((el) => {
+        gsap.from(el, {
+          y: 40,
+          opacity: 0,
+          duration: 1,
+          ease: 'cubic-bezier(0.22,1,0.36,1)',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true
+          }
+        });
+      });
+
+      // 2. Specialized staggered reveal for specs
+      gsap.from('.gsap-spec-item', {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.gsap-spec-grid',
+          start: 'top 80%',
+          once: true
+        }
+      });
+
+      // 3. Hover effects for cards
+      const cards = gsap.utils.toArray('.gsap-card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          gsap.to(card, { scale: 1.02, y: -8, duration: 0.4, ease: 'power2.out' });
+        });
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card, { scale: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+        });
+      });
+
+      // 4. Button effects
+      const buttons = gsap.utils.toArray('.gsap-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+          gsap.to(btn, { filter: 'brightness(1.1)', duration: 0.3 });
+        });
+        btn.addEventListener('mouseleave', () => {
+          gsap.to(btn, { filter: 'brightness(1)', duration: 0.3 });
+        });
+        btn.addEventListener('mousedown', () => {
+          gsap.to(btn, { scale: 0.97, duration: 0.1 });
+        });
+        btn.addEventListener('mouseup', () => {
+          gsap.to(btn, { scale: 1, duration: 0.1 });
+        });
+        btn.addEventListener('mouseleave', () => {
+          gsap.to(btn, { scale: 1, duration: 0.2 });
+        });
+      });
+
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
   
   return (
     <div ref={containerRef} className="bg-[#05070A] selection:bg-primary-vibrant relative flex flex-col">
@@ -34,24 +103,13 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
            
            {/* LEFT: THE INTERFACE */}
-           <motion.div 
-             initial={{ opacity: 0, x: -60 }}
-             whileInView={{ opacity: 1, x: 0 }}
-             viewport={{ once: true }}
-             transition={{ duration: 0.8 }}
-             className="flex justify-center"
-           >
+           <div className="flex justify-center gsap-reveal">
               <MobileInterface />
-           </motion.div>
+           </div>
 
            {/* RIGHT: THE APP FEATURES */}
            <div className="space-y-12">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="space-y-6"
-              >
+              <div className="space-y-6 gsap-reveal">
                  <span className="text-xs font-bold text-purple-400 uppercase tracking-[0.3em]">App Preview</span>
                  <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
                     The Pro <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Terminal</span>
@@ -59,29 +117,25 @@ export default function Home() {
                  <p className="text-lg text-white/40 leading-relaxed max-w-xl">
                     A precision interface designed for transparent earnings and effortless management.
                  </p>
-              </motion.div>
+              </div>
 
-              <div className="grid sm:grid-cols-2 gap-8">
+              <div className="grid sm:grid-cols-2 gap-8 gsap-spec-grid">
                  {[
                    { icon: Lock, title: 'Bank Security', desc: 'Encrypted protocols for every session.' },
                    { icon: Activity, title: 'Instant Sync', desc: 'Real-time response across the network.' },
                    { icon: Radio, title: 'UPI Settlement', desc: 'Direct payments with zero commission.' },
                    { icon: Signal, title: 'Accurate GPS', desc: 'Centimeter-precise spot location.' }
                  ].map((spec, i) => (
-                   <motion.div
+                   <div
                      key={i}
-                     initial={{ opacity: 0, y: 20 }}
-                     whileInView={{ opacity: 1, y: 0 }}
-                     transition={{ delay: i * 0.1, duration: 0.6 }}
-                     viewport={{ once: true }}
-                     className="space-y-3 group p-5 rounded-2xl hover:bg-white/[0.03] transition-all duration-300"
+                     className="space-y-3 group p-5 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 gsap-spec-item"
                    >
                      <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/[0.08] flex items-center justify-center transition-all duration-500 group-hover:border-blue-500/30 group-hover:bg-blue-500/5">
                        <spec.icon className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-500" />
                      </div>
                      <h4 className="text-base font-bold text-white tracking-tight">{spec.title}</h4>
                      <p className="text-sm text-white/30 leading-relaxed">{spec.desc}</p>
-                   </motion.div>
+                   </div>
                  ))}
               </div>
            </div>
@@ -91,17 +145,12 @@ export default function Home() {
       {/* 5. FEATURE CARDS */}
       <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
         <div className="max-w-[1440px] mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20 space-y-6"
-          >
+          <div className="text-center mb-20 space-y-6 gsap-reveal">
             <span className="text-xs font-bold text-blue-400 uppercase tracking-[0.3em]">Why ParkFlow</span>
             <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white">
               Global <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Coverage</span>
             </h2>
-          </motion.div>
+          </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
             {[
@@ -118,13 +167,9 @@ export default function Home() {
                 img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2940&auto=format&fit=crop'
               }
             ].map((f, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                viewport={{ once: true }}
-                className="group relative h-[420px] rounded-3xl overflow-hidden border border-white/[0.06] hover:border-white/10 hover:-translate-y-2 transition-all duration-500"
+                className="group relative h-[420px] rounded-3xl overflow-hidden border border-white/[0.06] hover:border-white/10 transition-all duration-500 gsap-card gsap-reveal"
               >
                 <div className="absolute inset-0 z-0">
                   <img src={f.img} alt={f.title} className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-15 grayscale" />
@@ -143,7 +188,7 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-white tracking-tight">{f.title}</h3>
                   <p className="text-sm text-white/30 leading-relaxed">{f.desc}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

@@ -44,159 +44,145 @@ export default function VibeHero() {
 
   useLayoutEffect(() => {
     const routeEl = routePathRef.current;
-    const routeGlowEl = routeGlowRef.current;
     if (routeEl) {
       const len = routeEl.getTotalLength();
       gsap.set(routeEl, { strokeDasharray: len, strokeDashoffset: len });
-      gsap.set(routeGlowEl, { strokeDasharray: len, strokeDashoffset: len });
     }
 
+    // Reset initial states
+    gsap.set(phoneRef.current, { scale: 0.96, opacity: 0, rotateY: 3, rotateX: 2 });
+    gsap.set('.phone-shadow', { opacity: 0, scale: 0.8 });
     gsap.set(carRef.current, { opacity: 0, scale: 0 });
-    gsap.set(uiNavRef.current, { y: -20, opacity: 0 });
-    gsap.set(uiCardRef.current, { y: '100%', opacity: 0 });
-    gsap.set(destRingRef.current, { scale: 0, opacity: 0 });
-    gsap.set(destGlowRef.current, { scale: 0, opacity: 0 });
-    gsap.set(lightRef.current, { x: '-150%' });
-    gsap.set(glowRef.current, { scale: 0.8, opacity: 0 });
-
+    gsap.set(uiNavRef.current, { y: -10, opacity: 0 });
+    gsap.set(uiCardRef.current, { y: 20, opacity: 0 });
+    
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      // 1. Entrance Animation
+      const introTl = gsap.timeline({
+        defaults: { duration: 1, ease: 'power2.out' }
+      });
+
+      introTl
+        .to(phoneRef.current, { 
+          opacity: 1, 
+          scale: 1, 
+          rotateY: 1, 
+          rotateX: 0, 
+          duration: 1.2,
+          ease: 'cubic-bezier(0.22,1,0.36,1)'
+        })
+        .to('.phone-shadow', { 
+          opacity: 1, 
+          scale: 1, 
+          duration: 1.2 
+        }, '-=1.2')
+        .to('.hero-title-word', { 
+          y: 0, 
+          opacity: 1, 
+          stagger: 0.05, 
+          duration: 0.8 
+        }, '-=0.8')
+        .to('.hero-desc-word', { 
+          y: 0, 
+          opacity: 0.28, 
+          stagger: 0.02, 
+          duration: 0.6 
+        }, '-=0.6');
+
+      // 2. Subtle Scroll Motion
+      const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: heroRef.current,
           start: 'top top',
-          end: '+=2500',
-          scrub: 2,
-          pin: true,
-        },
+          end: 'bottom top',
+          scrub: 1,
+        }
       });
 
-      tl.fromTo(
-        phoneRef.current,
-        { scale: 0.92, rotateY: 10, opacity: 0.7 },
-        { scale: 1, rotateY: 0, opacity: 1, duration: 0.8, ease: 'power2.inOut' },
-        0
-      );
+      scrollTl
+        .to(phoneRef.current, {
+          scale: 1.06,
+          rotateY: 0,
+          y: -20,
+          ease: 'none'
+        }, 0)
+        .to('.phone-shadow', {
+          scale: 1.1,
+          opacity: 0.4,
+          y: 10,
+          ease: 'none'
+        }, 0)
+        .to(bgRef.current, {
+          backgroundPosition: '100% 100%',
+          opacity: 1,
+          duration: 1
+        }, 0)
+        .to(mapLayerRef.current, {
+          y: -40,
+          ease: 'none'
+        }, 0);
 
-      tl.to(
-        phoneRef.current,
-        { scale: 1.2, y: -20, duration: 1.1, ease: 'power2.inOut' },
-        0.7
-      );
-      tl.to(
-        textRef.current,
-        { opacity: 0, x: -50, filter: 'blur(3px)', duration: 0.8, ease: 'power2.in' },
-        0.9
-      );
-      tl.to(
-        bgRef.current,
-        { opacity: 0.08, duration: 0.8, ease: 'power2.in' },
-        0.9
-      );
-      tl.to(
-        glowRef.current,
-        { scale: 1.2, opacity: 0.5, duration: 1, ease: 'power2.inOut' },
-        1.0
-      );
-
-      tl.to(
-        mapLayerRef.current,
-        { y: -180, duration: 3, ease: 'power2.inOut' },
-        1.5
-      );
-
-      tl.to(
-        routePathRef.current,
-        { strokeDashoffset: 0, duration: 2.2, ease: 'power2.inOut' },
-        1.8
-      );
-      tl.to(
-        routeGlowRef.current,
-        { strokeDashoffset: 0, duration: 2.2, ease: 'power2.inOut' },
-        1.8
-      );
-
-      tl.to(
-        carRef.current,
-        { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' },
-        2.0
-      );
-      tl.to(
-        uiNavRef.current,
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-        2.2
-      );
-      tl.to(
-        carRef.current,
-        {
-          motionPath: {
-            path: ROUTE_PATH,
-            align: 'self',
-            alignOrigin: [0.5, 0.5],
-            autoRotate: -90,
-          },
-          duration: 2.5,
-          ease: 'power2.inOut',
+      // 3. Subtle Car Motion along path
+      gsap.to(carRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1.5,
         },
-        2.0
-      );
-      tl.to(
-        phoneRef.current,
-        { scale: 1.3, rotateX: 6, rotateY: -2, duration: 2.5, ease: 'power2.inOut' },
-        2.0
-      );
-      tl.to(
-        lightRef.current,
-        { x: '150%', duration: 2, ease: 'power2.inOut' },
-        2.5
+        motionPath: {
+          path: ROUTE_PATH,
+          align: 'self',
+          alignOrigin: [0.5, 0.5],
+          autoRotate: -90,
+          start: 0,
+          end: 0.15 // Very subtle move
+        },
+        opacity: 1,
+        scale: 1,
+        ease: 'none'
+      });
+
+      // 4. Parking Nodes Pulse - Single soft pulse on enter
+      gsap.fromTo('.parking-node', 
+        { scale: 0.8, opacity: 0 },
+        { 
+          scale: 1, 
+          opacity: 1, 
+          duration: 0.8, 
+          stagger: 0.2,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top 80%',
+            once: true
+          }
+        }
       );
 
-      tl.to(
-        destNodeRef.current,
-        { scale: 1.4, duration: 0.3, ease: 'power2.in' },
-        4.3
-      );
-      tl.to(
-        destNodeRef.current,
-        { scale: 1, duration: 0.4, ease: 'power2.out' },
-        4.6
-      );
-      tl.to(
-        destRingRef.current,
-        { scale: 1, opacity: 0.5, duration: 0.5, ease: 'power2.out' },
-        4.3
-      );
-      tl.to(
-        destRingRef.current,
-        { scale: 1.8, opacity: 0, duration: 0.6, ease: 'power2.in' },
-        4.8
-      );
-      tl.to(
-        destGlowRef.current,
-        { scale: 1, opacity: 0.4, duration: 0.4, ease: 'power2.out' },
-        4.3
-      );
-      tl.to(
-        destGlowRef.current,
-        { opacity: 0, duration: 0.5, ease: 'power2.in' },
-        4.9
-      );
+      // 5. Interface elements appearance
+      gsap.to([uiNavRef.current, uiCardRef.current], {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top 20%',
+          once: true
+        }
+      });
 
-      tl.to(
-        uiCardRef.current,
-        { y: '0%', opacity: 1, duration: 0.8, ease: 'power2.inOut' },
-        4.8
-      );
+      // 6. Background Gradient Shift
+      gsap.to(bgRef.current, {
+        opacity: 0.08,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut'
+      });
 
-      tl.to(
-        phoneRef.current,
-        { scale: 1.1, rotateY: -4, rotateX: 2, y: 10, duration: 1, ease: 'power2.inOut' },
-        5.5
-      );
-      tl.to(
-        glowRef.current,
-        { opacity: 0.15, scale: 1, duration: 0.8, ease: 'power2.in' },
-        5.5
-      );
     }, heroRef);
 
     return () => ctx.revert();
@@ -227,28 +213,44 @@ export default function VibeHero() {
               </div>
 
               <h1 className="text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] font-semibold text-white tracking-[-0.03em] leading-[1.08]">
-                Find Parking
+                {"Find Parking".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden pb-1">
+                    <span className="hero-title-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
+                  </span>
+                ))}
                 <br />
-                <span className="text-[#0A84FF]">Near You</span>
+                {"Near You".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden pb-1">
+                    <span className={`hero-title-word inline-block translate-y-[110%] opacity-0 ${i === 0 || i === 1 ? 'text-[#0A84FF]' : ''}`}>{word}&nbsp;</span>
+                  </span>
+                ))}
                 <br />
-                Anytime
+                {"Anytime".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden pb-1">
+                    <span className="hero-title-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
+                  </span>
+                ))}
               </h1>
 
               <p className="text-[15px] text-white/28 leading-[1.7] max-w-md">
-                Discover private parking near you. Navigate in real-time. Pay only for what you use.
+                {"Discover private parking near you. Navigate in real-time. Pay only for what you use.".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden">
+                    <span className="hero-desc-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
+                  </span>
+                ))}
               </p>
 
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => navigate('/search')}
-                  className="group flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#0A84FF] text-white text-[13px] font-semibold tracking-wide active:scale-[0.97] hover:bg-[#0070E0] transition-all duration-200"
+                  className="gsap-btn group flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#0A84FF] text-white text-[13px] font-semibold tracking-wide"
                 >
                   Find Parking
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="px-6 py-3.5 rounded-xl border border-white/[0.08] text-white/40 text-[13px] font-semibold tracking-wide active:scale-[0.97] hover:text-white/55 hover:border-white/[0.12] transition-all duration-200"
+                  className="gsap-btn px-6 py-3.5 rounded-xl border border-white/[0.08] text-white/40 text-[13px] font-semibold tracking-wide"
                 >
                   List Your Space
                 </button>
@@ -267,6 +269,16 @@ export default function VibeHero() {
             />
 
             <div ref={phoneRef} style={{ transformStyle: 'preserve-3d', willChange: 'transform, opacity' }}>
+              {/* Premium shadow under phone */}
+              <div 
+                className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-10 phone-shadow" 
+                style={{ 
+                  background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 80%)',
+                  filter: 'blur(15px)',
+                  opacity: 0,
+                  transform: 'scale(0.8)'
+                }} 
+              />
               <div className="relative w-[280px] h-[580px] md:w-[295px] md:h-[620px]">
                 <div className="absolute inset-0 rounded-[2.8rem] bg-gradient-to-b from-[#2c2c2e] via-[#1c1c1e] to-[#161618] border border-white/[0.05] shadow-[0_35px_70px_-18px_rgba(0,0,0,0.75)]">
                   <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[78px] h-[22px] bg-black rounded-full z-50" />
@@ -309,7 +321,7 @@ export default function VibeHero() {
                       ].map((s, i) => (
                         <div
                           key={i}
-                          className="absolute w-[7px] h-[7px] rounded-full"
+                          className="absolute w-[7px] h-[7px] rounded-full parking-node"
                           style={{
                             left: s.x,
                             top: s.y,
@@ -329,7 +341,7 @@ export default function VibeHero() {
                         </div>
                         <div
                           ref={destNodeRef}
-                          className="relative w-[10px] h-[10px] rounded-full"
+                          className="relative w-[10px] h-[10px] rounded-full parking-node"
                           style={{
                             backgroundColor: 'rgba(10,132,255,0.15)',
                             border: '1.5px solid rgba(10,132,255,0.4)',
@@ -364,7 +376,7 @@ export default function VibeHero() {
                       </div>
                     </div>
 
-                    <div ref={uiCardRef} className="absolute bottom-4 left-3 right-3 z-40" style={{ willChange: 'transform, opacity' }}>
+                    <div ref={uiCardRef} className="absolute bottom-4 left-3 right-3 z-40 gsap-card" style={{ willChange: 'transform, opacity' }}>
                       <div className="p-3 rounded-2xl bg-[rgba(28,28,30,0.92)] backdrop-blur-xl border border-white/[0.05]">
                         <div className="flex items-center gap-2.5 mb-2.5">
                           <div className="w-8 h-8 rounded-lg bg-[rgba(10,132,255,0.06)] flex items-center justify-center">
@@ -382,7 +394,7 @@ export default function VibeHero() {
                             <p className="text-[7px] text-white/20">/hour</p>
                           </div>
                         </div>
-                        <button className="w-full h-9 rounded-lg bg-[#0A84FF] flex items-center justify-center active:scale-[0.97] transition-transform duration-150">
+                        <button className="gsap-btn w-full h-9 rounded-lg bg-[#0A84FF] flex items-center justify-center">
                           <span className="text-[10px] font-semibold text-white tracking-wide">Book This Spot</span>
                         </button>
                       </div>
@@ -399,8 +411,8 @@ export default function VibeHero() {
 
                   <div
                     ref={lightRef}
-                    className="absolute inset-0 w-10 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent pointer-events-none z-40 rounded-[2.8rem]"
-                    style={{ willChange: 'transform' }}
+                    className="absolute inset-0 w-10 bg-gradient-to-r from-transparent via-white/[0.015] to-transparent pointer-events-none z-40 rounded-[2.8rem]"
+                    style={{ willChange: 'transform', opacity: 0.4 }}
                   />
                 </div>
 

@@ -1,30 +1,28 @@
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-function AnimatedCounter({ target, suffix = '', prefix = '', duration = 2 }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+gsap.registerPlugin(ScrollTrigger);
+
+function AnimatedCounter({ target, suffix = '', prefix = '', isVisible }) {
   const [count, setCount] = useState(0);
+  const countRef = useRef({ val: 0 });
 
   useEffect(() => {
-    if (!isInView) return;
-    let start = 0;
-    const end = parseInt(target);
-    const increment = end / (duration * 60);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
+    if (!isVisible) return;
+    
+    gsap.to(countRef.current, {
+      val: parseInt(target),
+      duration: 2,
+      ease: 'power2.out',
+      onUpdate: () => {
+        setCount(Math.floor(countRef.current.val));
       }
-    }, 1000 / 60);
-    return () => clearInterval(timer);
-  }, [isInView, target, duration]);
+    });
+  }, [isVisible, target]);
 
   return (
-    <span ref={ref}>
+    <span>
       {prefix}{count.toLocaleString()}{suffix}
     </span>
   );
@@ -38,63 +36,83 @@ const stats = [
 ];
 
 export default function StatsSection() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Entrance animations
+      gsap.from('.stats-header', {
+        y: 30,
+        opacity: 0,
+        duration: 1,
+        ease: 'cubic-bezier(0.22,1,0.36,1)',
+        scrollTrigger: {
+          trigger: '.stats-header',
+          start: 'top 85%',
+          once: true,
+          onEnter: () => setIsVisible(true)
+        }
+      });
+
+      gsap.from('.stat-card', {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.stats-grid',
+          start: 'top 80%',
+          once: true
+        }
+      });
+
+      // 2. Background gradient animation
+      gsap.to('.stats-bg-gradient', {
+        backgroundPosition: '100% 50%',
+        duration: 12,
+        repeat: -1,
+        yoyo: true,
+        ease: 'none'
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden" ref={ref}>
+    <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden" ref={containerRef}>
       {/* Animated gradient bg */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(800px circle at 20% 50%, rgba(59,130,246,0.06), transparent 60%)',
-              'radial-gradient(800px circle at 80% 50%, rgba(139,92,246,0.06), transparent 60%)',
-              'radial-gradient(800px circle at 50% 50%, rgba(6,182,212,0.06), transparent 60%)',
-              'radial-gradient(800px circle at 20% 50%, rgba(59,130,246,0.06), transparent 60%)',
-            ],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-0"
-        />
-      </div>
+      <div className="absolute inset-0 pointer-events-none stats-bg-gradient" style={{
+        background: 'radial-gradient(800px circle at 20% 50%, rgba(59,130,246,0.06), transparent 60%)',
+        backgroundSize: '200% 200%'
+      }} />
 
       <div className="max-w-[1440px] mx-auto relative z-10">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          className="text-center mb-20 space-y-6"
-        >
+        <div className="text-center mb-20 space-y-6 stats-header">
           <span className="text-xs font-bold text-emerald-400 uppercase tracking-[0.3em]">Trusted Platform</span>
           <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight">
             Numbers That <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Speak</span>
           </h2>
-        </motion.div>
+        </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 stats-grid">
           {stats.map((stat, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: i * 0.12, duration: 0.6 }}
-              className="relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center hover:bg-white/[0.05] hover:border-white/10 transition-all duration-500 group hover:-translate-y-1"
+              className="relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center transition-all duration-500 group stat-card gsap-card"
             >
               <p className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-                {isInView ? (
-                  <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} />
-                ) : (
-                  `${stat.prefix || ''}0${stat.suffix || ''}`
-                )}
+                <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} isVisible={isVisible} />
               </p>
               <p className="text-sm font-bold text-white/60 mb-1">{stat.label}</p>
               <p className="text-xs text-white/30">{stat.desc}</p>
 
               {/* Hover glow */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -1,40 +1,56 @@
-import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function FinalCTA() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const containerRef = useRef(null);
   const navigate = useNavigate();
 
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Entrance animation
+      gsap.from('.cta-content', {
+        y: 40,
+        opacity: 0,
+        duration: 1.2,
+        ease: 'cubic-bezier(0.22,1,0.36,1)',
+        scrollTrigger: {
+          trigger: '.cta-content',
+          start: 'top 85%',
+          once: true
+        }
+      });
+
+      // 2. Subtle background drift
+      gsap.to('.cta-bg-glow', {
+        x: '20%',
+        y: '10%',
+        duration: 10,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut'
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-32 md:py-48 px-6 relative overflow-hidden bg-[#05070A]" ref={ref}>
-      {/* Animated gradient background */}
+    <section className="py-32 md:py-48 px-6 relative overflow-hidden bg-[#05070A]" ref={containerRef}>
+      {/* Subtle blurred background */}
       <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.15), transparent 60%)',
-              'radial-gradient(ellipse at 70% 40%, rgba(139,92,246,0.15), transparent 60%)',
-              'radial-gradient(ellipse at 50% 60%, rgba(6,182,212,0.12), transparent 60%)',
-              'radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.15), transparent 60%)',
-            ],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-0"
-        />
-        {/* Radial spotlight */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-blue-500/[0.07] rounded-full blur-[150px]" />
+        <div className="absolute inset-0 cta-bg-glow" style={{
+          background: 'radial-gradient(circle at 50% 50%, rgba(59,132,255,0.08) 0%, transparent 60%)',
+          transform: 'scale(1.5)'
+        }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-blue-500/[0.04] rounded-full blur-[150px]" />
       </div>
 
-      <div className="max-w-4xl mx-auto relative z-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="space-y-10"
-        >
+      <div className="max-w-4xl mx-auto relative z-10 text-center cta-content">
+        <div className="space-y-10">
           <Sparkles className="w-8 h-8 text-blue-400 mx-auto" />
 
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-tight">
@@ -49,43 +65,24 @@ export default function FinalCTA() {
             Join thousands of drivers and homeowners already using the smartest parking network in the country.
           </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-4"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-4">
+            <button
               onClick={() => navigate('/search')}
-              className="group relative flex items-center gap-3 px-10 py-5 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-sm uppercase tracking-wider overflow-hidden"
-              style={{ boxShadow: '0 20px 60px -15px rgba(59,130,246,0.5)' }}
+              className="gsap-btn group relative flex items-center gap-3 px-10 py-5 rounded-2xl bg-[#0A84FF] text-white font-bold text-sm uppercase tracking-wider overflow-hidden"
+              style={{ boxShadow: '0 20px 60px -15px rgba(10,132,255,0.45)' }}
             >
-              {/* Animated shimmer */}
-              <motion.div
-                animate={{ x: [-200, 400] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                className="absolute inset-0 w-20 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg] pointer-events-none"
-              />
-              {/* Pulse ring */}
-              <motion.div
-                animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0, 0.15] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-2xl border-2 border-blue-400"
-              />
               Find Your Spot
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+            </button>
 
             <button
               onClick={() => navigate('/register')}
-              className="flex items-center gap-3 px-10 py-5 rounded-2xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:border-white/20 font-bold text-sm uppercase tracking-wider hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-sm"
+              className="gsap-btn flex items-center gap-3 px-10 py-5 rounded-2xl bg-white/5 border border-white/10 text-white/70 font-bold text-sm uppercase tracking-wider backdrop-blur-sm"
             >
               Become a Host
             </button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
