@@ -200,7 +200,7 @@ export default function LiveMapSection() {
             <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
               Live <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Parking</span> Map
             </h2>
-            <p className="text-lg text-white/40 leading-relaxed max-w-lg">
+            <p className="text-lg text-white/70 leading-relaxed max-w-lg">
               Watch spots appear and disappear in real-time. Our network updates every second so you never miss an available space.
             </p>
 
@@ -216,7 +216,7 @@ export default function LiveMapSection() {
                 >
                   <stat.icon className="w-5 h-5 text-blue-400 mb-2" />
                   <p className="text-xl font-black text-white">{stat.value}</p>
-                  <p className="text-[11px] text-white/30 uppercase tracking-widest font-bold">{stat.label}</p>
+                  <p className="text-[11px] text-white/60 uppercase tracking-widest font-bold">{stat.label}</p>
                 </div>
               ))}
             </div>

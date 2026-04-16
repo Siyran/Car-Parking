@@ -61,7 +61,7 @@ export default function FinalCTA() {
             </span>
           </h2>
 
-          <p className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
             Join thousands of drivers and homeowners already using the smartest parking network in the country.
           </p>
 

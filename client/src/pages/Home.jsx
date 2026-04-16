@@ -114,7 +114,7 @@ export default function Home() {
                  <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
                     The Pro <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Terminal</span>
                  </h2>
-                 <p className="text-lg text-white/40 leading-relaxed max-w-xl">
+                 <p className="text-lg text-white/70 leading-relaxed max-w-xl">
                     A precision interface designed for transparent earnings and effortless management.
                  </p>
               </div>
@@ -131,10 +131,10 @@ export default function Home() {
                      className="space-y-3 group p-5 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 gsap-spec-item"
                    >
                      <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/[0.08] flex items-center justify-center transition-all duration-500 group-hover:border-blue-500/30 group-hover:bg-blue-500/5">
-                       <spec.icon className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-500" />
+                       <spec.icon className="w-5 h-5 text-white/60 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-500" />
                      </div>
                      <h4 className="text-base font-bold text-white tracking-tight">{spec.title}</h4>
-                     <p className="text-sm text-white/30 leading-relaxed">{spec.desc}</p>
+                     <p className="text-sm text-white/50 leading-relaxed">{spec.desc}</p>
                    </div>
                  ))}
               </div>
@@ -186,7 +186,7 @@ export default function Home() {
                     <f.icon className="w-5 h-5 text-white/50 group-hover:text-blue-400 transition-colors duration-500" />
                   </div>
                   <h3 className="text-2xl font-bold text-white tracking-tight">{f.title}</h3>
-                  <p className="text-sm text-white/30 leading-relaxed">{f.desc}</p>
+                  <p className="text-sm text-white/50 leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}

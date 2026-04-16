@@ -10,7 +10,7 @@ export default function VibeNavbar() {
           <Link 
             key={link} 
             to="/" 
-            className="text-[10px] font-black text-white/50 hover:text-white transition-colors tracking-[0.4em]"
+            className="text-[10px] font-black text-white/75 hover:text-white transition-colors tracking-[0.4em]"
           >
             {link}
           </Link>

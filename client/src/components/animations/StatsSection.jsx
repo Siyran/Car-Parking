@@ -108,8 +108,8 @@ export default function StatsSection() {
               <p className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
                 <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} isVisible={isVisible} />
               </p>
-              <p className="text-sm font-bold text-white/60 mb-1">{stat.label}</p>
-              <p className="text-xs text-white/30">{stat.desc}</p>
+              <p className="text-sm font-bold text-white/80 mb-1">{stat.label}</p>
+              <p className="text-xs text-white/70">{stat.desc}</p>
 
               {/* Hover glow */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
