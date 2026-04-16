@@ -10,7 +10,7 @@ export default function VibeNavbar() {
           <Link 
             key={link} 
             to="/" 
-            className="text-[10px] font-black text-white/75 hover:text-white transition-colors tracking-[0.4em]"
+            className="text-[11px] font-bold text-white hover:text-blue-400 transition-colors tracking-widest"
           >
             {link}
           </Link>
@@ -28,7 +28,7 @@ export default function VibeNavbar() {
       <div className="flex items-center gap-6">
         <Link 
           to="/login" 
-          className="text-[10px] font-black text-white hover:text-primary-vibrant transition-colors tracking-[0.4em]"
+          className="text-[11px] font-bold text-white hover:text-blue-400 transition-colors tracking-widest"
         >
           SIGN IN
         </Link>

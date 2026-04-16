@@ -13,7 +13,7 @@ function AnimatedCounter({ target, suffix = '', prefix = '', isVisible }) {
     
     gsap.to(countRef.current, {
       val: parseInt(target),
-      duration: 2,
+      duration: 1.5,
       ease: 'power2.out',
       onUpdate: () => {
         setCount(Math.floor(countRef.current.val));
@@ -42,32 +42,37 @@ export default function StatsSection() {
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       // 1. Entrance animations
-      gsap.from('.stats-header', {
-        y: 30,
-        opacity: 0,
-        duration: 1,
-        ease: 'cubic-bezier(0.22,1,0.36,1)',
-        scrollTrigger: {
-          trigger: '.stats-header',
-          start: 'top 85%',
-          once: true,
-          onEnter: () => setIsVisible(true)
+      gsap.fromTo('.stats-header', 
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: 'cubic-bezier(0.22,1,0.36,1)',
+          scrollTrigger: {
+            trigger: '.stats-header',
+            start: 'top 90%',
+            once: true
+          }
         }
-      });
+      );
 
-      gsap.from('.stat-card', {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.12,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.stats-grid',
-          start: 'top 95%',
-          once: true,
-          onEnter: () => setIsVisible(true)
+      gsap.fromTo('.stat-card', 
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '.stats-grid',
+            start: 'top bottom', // Trigger as soon as the grid enters the viewport
+            once: true,
+            onEnter: () => setIsVisible(true)
+          }
         }
-      });
+      );
 
       // 2. Background gradient animation
       gsap.to('.stats-bg-gradient', {
