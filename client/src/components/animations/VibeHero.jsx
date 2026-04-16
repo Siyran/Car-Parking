@@ -84,7 +84,7 @@ export default function VibeHero() {
         }, '-=0.8')
         .to('.hero-desc-word', { 
           y: 0, 
-          opacity: 0.28, 
+          opacity: 0.7, 
           stagger: 0.02, 
           duration: 0.6 
         }, '-=0.6');
@@ -232,7 +232,7 @@ export default function VibeHero() {
                 ))}
               </h1>
 
-              <p className="text-[15px] text-white/28 leading-[1.7] max-w-md">
+              <p className="text-[15px] text-white/70 leading-[1.7] max-w-md">
                 {"Discover private parking near you. Navigate in real-time. Pay only for what you use.".split(' ').map((word, i) => (
                   <span key={i} className="inline-block overflow-hidden">
                     <span className="hero-desc-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>

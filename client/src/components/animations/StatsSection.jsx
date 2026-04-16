@@ -63,8 +63,9 @@ export default function StatsSection() {
         ease: 'power2.out',
         scrollTrigger: {
           trigger: '.stats-grid',
-          start: 'top 80%',
-          once: true
+          start: 'top 95%',
+          once: true,
+          onEnter: () => setIsVisible(true)
         }
       });
 
