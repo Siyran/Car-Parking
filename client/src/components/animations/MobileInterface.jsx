@@ -1,20 +1,20 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Navigation2, Smartphone, ShieldCheck, Activity, Cpu, Globe, Zap, Radio, Signal, Lock } from 'lucide-react';
+import { MapPin, Smartphone, ShieldCheck, Activity, Zap, Radio, Signal, Lock, Star, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function MobileInterface() {
   const [ledger, setLedger] = useState([
-    { id: 'TX_442', type: 'Handshake', status: 'Verified' },
-    { id: 'TX_441', type: 'Settlement', status: 'Complete' },
-    { id: 'TX_440', type: 'Node_Sync', status: 'Connected' },
+    { id: 'ID_7742', type: 'Check-in', status: 'Active' },
+    { id: 'ID_7741', type: 'Payout', status: 'Complete' },
+    { id: 'ID_7740', type: 'Processing', status: 'Synced' },
   ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setLedger(prev => {
         const newTx = { 
-          id: `TX_${Math.floor(Math.random() * 900) + 100}`, 
-          type: Math.random() > 0.5 ? 'Handshake' : 'Settlement', 
+          id: `ID_${Math.floor(Math.random() * 9000) + 1000}`, 
+          type: Math.random() > 0.5 ? 'Check-in' : 'Payout', 
           status: 'Active' 
         };
         return [newTx, ...prev.slice(0, 3)];
@@ -33,11 +33,11 @@ export default function MobileInterface() {
       >
         <div className="flex items-center gap-3 text-primary-400">
           <Activity className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Secure Network</span>
+          <span className="text-[10px] font-black tracking-widest uppercase">Live Tracking</span>
         </div>
         <div className="flex items-center gap-3 text-emerald-400">
-          <ShieldCheck className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Bank Security</span>
+          <Lock className="w-4 h-4" />
+          <span className="text-[10px] font-black tracking-widest uppercase">Encrypted Pay</span>
         </div>
       </motion.div>
 
@@ -47,12 +47,12 @@ export default function MobileInterface() {
         className="absolute -right-32 bottom-20 glass-dark border border-white/5 p-4 rounded-2xl space-y-2 z-20 backdrop-blur-3xl hidden xl:block"
       >
         <div className="flex items-center gap-3 text-orange-400">
-          <Radio className="w-4 h-4 animate-pulse" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Spot Linked</span>
+          <Zap className="w-4 h-4 animate-pulse" />
+          <span className="text-[10px] font-black tracking-widest uppercase">Smart Access</span>
         </div>
         <div className="flex items-center gap-3 text-surface-400">
-          <Signal className="w-4 h-4" />
-          <span className="text-[10px] font-black tracking-widest uppercase">Verified</span>
+          <Star className="w-4 h-4 fill-current" />
+          <span className="text-[10px] font-black tracking-widest uppercase">Top Rated</span>
         </div>
       </motion.div>
 
@@ -88,7 +88,7 @@ export default function MobileInterface() {
 
           {/* Live Transaction Ledger */}
           <div className="flex-1 space-y-4 overflow-hidden">
-             <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest leading-none mb-2">P2P_Ledger_Live</p>
+             <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest leading-none mb-2">Live Activity Feed</p>
              <AnimatePresence mode="popLayout">
                 {ledger.map((tx) => (
                   <motion.div
@@ -114,7 +114,7 @@ export default function MobileInterface() {
           <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
              <div className="flex justify-between items-end">
                 <div>
-                   <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Active_Balance</p>
+                   <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Your Earnings</p>
                    <h4 className="text-2xl font-black text-white italic tracking-tighter">₹2,440.00</h4>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center">
@@ -122,7 +122,7 @@ export default function MobileInterface() {
                 </div>
              </div>
              <div className="w-full h-12 rounded-xl bg-primary-600 flex items-center justify-center text-xs font-black text-white uppercase tracking-[0.2em] shadow-glow">
-                Terminal Sync
+                Manage Revenue
              </div>
           </div>
 
