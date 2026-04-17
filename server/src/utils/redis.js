@@ -13,28 +13,42 @@ const redisConfig = {
 };
 
 const redis = new Redis(redisConfig);
+let isRedisAvailable = false;
 
-redis.on('connect', () => logger.info('✅ Redis connected'));
-redis.on('error', (err) => logger.error(`❌ Redis error: ${err.message}`));
+redis.on('connect', () => {
+  logger.info('✅ Redis connected');
+  isRedisAvailable = true;
+});
+
+redis.on('error', (err) => {
+  logger.warn(`⚠️  Redis connection unavailable: ${err.message}. Running in fallback mode.`);
+  isRedisAvailable = false;
+});
 
 // Distributed Locking logic (Redlock)
-// For PRODUCTION, use multiple redis instances in the Redlock constructor
-const redlock = new Redlock(
+const redlockInstance = new Redlock(
   [redis],
   {
     driftFactor: 0.01,
-    retryCount: 10,
-    retryDelay: 200, // time in ms
-    retryJitter: 200, // time in ms
-    automaticExtensionThreshold: 500, // time in ms
+    retryCount: 3, // Lower retry for dev stability
+    retryDelay: 100,
   }
 );
 
-redlock.on('error', (error) => {
-  // Ignore errors from the lock itself, they are handled in the try/catch of the logic
-  if (error instanceof Redlock.LockError) return;
-  logger.error(`❌ Redlock error: ${error.message}`);
-});
+// Fallback wrapper for Redlock
+const redlock = {
+  acquire: async (resources, duration) => {
+    if (!isRedisAvailable && process.env.NODE_ENV !== 'production') {
+      logger.warn(`🛠️  Using Mock Lock for ${resources.join(', ')} (Redis unavailable)`);
+      return { 
+        release: async () => logger.info(`🔓 Mock Lock released for ${resources.join(', ')}`)
+      };
+    }
+    return await redlockInstance.acquire(resources, duration);
+  },
+  on: (event, handler) => redlockInstance.on(event, handler)
+};
 
 export { redis, redlock };
 export default redis;
+

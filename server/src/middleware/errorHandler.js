@@ -21,16 +21,31 @@ const errorHandler = (err, req, res, next) => {
   // Handle specific database/validation errors
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map(e => e.message);
-    return res.status(400).json({ status: 'error', message: 'Validation failed', details: messages });
+    return res.status(400).json({ 
+      status: 'error', 
+      error: 'Validation failed', // Compatibility
+      message: 'Validation failed', 
+      details: messages 
+    });
   }
 
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern)[0];
-    return res.status(409).json({ status: 'error', message: `${field} already exists` });
+    const msg = `${field} already exists`;
+    return res.status(409).json({ 
+      status: 'error', 
+      error: msg, // Compatibility
+      message: msg 
+    });
   }
 
   if (err.name === 'CastError') {
-    return res.status(400).json({ status: 'error', message: 'Invalid ID format' });
+    const msg = 'Invalid ID format';
+    return res.status(400).json({ 
+      status: 'error', 
+      error: msg, // Compatibility
+      message: msg 
+    });
   }
 
   // Production safe messages
@@ -40,9 +55,11 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(statusCode).json({
     status: 'error',
+    error: message, // Compatibility field for existing UI
     message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
+
 };
 
 export default errorHandler;

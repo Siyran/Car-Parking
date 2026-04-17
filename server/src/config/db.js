@@ -23,20 +23,25 @@ const connectDB = async () => {
       }
     }
 
-    // Use MongoMemoryServer with persistent storage on disk
-    // Data is stored in the project's .data directory so it survives restarts
+    // Use MongoMemoryServer as a Replica Set for transaction support
     const dbPath = path.resolve(__dirname, '..', '..', '.data', 'mongodb');
-    console.log(`🔧 Starting local MongoDB with persistent storage at ${dbPath}`);
+    console.log(`🔧 Starting local MongoDB Replica Set at ${dbPath}`);
+    
     mongod = await MongoMemoryServer.create({
       instance: {
         dbPath,
         storageEngine: 'wiredTiger',
       },
+      replSet: {
+        count: 1, // Single-node replica set is sufficient for transactions
+        storageEngine: 'wiredTiger',
+      }
     });
     uri = mongod.getUri();
 
     const conn = await mongoose.connect(uri);
-    console.log(`✅ Local MongoDB started (persistent): ${conn.connection.host}`);
+    console.log(`✅ Local MongoDB Replica Set started: ${conn.connection.host}`);
+
     return conn;
   } catch (error) {
     console.error(`❌ MongoDB connection error: ${error.message}`);
