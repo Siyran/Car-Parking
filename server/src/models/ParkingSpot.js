@@ -27,8 +27,10 @@ const parkingSpotSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
   isActive: { type: Boolean, default: true },
   averageRating: { type: Number, default: 0 },
-  totalReviews: { type: Number, default: 0 }
+  totalReviews: { type: Number, default: 0 },
+  version: { type: Number, default: 0 } // For manual optimistic locking if needed
 }, { timestamps: true });
+
 
 parkingSpotSchema.index({ location: '2dsphere' });
 parkingSpotSchema.index({ owner: 1 });

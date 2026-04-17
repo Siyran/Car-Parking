@@ -4,83 +4,42 @@ import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
 import { getActiveDrivers, fetchETAFromOSRM } from '../socket/availability.socket.js';
 
+import BookingService from '../services/booking.service.js';
+
 export const startSession = async (req, res, next) => {
   try {
-    const { spotId, paymentMethod = 'wallet', hours = 1 } = req.body;
+    const { spotId, paymentMethod = 'wallet', hours = 1, userLocation } = req.body;
 
-    const spot = await ParkingSpot.findById(spotId);
-    if (!spot) return res.status(404).json({ error: 'Parking spot not found' });
-    if (spot.status !== 'approved') return res.status(400).json({ error: 'Spot not approved' });
-    if (spot.availableSlots <= 0) return res.status(400).json({ error: 'No available slots' });
-
-    // Check if user already has an active session
-    const activeBooking = await Booking.findOne({ user: req.user._id, status: 'active' });
-    if (activeBooking) return res.status(400).json({ error: 'You already have an active parking session' });
-
-    // Calculate prepaid amount
-    const prepaidHours = Math.max(1, Math.ceil(hours));
-    const prepaidAmount = prepaidHours * spot.pricePerHour;
-
-    // Process payment
-    if (paymentMethod === 'wallet') {
-      const user = await User.findById(req.user._id);
-      if (user.walletBalance < prepaidAmount) {
-        return res.status(400).json({ 
-          error: 'Insufficient wallet balance',
-          required: prepaidAmount,
-          available: user.walletBalance
-        });
-      }
-      // Deduct from wallet
-      user.walletBalance -= prepaidAmount;
-      await user.save();
-    }
-    // For 'upi' and 'card', we simulate payment (assume success)
-
-    // Decrease available slots
-    spot.availableSlots -= 1;
-    await spot.save();
-
-    const now = new Date();
-    const booking = await Booking.create({
-      user: req.user._id,
-      spot: spot._id,
-      startTime: now,
+    const booking = await BookingService.startSession({
+      user: req.user,
+      spotId,
       paymentMethod,
-      prepaidAmount,
-      isPaid: true,
-      billingMonth: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      hours,
+      userLocation
     });
 
-    // Record wallet debit transaction
-    if (paymentMethod === 'wallet') {
-      await Transaction.create({
-        booking: booking._id,
-        user: req.user._id,
-        owner: spot.owner,
-        amount: prepaidAmount,
-        ownerShare: 0,
-        platformShare: 0,
-        type: 'wallet_debit',
-        status: 'completed',
-        month: booking.billingMonth,
-        description: `Prepaid ${prepaidHours}h parking at ${spot.title}`,
-        paymentMethod: 'wallet'
-      });
-    }
-
+    // Populate spot details for the response
     await booking.populate('spot', 'title address pricePerHour location photos');
 
     // Emit socket event for real-time update
     if (req.app.get('io')) {
-      req.app.get('io').emit('spotUpdate', { spotId: spot._id, availableSlots: spot.availableSlots });
+      req.app.get('io').emit('spotUpdate', { 
+        spotId: booking.spot._id, 
+        availableSlots: booking.spot.availableSlots 
+      });
     }
 
     res.status(201).json({ booking });
   } catch (error) {
+    // If it's a known error message, send 400, otherwise let global error handler handle it
+    const clientErrors = ['not found', 'not approved', 'No available slots', 'active parking session', 'balance'];
+    if (clientErrors.some(msg => error.message.includes(msg))) {
+      return res.status(400).json({ error: error.message });
+    }
     next(error);
   }
 };
+
 
 export const endSession = async (req, res, next) => {
   try {

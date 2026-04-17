@@ -98,6 +98,8 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
+import PaymentService from '../services/payment.service.js';
+
 export const verifyPayment = async (req, res, next) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
@@ -117,36 +119,27 @@ export const verifyPayment = async (req, res, next) => {
       return res.status(400).json({ error: 'Payment verification failed — invalid signature' });
     }
 
-    // Signature is valid — credit the wallet
+    // Signature is valid — credit the wallet using the robust PaymentService
     const creditAmount = amount / 100; // Convert paise back to rupees
-    const user = await User.findById(req.user._id);
-    user.walletBalance += creditAmount;
-    await user.save();
-
-    // Record the transaction
-    const now = new Date();
-    await Transaction.create({
-      user: user._id,
+    
+    const { balance } = await PaymentService.creditWallet({
+      userId: req.user._id,
       amount: creditAmount,
-      ownerShare: 0,
-      platformShare: 0,
-      type: 'wallet_topup',
-      status: 'completed',
-      month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
-      description: `Wallet top-up via Razorpay`,
-      paymentMethod: `razorpay:${razorpay_payment_id}`
+      paymentId: razorpay_payment_id,
+      method: 'razorpay',
+      description: `Wallet top-up via Razorpay`
     });
 
     res.json({
-      balance: user.walletBalance,
+      balance,
       message: `₹${creditAmount} added to wallet`,
       paymentId: razorpay_payment_id
     });
   } catch (error) {
-    console.error('Payment verification error:', error);
     next(error);
   }
 };
+
 
 export const createParkingOrder = async (req, res, next) => {
   try {
