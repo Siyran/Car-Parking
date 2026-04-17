@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Smartphone, ShieldCheck, Activity, Zap, Radio, Signal, Lock, Star, ChevronRight } from 'lucide-react';
+import { MapPin, Smartphone, ShieldCheck, Activity, Zap, Radio, Signal, Lock, Star, Globe, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function MobileInterface() {
