@@ -194,7 +194,7 @@ export default function VibeHero() {
       onMouseMove={handleMouse}
       className="relative h-screen bg-black overflow-hidden"
     >
-      <div ref={bgRef} className="absolute inset-0 pointer-events-none" style={{ willChange: 'opacity' }}>
+      <div ref={bgRef} className="absolute inset-0 pointer-events-none" style={{ willChange: 'opacity, transform' }}>
         <div
           className="absolute inset-0"
           style={{
@@ -284,7 +284,7 @@ export default function VibeHero() {
                   <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[78px] h-[22px] bg-black rounded-full z-50" />
 
                   <div className="absolute inset-[4px] rounded-[2.6rem] overflow-hidden bg-[#1c1c1e]">
-                    <div ref={mapLayerRef} className="absolute inset-x-0 top-0 w-full h-[170%]" style={{ willChange: 'transform', filter: 'blur(0.2px)' }}>
+                    <div ref={mapLayerRef} className="absolute inset-x-0 top-0 w-full h-[170%]" style={{ willChange: 'transform', filter: 'blur(0px)', transform: 'translateZ(0)' }}>
                       <svg className="w-full h-full" viewBox="0 0 300 850" preserveAspectRatio="none">
                         {[
                           [20, 30, 50, 65], [105, 20, 60, 85], [200, 55, 70, 75],

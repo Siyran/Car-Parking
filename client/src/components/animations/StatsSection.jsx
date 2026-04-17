@@ -5,25 +5,27 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 function AnimatedCounter({ target, suffix = '', prefix = '', isVisible }) {
-  const [count, setCount] = useState(0);
+  const displayRef = useRef(null);
   const countRef = useRef({ val: 0 });
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !displayRef.current) return;
     
     gsap.to(countRef.current, {
       val: parseInt(target),
       duration: 1.5,
       ease: 'power2.out',
       onUpdate: () => {
-        setCount(Math.floor(countRef.current.val));
+        if (displayRef.current) {
+          displayRef.current.innerText = `${prefix}${Math.floor(countRef.current.val).toLocaleString()}${suffix}`;
+        }
       }
     });
-  }, [isVisible, target]);
+  }, [isVisible, target, prefix, suffix]);
 
   return (
-    <span>
-      {prefix}{count.toLocaleString()}{suffix}
+    <span ref={displayRef}>
+      {prefix}0{suffix}
     </span>
   );
 }
@@ -108,7 +110,7 @@ export default function StatsSection() {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center transition-all duration-500 group stat-card gsap-card"
+              className="relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center transition-all duration-500 group stat-card"
             >
               <p className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
                 <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} isVisible={isVisible} />

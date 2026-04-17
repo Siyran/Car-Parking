@@ -24,13 +24,13 @@ export default function Home() {
       // 1. Entrance animations for sections
       gsap.utils.toArray('.gsap-reveal').forEach((el) => {
         gsap.from(el, {
-          y: 40,
+          y: 30,
           opacity: 0,
-          duration: 1,
-          ease: 'cubic-bezier(0.22,1,0.36,1)',
+          duration: 0.8,
+          ease: 'power2.out',
           scrollTrigger: {
             trigger: el,
-            start: 'top 85%',
+            start: 'top 95%',
             once: true
           }
         });
@@ -38,47 +38,25 @@ export default function Home() {
 
       // 2. Specialized staggered reveal for specs
       gsap.from('.gsap-spec-item', {
-        y: 30,
+        y: 20,
         opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
+        duration: 0.6,
+        stagger: 0.08,
         ease: 'power2.out',
         scrollTrigger: {
           trigger: '.gsap-spec-grid',
-          start: 'top 80%',
+          start: 'top 95%',
           once: true
         }
       });
 
-      // 3. Hover effects for cards
-      const cards = gsap.utils.toArray('.gsap-card');
-      cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-          gsap.to(card, { scale: 1.02, y: -8, duration: 0.4, ease: 'power2.out' });
-        });
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, { scale: 1, y: 0, duration: 0.4, ease: 'power2.out' });
-        });
-      });
-
-      // 4. Button effects
+      // 3. Button effects (Efficient)
       const buttons = gsap.utils.toArray('.gsap-btn');
       buttons.forEach(btn => {
-        btn.addEventListener('mouseenter', () => {
-          gsap.to(btn, { filter: 'brightness(1.1)', duration: 0.3 });
-        });
-        btn.addEventListener('mouseleave', () => {
-          gsap.to(btn, { filter: 'brightness(1)', duration: 0.3 });
-        });
-        btn.addEventListener('mousedown', () => {
-          gsap.to(btn, { scale: 0.97, duration: 0.1 });
-        });
-        btn.addEventListener('mouseup', () => {
-          gsap.to(btn, { scale: 1, duration: 0.1 });
-        });
-        btn.addEventListener('mouseleave', () => {
-          gsap.to(btn, { scale: 1, duration: 0.2 });
-        });
+        btn.addEventListener('mouseenter', () => gsap.to(btn, { filter: 'brightness(1.1)', duration: 0.2 }));
+        btn.addEventListener('mouseleave', () => gsap.to(btn, { filter: 'brightness(1)', scale: 1, duration: 0.2 }));
+        btn.addEventListener('mousedown', () => gsap.to(btn, { scale: 0.98, duration: 0.1 }));
+        btn.addEventListener('mouseup', () => gsap.to(btn, { scale: 1, duration: 0.1 }));
       });
 
     }, containerRef);
@@ -156,23 +134,23 @@ export default function Home() {
             {[
               { 
                 icon: Globe, title: 'Urban Scale', desc: 'Thousands of spots in major metro hubs.',
-                img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2940&auto=format&fit=crop'
+                img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop'
               },
               { 
                 icon: ShieldCheck, title: 'Ironclad Trust', desc: 'Every spot verified through safety checks.',
-                img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2940&auto=format&fit=crop'
+                img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1200&auto=format&fit=crop'
               },
               { 
                 icon: Zap, title: 'Instant Payouts', desc: 'Earnings available immediately after session.',
-                img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2940&auto=format&fit=crop'
+                img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1200&auto=format&fit=crop'
               }
             ].map((f, i) => (
               <div
                 key={i}
-                className="group relative h-[420px] rounded-3xl overflow-hidden border border-white/[0.06] hover:border-white/10 transition-all duration-500 gsap-card gsap-reveal"
+                className="group relative h-[420px] rounded-3xl overflow-hidden border border-white/[0.06] hover:border-white/10 transition-all duration-500 gsap-reveal"
               >
                 <div className="absolute inset-0 z-0">
-                  <img src={f.img} alt={f.title} className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-15 grayscale" />
+                  <img src={f.img} alt={f.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-110 opacity-15 grayscale will-change-transform" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
                 </div>
 
