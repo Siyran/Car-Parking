@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import logger from '../utils/logger.js';
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -9,9 +10,11 @@ const generateToken = (userId) => {
 export const register = async (req, res, next) => {
   try {
     const { name, email, phone, password, role, aadhaarNumber, upiId, bankDetails } = req.body;
+    logger.info({ email, role }, '🆕 Identity registration initiated');
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      logger.warn({ email }, '⚠️ Registration failed: Email already registered');
       return res.status(409).json({ error: 'Email already registered' });
     }
 
@@ -32,6 +35,8 @@ export const register = async (req, res, next) => {
     const user = await User.create(userData);
     const token = generateToken(user._id);
 
+    logger.info({ userId: user._id, role: user.role }, '✅ Identity registered successfully');
+
     res.status(201).json({
       token,
       user: {
@@ -47,18 +52,22 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    logger.info({ email }, '🔐 Identity authentication initiated');
 
     const user = await User.findOne({ email });
     if (!user) {
+      logger.warn({ email }, '❌ Authentication failed: Identity not found');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      logger.warn({ email, userId: user._id }, '❌ Authentication failed: Password mismatch');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const token = generateToken(user._id);
+    logger.info({ userId: user._id, role: user.role }, '✅ Identity authenticated successfully');
 
     res.json({
       token,
@@ -68,9 +77,11 @@ export const login = async (req, res, next) => {
       }
     });
   } catch (error) {
+    logger.error({ err: error, email }, '💥 Critical authentication failure');
     next(error);
   }
 };
+
 
 export const getMe = async (req, res) => {
   res.json({ user: req.user });

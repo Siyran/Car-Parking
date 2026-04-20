@@ -23,26 +23,44 @@ const connectDB = async () => {
       }
     }
 
-    // Use MongoMemoryServer as a Replica Set for transaction support
-    const dbPath = path.resolve(__dirname, '..', '..', '.data', 'mongodb');
-    console.log(`🔧 Starting local MongoDB Replica Set at ${dbPath}`);
+    // Use MongoMemoryServer as a Replica Set for transaction support (ACID)
+    const dbPath = path.resolve(__dirname, '..', '..', '.data', 'mongodb_repl');
+    console.log(`🔧 Attempting to start local MongoDB Replica Set at ${dbPath}`);
     
-    mongod = await MongoMemoryServer.create({
-      instance: {
-        dbPath,
-        storageEngine: 'wiredTiger',
-      },
-      replSet: {
-        count: 1, // Single-node replica set is sufficient for transactions
-        storageEngine: 'wiredTiger',
-      }
+    try {
+      mongod = await MongoMemoryServer.create({
+        instance: {
+          dbPath,
+          storageEngine: 'wiredTiger',
+        },
+        replSet: {
+          count: 1,
+          storageEngine: 'wiredTiger',
+        }
+      });
+      uri = mongod.getUri();
+      console.log('✅ Local MongoDB Replica Set started');
+    } catch (replError) {
+      console.warn(`⚠️  Replica Set failed to start: ${replError.message}. Falling back to standalone mode.`);
+      console.warn('ℹ️  Note: Transactions will be disabled in standalone mode.');
+      
+      const standalonePath = path.resolve(__dirname, '..', '..', '.data', 'mongodb_standalone');
+      mongod = await MongoMemoryServer.create({
+        instance: {
+          dbPath: standalonePath,
+          storageEngine: 'wiredTiger',
+        },
+      });
+      uri = mongod.getUri();
+      console.log('✅ Local MongoDB Standalone started');
+    }
+
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000, // Don't hang forever
     });
-    uri = mongod.getUri();
-
-    const conn = await mongoose.connect(uri);
-    console.log(`✅ Local MongoDB Replica Set started: ${conn.connection.host}`);
-
+    console.log(`🚀 Connected to database: ${conn.connection.host}`);
     return conn;
+
   } catch (error) {
     console.error(`❌ MongoDB connection error: ${error.message}`);
     process.exit(1);
