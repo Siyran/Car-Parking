@@ -21,8 +21,16 @@ export default function Login() {
       toast.success(`Welcome back, ${user.name}!`);
       navigate(user.role === 'admin' ? '/admin' : user.role === 'owner' ? '/owner' : '/search');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      const errorMsg = err.response?.data?.error || err.response?.data?.message;
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else if (!err.response) {
+        toast.error('Server Unreachable: Connection timed out or DNS failure');
+      } else {
+        toast.error('Login failed: An internal terminal error occurred');
+      }
     }
+
     setLoading(false);
   };
 

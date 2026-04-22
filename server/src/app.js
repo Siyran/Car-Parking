@@ -59,8 +59,14 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
 
+let isDBConnected = false;
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    database: isDBConnected ? 'connected' : 'connecting',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 app.use(errorHandler);
@@ -69,25 +75,36 @@ const PORT = process.env.PORT || 5000;
 
 // Auto-seed function
 const autoSeed = async () => {
-  const User = (await import('./models/User.js')).default;
-  const count = await User.countDocuments();
-  if (count === 0) {
-    console.log('📦 No data found. Auto-seeding sample data...');
-    const { seedData } = await import('./seed/seeder.js');
-    await seedData();
-    console.log('✅ Sample data loaded!');
+  try {
+    const User = (await import('./models/User.js')).default;
+    const count = await User.countDocuments();
+    if (count === 0) {
+      console.log('📦 No data found. Auto-seeding sample data...');
+      const { seedData } = await import('./seed/seeder.js');
+      await seedData();
+      console.log('✅ Sample data loaded!');
+    }
+  } catch (error) {
+    console.error('❌ Auto-seeding failed:', error.message);
   }
 };
 
-connectDB().then(async () => {
-  await autoSeed();
-  httpServer.listen(PORT, () => {
-    console.log('');
-    console.log('  🚀 ParkFlow Server running on port ' + PORT);
-    console.log('  📡 Socket.io enabled');
-    console.log('  🌍 Open http://localhost:5173 in your browser');
-    console.log('');
+// Start listening immediately
+httpServer.listen(PORT, () => {
+  console.log('');
+  console.log('  🚀 ParkFlow Server running on port ' + PORT);
+  console.log('  📡 Socket.io enabled');
+  console.log('  🌍 Open http://localhost:5173 in your browser');
+  console.log('');
+  
+  // Connect to DB and seed in the background
+  connectDB().then(async () => {
+    isDBConnected = true;
+    await autoSeed();
+  }).catch(err => {
+    console.error('❌ Background DB connection failed:', err.message);
   });
 });
+
 
 export default app;

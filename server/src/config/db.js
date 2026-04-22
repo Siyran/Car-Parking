@@ -56,15 +56,16 @@ const connectDB = async () => {
     }
 
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // Don't hang forever
+      serverSelectionTimeoutMS: 2000, // Faster timeout for better UX
     });
     console.log(`🚀 Connected to database: ${conn.connection.host}`);
     return conn;
 
   } catch (error) {
-    console.error(`❌ MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    console.error(`❌ MongoDB connection strategy failed: ${error.message}`);
+    throw error; // Let the caller handle it (background process in app.js)
   }
 };
+
 
 export default connectDB;
