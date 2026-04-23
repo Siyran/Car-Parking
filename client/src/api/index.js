@@ -1,9 +1,16 @@
 import axios from 'axios';
 
+// Use explicit backend URL if we're not running on the Vite dev port, 
+// ensuring connectivity even when accessed via localhost/ParkFlow
+const baseURL = (window.location.port !== '5173' && window.location.hostname === 'localhost')
+  ? 'http://localhost:5000/api'
+  : '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' }
 });
+
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('parkflow_token');

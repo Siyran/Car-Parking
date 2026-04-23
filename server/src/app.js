@@ -45,7 +45,18 @@ const limiter = rateLimit({
   message: { error: 'Too many requests, please try again later' }
 });
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+const origin = process.env.NODE_ENV === 'production' 
+  ? (process.env.CLIENT_URL || 'http://localhost:5173')
+  : [
+      'http://localhost:5173', 
+      'http://localhost', 
+      'http://127.0.0.1:5173', 
+      'http://127.0.0.1',
+      'http://localhost:5000' // Self
+    ];
+
+app.use(cors({ origin, credentials: true }));
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
