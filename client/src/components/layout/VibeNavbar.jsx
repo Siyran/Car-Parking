@@ -17,12 +17,7 @@ export default function VibeNavbar() {
         ))}
       </div>
 
-      {/* CENTER LOGO (SERIF) */}
-      <div className="absolute left-1/2 -translate-x-1/2">
-        <span className="font-serif text-3xl font-black italic text-white tracking-widest uppercase">
-          REMOTE
-        </span>
-      </div>
+
 
       {/* RIGHT SIGN IN */}
       <div className="flex items-center gap-6">
