@@ -77,14 +77,22 @@ export default function SpotDetail() {
 
   const openPaymentModal = async () => {
     if (!user) { navigate('/login'); return; }
+    setStarting(true);
     try {
       const { data } = await walletAPI.getBalance();
       setWalletBalance(data.balance);
+      setShowPayment(true);
     } catch (err) {
+      console.error('Wallet fetch failed:', err);
+      toast.error('Secure Link Timing Out. Re-syncing...');
       setWalletBalance(0);
+      // Still show payment modal so they can use UPI fallback
+      setShowPayment(true);
+    } finally {
+      setStarting(false);
     }
-    setShowPayment(true);
   };
+
 
   const handleStartParking = async () => {
     setStarting(true);
@@ -584,8 +592,9 @@ export default function SpotDetail() {
                     <p className="text-sm font-black uppercase tracking-wider">{m.label}</p>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${
                       m.insufficient ? 'text-red-400' : 'text-surface-500'
-                    }`}>{m.sub}</p>
+                    }`}>{m.id === 'wallet' ? `Available: ₹${(walletBalance || 0).toLocaleString('en-IN')}` : m.sub}</p>
                   </div>
+
                   {m.insufficient && m.id === 'wallet' && (
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate('/wallet'); }}
