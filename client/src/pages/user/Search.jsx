@@ -436,11 +436,14 @@ export default function Search() {
                 start={userLocation}
                 end={routingTo}
                 onRouteFound={(route) => {
-                  setRouteInfo({
-                    totalTime: route.summary?.totalTime,
-                    totalDistance: route.summary?.totalDistance
-                  });
+                  if (route?.summary) {
+                    setRouteInfo({
+                      totalTime: route.summary.totalTime || 0,
+                      totalDistance: route.summary.totalDistance || 0
+                    });
+                  }
                 }}
+
               />
             )}
             
