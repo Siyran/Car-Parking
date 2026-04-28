@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { spotAPI, bookingAPI, walletAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +11,7 @@ import Modal from '../../components/ui/Modal';
 import RoutingMachine from '../../components/map/RoutingMachine';
 import LiveTrackingMap from '../../components/map/LiveTrackingMap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu, Wallet, CreditCard, Smartphone, X, Radio } from 'lucide-react';
+import { MapPin, Star, Clock, Shield, Car, Navigation, ChevronLeft, Send, ArrowLeft, Activity, Info, Zap, IndianRupee, ChevronRight, MessageSquare, ShieldCheck, Cpu, Wallet, CreditCard, Smartphone, X, Radio, LocateFixed } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
@@ -32,6 +32,38 @@ const createPriceIcon = (price, available) => {
     iconSize: [64, 32],
     iconAnchor: [32, 32],
   });
+};
+
+const RecenterButton = ({ userLocation, requestLocation }) => {
+  const map = useMap();
+  
+  const handleCenter = async (e) => {
+    e.stopPropagation();
+    let pos = userLocation;
+    if (!pos) {
+       toast.loading('Acquiring GPS Lock...', { id: 'gps-lock' });
+       try {
+         pos = await requestLocation();
+         toast.success('GPS Lock Established', { id: 'gps-lock' });
+       } catch (err) {
+         toast.dismiss('gps-lock');
+         return;
+       }
+    }
+    map.flyTo(pos, 16);
+  };
+
+  return (
+    <div className="absolute right-4 bottom-4 z-[1000]">
+      <button 
+        onClick={handleCenter}
+        className="w-12 h-12 bg-surface-950/80 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-primary-500 hover:text-white hover:border-primary-500/50 hover:bg-primary-600/20 shadow-glow transition-all"
+        title="Center on my location"
+      >
+        <LocateFixed className="w-5 h-5" />
+      </button>
+    </div>
+  );
 };
 
 export default function SpotDetail() {
@@ -322,6 +354,7 @@ export default function SpotDetail() {
                     {showRoute && userLocation && (
                       <RoutingMachine start={userLocation} end={[lat, lng]} />
                     )}
+                    <RecenterButton userLocation={userLocation} requestLocation={requestUserLocation} />
                   </MapContainer>
                 </div>
                 <div className="p-8 bg-surface-950/80 backdrop-blur-2xl border-t border-white/5 flex items-center justify-between gap-8">
