@@ -176,7 +176,8 @@ export default function SpotDetail() {
       toast.success('Payment recorded — parking started!');
       navigate('/bookings');
     } catch (err) {
-      toast.error('Session start failed');
+      console.error('Session start failed error:', err.response?.data || err.message || err);
+      toast.error(err.response?.data?.error || 'Session start failed');
     }
     setStarting(false);
   };

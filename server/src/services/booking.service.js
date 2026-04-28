@@ -19,11 +19,23 @@ class BookingService {
       // 1. Acquire Distributed Lock (Gatekeeper)
       lock = await redlock.acquire([lockKey], 10000); 
       
-      const session = await mongoose.startSession();
-      session.startTransaction();
+      // Handle environments where MongoDB doesn't support transactions (standalone)
+      const isStandalone = mongoose.connection.client?.topology?.description?.type === 'Standalone' || global.__MONGO_STANDALONE__;
+      let session = null;
+      
+      if (!isStandalone) {
+        try {
+          session = await mongoose.startSession();
+          session.startTransaction();
+        } catch (err) {
+          session = null; // Fallback
+        }
+      }
+
+      const opts = session ? { session } : {};
 
       try {
-        const spot = await ParkingSpot.findById(spotId).session(session);
+        const spot = session ? await ParkingSpot.findById(spotId).session(session) : await ParkingSpot.findById(spotId);
         if (!spot) throw new Error('Parking spot not found');
         if (spot.status !== 'approved') throw new Error('Spot not approved');
         if (spot.availableSlots <= 0) throw new Error('No available slots');
@@ -47,7 +59,7 @@ class BookingService {
         }
 
         // 2. Check if user already has an active session
-        const activeBooking = await Booking.findOne({ user: user._id, status: 'active' }).session(session);
+        const activeBooking = session ? await Booking.findOne({ user: user._id, status: 'active' }).session(session) : await Booking.findOne({ user: user._id, status: 'active' });
         if (activeBooking) throw new Error('You already have an active parking session');
 
         const prepaidHours = Math.max(1, Math.ceil(hours));
@@ -55,17 +67,17 @@ class BookingService {
 
         // 3. Process Payment (Atomic)
         if (paymentMethod === 'wallet') {
-          const dbUser = await User.findById(user._id).session(session);
+          const dbUser = session ? await User.findById(user._id).session(session) : await User.findById(user._id);
           if (dbUser.walletBalance < prepaidAmount) {
             throw new Error(`Insufficient wallet balance.`);
           }
           dbUser.walletBalance -= prepaidAmount;
-          await dbUser.save({ session });
+          await dbUser.save(opts);
         }
 
         // 4. Update Spot Availability
         spot.availableSlots -= 1;
-        await spot.save({ session });
+        await spot.save(opts);
 
         // 5. Create Booking Record
         const now = new Date();
@@ -77,7 +89,7 @@ class BookingService {
           prepaidAmount,
           isPaid: true,
           billingMonth: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-        }], { session });
+        }], opts);
 
         await Transaction.create([{
           booking: booking[0]._id,
@@ -91,17 +103,21 @@ class BookingService {
           month: booking[0].billingMonth,
           description: `Prepaid parking at ${spot.title}`,
           paymentMethod: 'wallet'
-        }], { session });
+        }], opts);
 
-        await session.commitTransaction();
-        session.endSession();
+        if (session) {
+          await session.commitTransaction();
+          session.endSession();
+        }
 
         logger.info({ bookingId: booking[0]._id, userId: user._id, distancePriority: true }, '✅ Booking confirmed');
         return booking[0];
 
       } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
+        if (session) {
+          await session.abortTransaction();
+          session.endSession();
+        }
         throw error;
       }
     } catch (error) {
