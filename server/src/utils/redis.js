@@ -7,21 +7,29 @@ const redisConfig = {
   port: process.env.REDIS_PORT || 6379,
   password: process.env.REDIS_PASSWORD || undefined,
   retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 2000);
+    if (times > 10) return null; // Stop retrying after 10 attempts
+    const delay = Math.min(times * 500, 5000);
     return delay;
   },
+  maxRetriesPerRequest: 1,
+  lazyConnect: false,
 };
 
 const redis = new Redis(redisConfig);
 let isRedisAvailable = false;
+let redisErrorLogged = false;
 
 redis.on('connect', () => {
   logger.info('✅ Redis connected');
   isRedisAvailable = true;
+  redisErrorLogged = false;
 });
 
 redis.on('error', (err) => {
-  logger.warn(`⚠️  Redis connection unavailable: ${err.message}. Running in fallback mode.`);
+  if (!redisErrorLogged) {
+    logger.warn(`⚠️  Redis unavailable: ${err.message}. Running in fallback mode.`);
+    redisErrorLogged = true;
+  }
   isRedisAvailable = false;
 });
 

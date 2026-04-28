@@ -4,6 +4,7 @@ import { LogOut, MapPin, Calendar, User, Wallet, BarChart3, Menu, X, ParkingCirc
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
