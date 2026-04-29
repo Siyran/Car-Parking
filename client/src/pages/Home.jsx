@@ -71,13 +71,17 @@ export default function Home() {
       <VibeHero />
       
       {/* 2. HOW IT WORKS — Animated 4-step flow */}
-      <HowItWorks />
+      <div id="how-it-works">
+        <HowItWorks />
+      </div>
 
       {/* 3. LIVE MAP — Interactive parking map preview */}
-      <LiveMapSection />
+      <div id="live-map">
+        <LiveMapSection />
+      </div>
 
       {/* 4. THE APP SHOWCASE (Interface Terminal) */}
-      <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
+      <section id="features" className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
         <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
            
            {/* LEFT: THE INTERFACE */}
@@ -173,10 +177,14 @@ export default function Home() {
       </section>
 
       {/* 6. STATS & TRUST */}
-      <StatsSection />
+      <div id="stats">
+        <StatsSection />
+      </div>
 
       {/* 7. FINAL CTA */}
-      <FinalCTA />
+      <div id="final-cta">
+        <FinalCTA />
+      </div>
     </div>
   );
 }

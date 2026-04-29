@@ -1,9 +1,18 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 export default function VibeNavbar() {
   const [scrolled, setScrolled] = useState(false);
+  const sectionLinks = [
+    { label: 'Product', id: 'how-it-works' },
+    { label: 'Pricing', id: 'features' },
+    { label: 'About', id: 'stats' },
+    { label: 'Contact', id: 'final-cta' },
+  ];
+
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -20,14 +29,15 @@ export default function VibeNavbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-10">
-          {['Product', 'Pricing', 'About', 'Contact'].map(link => (
-            <Link 
-              key={link} 
-              to="/" 
+          {sectionLinks.map(({ label, id }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => scrollToSection(id)}
               className="text-sm font-medium text-surface-400 hover:text-white transition-colors"
             >
-              {link}
-            </Link>
+              {label}
+            </button>
           ))}
         </div>
 

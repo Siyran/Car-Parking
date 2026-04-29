@@ -33,7 +33,7 @@ export default function AddSpot() {
   const [photos, setPhotos] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [form, setForm] = useState({
-    title: '', description: '', address: '', totalSlots: '',
+    title: '', description: '', address: '', totalSlots: '', pricePerHour: '',
     amenities: '', vehicleTypes: ['car']
   });
   const [locating, setLocating] = useState(false);
@@ -85,6 +85,7 @@ export default function AddSpot() {
       formData.append('latitude', position[0]);
       formData.append('longitude', position[1]);
       formData.append('totalSlots', form.totalSlots);
+      formData.append('pricePerHour', form.pricePerHour);
       formData.append('amenities', JSON.stringify(form.amenities.split(',').map(s => s.trim()).filter(Boolean)));
       formData.append('vehicleTypes', JSON.stringify(form.vehicleTypes));
       photos.forEach(p => formData.append('photos', p));

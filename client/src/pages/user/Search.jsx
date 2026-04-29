@@ -7,6 +7,7 @@ import { spotAPI } from '../../api';
 import { useSocket } from '../../context/SocketContext';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import Card from '../../components/ui/Card';
 import RoutingMachine from '../../components/map/RoutingMachine';
 import LiveTrackingMap from '../../components/map/LiveTrackingMap';
 import { MapPin, Star, Navigation, List, Map as MapIcon, Filter, X, IndianRupee, ArrowLeft, Search as SearchIcon, SlidersHorizontal, ChevronRight, Activity, Cpu, Shield, Radio, Globe } from 'lucide-react';
@@ -178,19 +179,33 @@ export default function Search() {
   }, [mapCenter]);
 
   const fetchSpots = async (lat, lng) => {
+    if (!lat || !lng) return;
     setLoading(true);
     try {
       const params = { lat, lng, radius: filters.radius };
       if (filters.minPrice) params.minPrice = filters.minPrice;
       if (filters.maxPrice) params.maxPrice = filters.maxPrice;
+      
       const { data } = await spotAPI.getNearby(params);
-      const withDist = data.spots.map(s => ({
-        ...s,
-        distance: userLocation ? getDistance(userLocation[0], userLocation[1], s.location.coordinates[1], s.location.coordinates[0]) : null
-      }));
-      withDist.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+      
+      if (!data || !Array.isArray(data.spots)) {
+        console.error('Invalid spots data received:', data);
+        setSpots([]);
+        return;
+      }
+
+      const withDist = data.spots.map(s => {
+        if (!s.location || !s.location.coordinates) return { ...s, distance: null };
+        return {
+          ...s,
+          distance: userLocation ? getDistance(userLocation[0], userLocation[1], s.location.coordinates[1], s.location.coordinates[0]) : null
+        };
+      });
+      
+      withDist.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
       setSpots(withDist);
     } catch (err) {
+      console.error('Fetch spots failed:', err);
       toast.error(`Search failed: ${err.message}`);
     }
     setLoading(false);
@@ -346,29 +361,32 @@ export default function Search() {
                 }}
               />
             )}
-            {!routingTo && spots.map(spot => (
-              <Marker
-                key={spot._id}
-                position={[spot.location.coordinates[1], spot.location.coordinates[0]]}
-                icon={createPriceIcon(spot.pricePerHour, spot.availableSlots)}
-                eventHandlers={{ click: () => navigate(`/spots/${spot._id}`) }}
-              >
-                <Popup className="tech-popup">
-                  <div className="p-4 bg-surface-950 border border-white/10 rounded-2xl min-w-[240px] shadow-2xl">
-                    <h3 className="text-sm font-semibold text-white mb-1">{spot.title}</h3>
-                    <p className="text-[10px] text-surface-500 mb-3 line-clamp-1">{spot.address}</p>
-                    <div className="flex justify-between items-center py-3 border-y border-white/5 mb-3">
-                      <span className="text-primary-400 font-bold">₹{spot.pricePerHour}<span className="text-[10px] font-medium text-surface-500 ml-1">/hr</span></span>
-                      <Badge variant={spot.availableSlots > 0 ? 'success' : 'danger'}>{spot.availableSlots} Left</Badge>
+            {!routingTo && Array.isArray(spots) && spots.map(spot => {
+              if (!spot.location || !spot.location.coordinates) return null;
+              return (
+                <Marker
+                  key={spot._id}
+                  position={[spot.location.coordinates[1], spot.location.coordinates[0]]}
+                  icon={createPriceIcon(spot.pricePerHour, spot.availableSlots)}
+                  eventHandlers={{ click: () => navigate(`/spots/${spot._id}`) }}
+                >
+                  <Popup className="tech-popup">
+                    <div className="p-4 bg-surface-950 border border-white/10 rounded-2xl min-w-[240px] shadow-2xl">
+                      <h3 className="text-sm font-semibold text-white mb-1">{spot.title}</h3>
+                      <p className="text-[10px] text-surface-500 mb-3 line-clamp-1">{spot.address}</p>
+                      <div className="flex justify-between items-center py-3 border-y border-white/5 mb-3">
+                        <span className="text-primary-400 font-bold">₹{spot.pricePerHour}<span className="text-[10px] font-medium text-surface-500 ml-1">/hr</span></span>
+                        <Badge variant={spot.availableSlots > 0 ? 'success' : 'danger'}>{spot.availableSlots} Left</Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1 h-9 rounded-lg text-[11px]" onClick={() => navigate(`/spots/${spot._id}`)}>View Details</Button>
+                        <button onClick={(e) => { e.stopPropagation(); handleGetDirections(spot); }} className="p-2 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10"><Navigation className="w-4 h-4" /></button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" className="flex-1 h-9 rounded-lg text-[11px]" onClick={() => navigate(`/spots/${spot._id}`)}>View Details</Button>
-                      <button onClick={(e) => { e.stopPropagation(); handleGetDirections(spot); }} className="p-2 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10"><Navigation className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
           
           <button onClick={() => { setIsManual(true); setMapCenter(userLocation || [34.0837, 74.7973]); }}

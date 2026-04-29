@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw, IndianRupee, Zap, History, Shield, Smartphone, QrCode, CheckCircle2, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 
 export default function Wallet() {
   const { user } = useAuth();
@@ -17,10 +19,6 @@ export default function Wallet() {
   const [upiLink, setUpiLink] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     setLoading(true);
     try {
@@ -28,13 +26,17 @@ export default function Wallet() {
         walletAPI.getBalance(),
         walletAPI.getHistory()
       ]);
-      setBalance(balRes.data.balance);
-      setHistory(histRes.data.transactions);
+      setBalance(balRes?.data?.balance || 0);
+      setHistory(histRes?.data?.transactions || []);
     } catch (err) {
       toast.error('Failed to load wallet data');
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const initiateUPI = async () => {
     const amount = parseFloat(topUpAmount);
@@ -159,6 +161,16 @@ export default function Wallet() {
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-surface-400 uppercase tracking-widest px-1">Recent Activity</h3>
         <div className="space-y-2">
+          {loading && (
+            <Card className="p-8 text-center text-surface-500">
+              Loading wallet activity...
+            </Card>
+          )}
+          {!loading && history.length === 0 && (
+            <Card className="p-8 text-center text-surface-500">
+              No wallet transactions yet.
+            </Card>
+          )}
           {history.map((tx) => {
             const info = getTypeInfo(tx.type);
             return (

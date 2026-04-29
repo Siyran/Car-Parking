@@ -11,6 +11,10 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 });
 
+const getLoginUrl = () => {
+  const { origin, pathname, search } = window.location;
+  return `${origin}${pathname}${search}#/login`;
+};
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('parkflow_token');
@@ -26,7 +30,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('parkflow_token');
       localStorage.removeItem('parkflow_user');
-      window.location.href = '/login';
+      window.location.href = getLoginUrl();
     }
     return Promise.reject(error);
   }

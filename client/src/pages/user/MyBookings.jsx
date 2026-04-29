@@ -64,9 +64,10 @@ export default function MyBookings() {
         bookingAPI.getMy({ status: filter || undefined }),
         bookingAPI.getActive()
       ]);
-      setBookings(bookingsRes.data.bookings);
-      setActiveSession(activeRes.data.booking);
+      setBookings(bookingsRes?.data?.bookings || []);
+      setActiveSession(activeRes?.data?.booking || null);
     } catch (err) {
+      console.error('Load bookings failed:', err);
       toast.error('Failed to load bookings');
     }
     setLoading(false);
@@ -122,9 +123,14 @@ export default function MyBookings() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {showLiveMap && activeSession && (
+      {showLiveMap && activeSession?.spot?.location?.coordinates && (
         <LiveTrackingMap
-          destination={{ lat: activeSession.spot.location.coordinates[1], lng: activeSession.spot.location.coordinates[0], title: activeSession.spot.title, address: activeSession.spot.address }}
+          destination={{ 
+            lat: activeSession.spot.location.coordinates[1], 
+            lng: activeSession.spot.location.coordinates[0], 
+            title: activeSession.spot.title, 
+            address: activeSession.spot.address 
+          }}
           onClose={() => setShowLiveMap(false)}
           initialPosition={userLocation ? { lat: userLocation[0], lng: userLocation[1] } : null}
           bookingId={activeSession._id}
@@ -205,22 +211,22 @@ export default function MyBookings() {
               <p className="text-surface-500">No bookings found</p>
             </div>
           )}
-          {bookings.filter(b => b._id !== activeSession?._id).map((b) => (
-            <Card key={b._id} onClick={() => navigate(`/spots/${b.spot?._id}`)} className="p-5 flex items-center gap-6 hover:bg-white/[0.02] cursor-pointer">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${b.status === 'completed' ? 'bg-emerald-500/10' : 'bg-surface-500/10'}`}>
-                <Clock className={`w-6 h-6 ${b.status === 'completed' ? 'text-emerald-500' : 'text-surface-500'}`} />
+          {Array.isArray(bookings) && bookings.filter(b => b?._id !== activeSession?._id).map((b) => (
+            <Card key={b?._id} onClick={() => b?.spot?._id && navigate(`/spots/${b.spot._id}`)} className="p-5 flex items-center gap-6 hover:bg-white/[0.02] cursor-pointer">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${b?.status === 'completed' ? 'bg-emerald-500/10' : 'bg-surface-500/10'}`}>
+                <Clock className={`w-6 h-6 ${b?.status === 'completed' ? 'text-emerald-500' : 'text-surface-500'}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-white truncate">{b.spot?.title || 'Unknown Spot'}</h4>
+                <h4 className="text-base font-semibold text-white truncate">{b?.spot?.title || 'Unknown Spot'}</h4>
                 <div className="flex items-center gap-3 mt-1">
-                  <p className="text-[11px] text-surface-500">{formatDate(b.startTime)}</p>
+                  <p className="text-[11px] text-surface-500">{b?.startTime ? formatDate(b.startTime) : '---'}</p>
                   <span className="w-1 h-1 rounded-full bg-white/10" />
-                  <p className="text-[11px] text-surface-500">{formatTime(b.startTime)}</p>
+                  <p className="text-[11px] text-surface-500">{b?.startTime ? formatTime(b.startTime) : '---'}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-base font-bold text-white mb-1">{b.totalAmount > 0 ? formatCurrency(b.totalAmount) : '—'}</p>
-                <Badge variant={statusVariant[b.status]}>{b.status}</Badge>
+                <p className="text-base font-bold text-white mb-1">{b?.totalAmount > 0 ? formatCurrency(b.totalAmount) : '—'}</p>
+                <Badge variant={statusVariant[b?.status] || 'neutral'}>{b?.status || 'Unknown'}</Badge>
               </div>
             </Card>
           ))}

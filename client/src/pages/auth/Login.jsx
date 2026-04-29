@@ -48,7 +48,13 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="text-xs font-semibold text-surface-500 uppercase tracking-widest">Password</label>
-                <a href="#" className="text-[10px] font-bold text-primary-400 hover:text-white transition-colors">Forgot password?</a>
+                <button
+                  type="button"
+                  onClick={() => toast('Password reset is not available in this demo yet.')}
+                  className="text-[10px] font-bold text-primary-400 hover:text-white transition-colors"
+                >
+                  Forgot password?
+                </button>
               </div>
               <Input type="password" icon={Lock} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
             </div>

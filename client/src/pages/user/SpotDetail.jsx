@@ -144,7 +144,7 @@ export default function SpotDetail() {
     );
   }
 
-  if (!spot) return null;
+  if (!spot || !spot.location || !spot.location.coordinates) return null;
   const [lng, lat] = spot.location.coordinates;
 
   return (
