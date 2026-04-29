@@ -30,8 +30,8 @@ export const getNearbySpots = async (req, res, next) => {
   try {
     const { lat, lng, radius = 5000, minPrice, maxPrice, vehicleType } = req.query;
 
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'lat and lng are required' });
+    if (lat === undefined || lng === undefined || isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ error: 'Valid lat and lng parameters are required' });
     }
 
     const query = {

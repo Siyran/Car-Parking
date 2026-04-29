@@ -150,7 +150,7 @@ export default function Search() {
         setIsManual(true);
         setMapCenter(loc);
       },
-      () => { fetchSpots(mapCenter[0], mapCenter[1]); },
+      () => { /* mapCenter effect will handle initial fetch if GPS fails */ },
       { enableHighAccuracy: true }
     );
 
@@ -197,7 +197,8 @@ export default function Search() {
       withDist.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       setSpots(withDist);
     } catch (err) {
-      toast.error('Recalibration failed');
+      const errorMsg = err.response?.data?.error || err.message;
+      toast.error(`Recalibration failed: ${errorMsg}`);
     }
     setLoading(false);
   };
