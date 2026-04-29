@@ -2,19 +2,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 const variants = {
-  primary: 'bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40',
-  secondary: 'bg-white/80 dark:bg-surface-800/80 backdrop-blur-md text-surface-700 dark:text-surface-200 border border-surface-200/50 dark:border-surface-700/50 hover:bg-white dark:hover:bg-surface-800',
-  danger: 'bg-gradient-to-r from-danger-600 to-danger-500 text-white shadow-lg shadow-danger-500/20',
-  success: 'bg-gradient-to-r from-success-600 to-success-500 text-white shadow-lg shadow-success-500/20',
-  ghost: 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800/50',
-  outline: 'border-2 border-primary-500/50 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 hover:border-primary-500',
-  glass: 'glass-morphism text-white hover:bg-white/10 border-white/20'
+  primary: 'bg-primary-600 text-white shadow-lg shadow-primary-500/20 hover:bg-primary-500 active:bg-primary-700 border border-primary-400/20',
+  secondary: 'bg-white/5 dark:bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 active:bg-white/20',
+  danger: 'bg-danger-600 text-white shadow-lg shadow-danger-500/20 hover:bg-danger-500 active:bg-danger-700',
+  success: 'bg-success-600 text-white shadow-lg shadow-success-500/20 hover:bg-success-500 active:bg-success-700',
+  ghost: 'text-surface-400 hover:text-white hover:bg-white/5 active:bg-white/10',
+  outline: 'border border-primary-500/50 text-primary-400 hover:bg-primary-500/10 hover:border-primary-500 active:bg-primary-500/20',
+  glass: 'glass-premium text-white hover:bg-white/10 active:bg-white/20'
 };
 
 const sizes = {
-  sm: 'px-4 py-2 text-xs',
-  md: 'px-6 py-3 text-sm',
-  lg: 'px-8 py-4 text-base'
+  sm: 'px-4 h-9 text-xs',
+  md: 'px-6 h-11 text-sm',
+  lg: 'px-8 h-14 text-base'
 };
 
 export default function Button({ 
@@ -28,11 +28,11 @@ export default function Button({
 }) {
   return (
     <motion.button
-      whileHover={{ scale: 1.01, y: -2 }}
+      whileHover={{ y: -1 }}
       whileTap={{ scale: 0.98 }}
       className={`
-        relative inline-flex items-center justify-center gap-2 font-display font-black tracking-tight transition-all duration-300 h-14
-        ${variants[variant]} ${sizes[size]} ${loading || disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+        relative inline-flex items-center justify-center gap-2 font-sans font-medium tracking-tight transition-all duration-200 rounded-xl
+        ${variants[variant]} ${sizes[size]} ${loading || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
       `}
       disabled={disabled || loading}
@@ -42,28 +42,25 @@ export default function Button({
         {loading ? (
           <motion.div
             key="loader"
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="absolute flex items-center justify-center inset-0 bg-inherit rounded-inherit"
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex items-center justify-center"
           >
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           </motion.div>
         ) : (
           <motion.div
             key="content"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: -5 }}
             className="flex items-center gap-2"
           >
             {children}
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Shine effect on hover */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 hover:opacity-100 transition-opacity duration-500 -translate-x-full hover:translate-x-full transform ease-out" />
     </motion.button>
   );
 }

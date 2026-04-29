@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/layout/Navbar';
+import DashboardLayout from './components/layout/DashboardLayout';
 
 // Pages
 import Home from './pages/Home';
@@ -38,26 +39,26 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'owner' ? '/owner' : '/search'} /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
       
-      {/* Public */}
-      <Route path="/search" element={<Search />} />
-      <Route path="/spots/:id" element={<SpotDetail />} />
+      {/* Public / Search (Show Navbar) */}
+      <Route path="/search" element={<><Navbar /><Search /></>} />
+      <Route path="/spots/:id" element={<><Navbar /><SpotDetail /></>} />
 
-      {/* User (formerly Driver) */}
-      <Route path="/bookings" element={<ProtectedRoute roles={['user']}><MyBookings /></ProtectedRoute>} />
-      <Route path="/wallet" element={<ProtectedRoute roles={['user']}><Wallet /></ProtectedRoute>} />
-      <Route path="/billing" element={<ProtectedRoute roles={['user']}><Billing /></ProtectedRoute>} />
+      {/* User (formerly Driver) - Dashboard Pages */}
+      <Route path="/bookings" element={<ProtectedRoute roles={['user']}><DashboardLayout><MyBookings /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/wallet" element={<ProtectedRoute roles={['user']}><DashboardLayout><Wallet /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute roles={['user']}><DashboardLayout><Billing /></DashboardLayout></ProtectedRoute>} />
 
-      {/* Owner */}
-      <Route path="/owner" element={<ProtectedRoute roles={['owner']}><OwnerDashboard /></ProtectedRoute>} />
-      <Route path="/owner/add-spot" element={<ProtectedRoute roles={['owner']}><AddSpot /></ProtectedRoute>} />
-      <Route path="/owner/listings" element={<ProtectedRoute roles={['owner']}><MyListings /></ProtectedRoute>} />
-      <Route path="/owner/earnings" element={<ProtectedRoute roles={['owner']}><Earnings /></ProtectedRoute>} />
+      {/* Owner - Dashboard Pages */}
+      <Route path="/owner" element={<ProtectedRoute roles={['owner']}><DashboardLayout><OwnerDashboard /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/owner/add-spot" element={<ProtectedRoute roles={['owner']}><DashboardLayout><AddSpot /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/owner/listings" element={<ProtectedRoute roles={['owner']}><DashboardLayout><MyListings /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/owner/earnings" element={<ProtectedRoute roles={['owner']}><DashboardLayout><Earnings /></DashboardLayout></ProtectedRoute>} />
 
-      {/* Admin */}
-      <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsers /></ProtectedRoute>} />
-      <Route path="/admin/listings" element={<ProtectedRoute roles={['admin']}><AdminListings /></ProtectedRoute>} />
-      <Route path="/admin/transactions" element={<ProtectedRoute roles={['admin']}><AdminTransactions /></ProtectedRoute>} />
+      {/* Admin - Dashboard Pages */}
+      <Route path="/admin" element={<ProtectedRoute roles={['admin']}><DashboardLayout><AdminAnalytics /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><DashboardLayout><AdminUsers /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/admin/listings" element={<ProtectedRoute roles={['admin']}><DashboardLayout><AdminListings /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/admin/transactions" element={<ProtectedRoute roles={['admin']}><DashboardLayout><AdminTransactions /></DashboardLayout></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
@@ -69,10 +70,9 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <Router>
-          <Navbar />
           <AppRoutes />
           <Toaster position="top-right" toastOptions={{
-            style: { borderRadius: '12px', background: '#1e293b', color: '#f1f5f9', fontSize: '14px' },
+            style: { borderRadius: '12px', background: '#0c0c0e', color: '#f1f5f9', border: '1px solid rgba(255,255,255,0.1)', fontSize: '14px' },
             duration: 3000
           }} />
         </Router>

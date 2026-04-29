@@ -1,21 +1,24 @@
 import { motion } from 'framer-motion';
 
-export default function Card({ children, className = '', hover = false, ...props }) {
+export default function Card({ children, className = '', hover = false, variant = 'default', ...props }) {
   const Component = hover ? motion.div : 'div';
-  const hoverProps = hover ? {
-    whileHover: { y: -5, scale: 1.01 },
-    transition: { duration: 0.3, ease: 'easeOut' }
-  } : {};
+  
+  const variants = {
+    default: 'bg-white dark:bg-surface-900 border-surface-100 dark:border-surface-800',
+    glass: 'glass-dark',
+    premium: 'glass-premium'
+  };
 
   return (
     <Component
+      whileHover={hover ? { y: -4, scale: 1.005 } : {}}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={`
-        bg-white dark:bg-surface-900 rounded-[2rem] border border-surface-100 dark:border-surface-800 
-        shadow-sm hover:shadow-premium transition-shadow duration-300
-        ${hover ? 'cursor-pointer hover:border-primary-500/20' : ''} 
+        rounded-2xl border transition-all duration-300
+        ${variants[variant]}
+        ${hover ? 'cursor-pointer hover:shadow-premium hover:border-primary-500/30' : 'shadow-sm'} 
         ${className}
       `}
-      {...hoverProps}
       {...props}
     >
       {children}
@@ -25,12 +28,12 @@ export default function Card({ children, className = '', hover = false, ...props
 
 export function CardHeader({ children, className = '' }) {
   return (
-    <div className={`px-8 py-6 border-b border-surface-50 dark:border-surface-800/50 ${className}`}>
+    <div className={`px-6 py-4 border-b border-surface-100 dark:border-white/5 ${className}`}>
       {children}
     </div>
   );
 }
 
 export function CardBody({ children, className = '' }) {
-  return <div className={`px-8 py-6 ${className}`}>{children}</div>;
+  return <div className={`px-6 py-5 ${className}`}>{children}</div>;
 }

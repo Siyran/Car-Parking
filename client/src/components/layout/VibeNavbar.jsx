@@ -1,32 +1,50 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export default function VibeNavbar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <nav className="fixed top-0 w-full z-50 px-12 py-10 flex items-center justify-between font-sans">
-      {/* LEFT LINKS */}
-      <div className="flex items-center gap-10">
-        {['HOME', 'ABOUT US', 'PRICING', 'PRODUCT'].map(link => (
-          <Link 
-            key={link} 
-            to="/" 
-            className="text-[11px] font-bold text-white hover:text-blue-400 transition-colors tracking-widest"
-          >
-            {link}
-          </Link>
-        ))}
-      </div>
-
-
-
-      {/* RIGHT SIGN IN */}
-      <div className="flex items-center gap-6">
-        <Link 
-          to="/login" 
-          className="text-[11px] font-bold text-white hover:text-blue-400 transition-colors tracking-widest"
-        >
-          SIGN IN
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 py-4 md:px-12 md:py-6 ${scrolled ? 'bg-surface-950/80 backdrop-blur-md border-b border-white/5' : 'bg-transparent'}`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white font-display font-bold text-lg">P</div>
+          <span className="font-display font-bold text-xl tracking-tight text-white">ParkFlow</span>
         </Link>
+
+        <div className="hidden md:flex items-center gap-10">
+          {['Product', 'Pricing', 'About', 'Contact'].map(link => (
+            <Link 
+              key={link} 
+              to="/" 
+              className="text-sm font-medium text-surface-400 hover:text-white transition-colors"
+            >
+              {link}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-6">
+          <Link 
+            to="/login" 
+            className="text-sm font-medium text-white hover:text-primary-400 transition-colors"
+          >
+            Sign In
+          </Link>
+          <Link 
+            to="/register" 
+            className="bg-white text-surface-950 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-surface-200 transition-colors"
+          >
+            Get Started
+          </Link>
+        </div>
       </div>
     </nav>
   );
