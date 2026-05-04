@@ -1,7 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function VibeNavbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const sectionLinks = [
     { label: 'Product', id: 'how-it-works' },
@@ -13,6 +17,16 @@ export default function VibeNavbar() {
   const scrollToSection = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Session Terminated');
+    navigate('/login');
+  };
+
+  const homeCta = user
+    ? (user.role === 'admin' ? '/admin' : user.role === 'owner' ? '/owner' : '/search')
+    : '/register';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -42,18 +56,38 @@ export default function VibeNavbar() {
         </div>
 
         <div className="flex items-center gap-6">
-          <Link 
-            to="/login" 
-            className="text-sm font-medium text-white hover:text-primary-400 transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link 
-            to="/register" 
-            className="bg-white text-surface-950 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-surface-200 transition-colors"
-          >
-            Get Started
-          </Link>
+          {user ? (
+            <>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-medium text-white hover:text-primary-400 transition-colors"
+              >
+                Sign Out
+              </button>
+              <Link
+                to={homeCta}
+                className="bg-white text-surface-950 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-surface-200 transition-colors"
+              >
+                Open Dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link 
+                to="/login" 
+                className="text-sm font-medium text-white hover:text-primary-400 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                to={homeCta}
+                className="bg-white text-surface-950 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-surface-200 transition-colors"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

@@ -65,7 +65,7 @@ export default function Home() {
   
   return (
     <div ref={containerRef} className="bg-[#05070A] selection:bg-primary-vibrant relative flex flex-col">
-      {!user && <VibeNavbar />}
+      <VibeNavbar />
 
       {/* 1. HERO SECTION — 3D phone with animated map */}
       <VibeHero />
