@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import toast from 'react-hot-toast';
 
-export default function Navbar() {
+export default function Navbar({ hideBrandOnDesktop = false }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ export default function Navbar() {
         ${scrolled ? 'glass-dark border-white/10 shadow-xl' : 'bg-transparent border-transparent'}
       `}>
         <div className="flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className={`flex items-center gap-3 group ${hideBrandOnDesktop ? 'lg:hidden' : ''}`}>
             <motion.div 
               whileHover={{ scale: 1.05 }}
               className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white font-display font-bold text-xl"
@@ -69,7 +69,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8 ml-auto">
             <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
               {navLinks.map((link) => {
                 const Icon = link.icon;
