@@ -25,6 +25,31 @@ export default function Navbar({ hideBrandOnDesktop = false }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      document.body.style.overflow = '';
+      return;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
   const links = {
     user: [
       { name: 'Find Parking', path: '/search', icon: MapPin },
@@ -116,7 +141,12 @@ export default function Navbar({ hideBrandOnDesktop = false }) {
           </div>
 
           {/* Mobile Button */}
-          <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden p-2 text-white">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            className="lg:hidden p-2 text-white"
+          >
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
