@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }) {
     <div className="flex min-h-screen bg-surface-950">
       <Navbar hideBrandOnDesktop />
       <Sidebar />
-      <main className="flex-1 lg:ml-64 pt-28 p-6 md:p-10">
+      <main className="flex-1 lg:ml-64 pt-36 md:pt-40 p-6 md:p-10">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

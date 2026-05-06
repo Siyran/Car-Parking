@@ -46,14 +46,16 @@ export default function Navbar({ hideBrandOnDesktop = false }) {
 
   const navLinks = (user && links[user.role]) ? links[user.role] : [];
   const isHomePage = pathname === '/';
+  const isDashboardNav = hideBrandOnDesktop;
+  const showSolidShell = scrolled || isDashboardNav;
 
   if (isHomePage && !user) return null;
 
   return (
-    <nav className="fixed top-0 w-full z-50 px-6 py-4 pointer-events-none">
+    <nav className="fixed top-0 w-full z-[1200] px-6 py-4 pointer-events-none">
       <div className={`
         max-w-7xl mx-auto px-6 py-3 rounded-2xl transition-all duration-500 pointer-events-auto
-        ${scrolled ? 'glass-dark border-white/10 shadow-xl' : 'bg-transparent border-transparent'}
+        ${showSolidShell ? 'glass-dark border-white/10 shadow-xl' : 'bg-transparent border-transparent'}
       `}>
         <div className="flex justify-between items-center">
           <Link to="/" className={`flex items-center gap-3 group ${hideBrandOnDesktop ? 'lg:hidden' : ''}`}>
