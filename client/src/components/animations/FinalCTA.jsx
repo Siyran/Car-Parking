@@ -39,7 +39,7 @@ export default function FinalCTA() {
   }, []);
 
   return (
-    <section className="py-32 md:py-48 px-6 relative overflow-hidden bg-[#05070A]" ref={containerRef}>
+    <section className="py-32 md:py-48 px-6 relative overflow-hidden bg-[#05070A]/90" ref={containerRef}>
       {/* Subtle blurred background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 cta-bg-glow" style={{

@@ -64,7 +64,14 @@ export default function Home() {
   }, []);
   
   return (
-    <div ref={containerRef} className="bg-[#05070A] selection:bg-primary-vibrant relative flex flex-col">
+    <div ref={containerRef} className="relative flex flex-col overflow-hidden selection:bg-primary-vibrant bg-[#04060A]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_50%_0%,rgba(77,124,255,0.24),transparent_54%)]" />
+        <div className="absolute left-[-12rem] top-[14rem] h-[28rem] w-[28rem] rounded-full bg-cyan-500/10 blur-[160px]" />
+        <div className="absolute right-[-10rem] top-[40rem] h-[26rem] w-[26rem] rounded-full bg-indigo-500/10 blur-[150px]" />
+        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:radial-gradient(ellipse_at_center,black_38%,transparent_100%)]" />
+      </div>
+
       <VibeNavbar />
 
       {/* 1. HERO SECTION — 3D phone with animated map */}
@@ -81,7 +88,7 @@ export default function Home() {
       </div>
 
       {/* 4. THE APP SHOWCASE (Interface Terminal) */}
-      <section id="features" className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
+      <section id="features" className="py-32 md:py-40 px-6 relative overflow-hidden border-t border-white/[0.05] bg-white/[0.015] backdrop-blur-3xl">
         <div className="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
            
            {/* LEFT: THE INTERFACE */}
@@ -125,7 +132,7 @@ export default function Home() {
       </section>
 
       {/* 5. FEATURE CARDS */}
-      <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden border-t border-white/[0.04]">
+      <section className="py-32 md:py-40 px-6 relative overflow-hidden border-t border-white/[0.05] bg-[#05070A]/90">
         <div className="max-w-[1440px] mx-auto">
           <div className="text-center mb-20 space-y-6 gsap-reveal">
             <span className="text-xs font-bold text-blue-400 uppercase tracking-[0.3em]">Why ParkFlow</span>
@@ -177,12 +184,12 @@ export default function Home() {
       </section>
 
       {/* 6. STATS & TRUST */}
-      <div id="stats">
+      <div id="stats" className="relative">
         <StatsSection />
       </div>
 
       {/* 7. FINAL CTA */}
-      <div id="final-cta">
+      <div id="final-cta" className="relative">
         <FinalCTA />
       </div>
     </div>

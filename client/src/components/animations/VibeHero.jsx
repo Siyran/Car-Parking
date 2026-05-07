@@ -1,6 +1,6 @@
 import { useRef, useCallback, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, MapPin, Navigation, Star } from 'lucide-react';
+import { ArrowRight, MapPin, Navigation, Star, Sparkles, ShieldCheck, TrendingUp } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
@@ -192,84 +192,99 @@ export default function VibeHero() {
     <section
       ref={heroRef}
       onMouseMove={handleMouse}
-      className="relative h-screen bg-black overflow-hidden"
+      className="relative min-h-screen overflow-hidden bg-transparent pt-28 md:pt-32"
     >
       <div ref={bgRef} className="absolute inset-0 pointer-events-none" style={{ willChange: 'opacity, transform' }}>
         <div
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse at 55% 45%, rgba(255,255,255,0.025) 0%, transparent 55%)',
+            background: 'radial-gradient(ellipse at 50% 35%, rgba(255,255,255,0.04) 0%, transparent 55%)',
           }}
         />
+        <div className="absolute inset-x-0 top-0 h-[36rem] bg-[radial-gradient(circle_at_50%_0%,rgba(77,124,255,0.22),transparent_52%)]" />
+        <div className="absolute left-[-12rem] top-[12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-500/10 blur-[140px]" />
+        <div className="absolute right-[-10rem] top-[20rem] h-[26rem] w-[26rem] rounded-full bg-indigo-400/10 blur-[150px]" />
       </div>
 
-      <div className="relative z-10 h-full max-w-[1300px] mx-auto px-8 flex items-center">
-        <div className="w-full grid lg:grid-cols-[1fr_auto] gap-16 items-center">
-          <div ref={textRef} className="max-w-lg" style={{ willChange: 'transform, opacity, filter' }}>
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
+        <div className="grid gap-16 lg:grid-cols-[1.08fr_0.92fr] items-center min-h-[calc(100vh-8rem)]">
+          <div ref={textRef} className="max-w-2xl" style={{ willChange: 'transform, opacity, filter' }}>
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/[0.06]">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#30D158]" />
-                <span className="text-[11px] font-medium text-white/50 tracking-wide">5,000+ spots live</span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 backdrop-blur-xl shadow-[0_12px_35px_-22px_rgba(0,0,0,0.8)]">
+                <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.7)]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">Live network • 5,000+ spots</span>
               </div>
 
-              <h1 className="text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] font-semibold text-white tracking-[-0.03em] leading-[1.08]">
-                {"Find Parking".split(' ').map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden pb-1">
-                    <span className="hero-title-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
-                  </span>
-                ))}
-                <br />
-                {"Near You".split(' ').map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden pb-1">
-                    <span className={`hero-title-word inline-block translate-y-[110%] opacity-0 ${i === 0 || i === 1 ? 'text-[#0A84FF]' : ''}`}>{word}&nbsp;</span>
-                  </span>
-                ))}
-                <br />
-                {"Anytime".split(' ').map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden pb-1">
-                    <span className="hero-title-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
+              <h1 className="max-w-[12ch] text-[3.6rem] md:text-[5.2rem] lg:text-[6.4rem] font-black text-white tracking-[-0.05em] leading-[0.94]">
+                {"Parking that feels premium.".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden pb-2 pr-3">
+                    <span className={`hero-title-word inline-block translate-y-[120%] opacity-0 ${word === 'premium.' ? 'bg-gradient-to-r from-cyan-300 via-white to-indigo-300 bg-clip-text text-transparent' : ''}`}>{word}&nbsp;</span>
                   </span>
                 ))}
               </h1>
 
-              <p className="text-[15px] text-white/85 leading-[1.7] max-w-md">
-                {"Discover private parking near you. Navigate in real-time. Pay only for what you use.".split(' ').map((word, i) => (
-                  <span key={i} className="inline-block overflow-hidden">
+              <p className="max-w-xl text-base md:text-lg text-white/72 leading-[1.8]">
+                {"Discover parking in seconds, book with confidence, and move through every step with a polished real-time experience built for drivers and hosts.".split(' ').map((word, i) => (
+                  <span key={i} className="inline-block overflow-hidden pr-1">
                     <span className="hero-desc-word inline-block translate-y-[110%] opacity-0">{word}&nbsp;</span>
                   </span>
                 ))}
               </p>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   onClick={() => navigate('/search')}
-                  className="gsap-btn group flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#0A84FF] text-white text-[13px] font-semibold tracking-wide"
+                  className="gsap-btn group inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-primary-500 via-cyan-400 to-emerald-400 px-7 py-4 text-sm font-semibold text-[#05070A] shadow-[0_18px_50px_-16px_rgba(77,124,255,0.65)] transition-transform duration-300"
                 >
                   Find Parking
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="gsap-btn px-6 py-3.5 rounded-xl border border-white/[0.08] text-white/40 text-[13px] font-semibold tracking-wide"
+                  className="gsap-btn inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-7 py-4 text-sm font-semibold text-white/74 backdrop-blur-xl transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
                 >
                   List Your Space
                 </button>
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-3 pt-2">
+                {[
+                  { icon: ShieldCheck, label: 'Verified listings', value: '100%' },
+                  { icon: TrendingUp, label: 'Faster booking', value: '2 min' },
+                  { icon: Sparkles, label: 'No hidden fees', value: 'Zero' },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-2xl shadow-[0_18px_45px_-28px_rgba(0,0,0,0.8)]">
+                    <stat.icon className="mb-3 h-4 w-4 text-cyan-300" />
+                    <p className="text-2xl font-black tracking-tight text-white">{stat.value}</p>
+                    <p className="text-xs uppercase tracking-[0.25em] text-white/45">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-center lg:justify-end relative" style={{ perspective: 1200 }}>
+          <div className="flex justify-center lg:justify-end relative" style={{ perspective: 1600 }}>
             <div
               ref={glowRef}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full pointer-events-none"
+              className="absolute top-1/2 left-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
               style={{
-                background: 'radial-gradient(circle, rgba(10,132,255,0.1) 0%, transparent 60%)',
+                background: 'radial-gradient(circle, rgba(77,124,255,0.16) 0%, transparent 62%)',
                 willChange: 'transform, opacity',
               }}
             />
 
-            <div ref={phoneRef} style={{ transformStyle: 'preserve-3d', willChange: 'transform, opacity' }}>
-              {/* Premium shadow under phone */}
+            <div ref={phoneRef} className="relative" style={{ transformStyle: 'preserve-3d', willChange: 'transform, opacity' }}>
+              <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-white/[0.08] via-transparent to-cyan-400/10 blur-2xl" />
+              <div className="absolute -left-10 top-24 hidden rounded-[2rem] border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl lg:block" style={{ transform: 'translateZ(90px)' }}>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">Live demand</p>
+                <p className="mt-1 text-2xl font-black text-white">94%</p>
+              </div>
+
+              <div className="absolute -right-6 bottom-24 hidden rounded-[2rem] border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl lg:block" style={{ transform: 'translateZ(110px)' }}>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">Avg. savings</p>
+                <p className="mt-1 text-2xl font-black text-emerald-300">₹320</p>
+              </div>
+
               <div 
                 className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[80%] h-10 phone-shadow" 
                 style={{ 
@@ -279,11 +294,13 @@ export default function VibeHero() {
                   transform: 'scale(0.8)'
                 }} 
               />
-              <div className="relative w-[280px] h-[580px] md:w-[295px] md:h-[620px]">
-                <div className="absolute inset-0 rounded-[2.8rem] bg-gradient-to-b from-[#2c2c2e] via-[#1c1c1e] to-[#161618] border border-white/[0.05] shadow-[0_35px_70px_-18px_rgba(0,0,0,0.75)]">
+              <div className="relative w-[290px] h-[600px] md:w-[320px] md:h-[660px]">
+                <div className="absolute inset-0 rounded-[2.8rem] bg-gradient-to-b from-white/[0.14] via-white/[0.06] to-white/[0.02] p-[1px] shadow-[0_45px_80px_-20px_rgba(0,0,0,0.8)]">
+                  <div className="absolute inset-0 rounded-[2.8rem] bg-gradient-to-b from-[#1a1e29] via-[#10141d] to-[#090c12] border border-white/[0.04]" />
                   <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[78px] h-[22px] bg-black rounded-full z-50" />
 
-                  <div className="absolute inset-[4px] rounded-[2.6rem] overflow-hidden bg-[#1c1c1e]">
+                  <div className="absolute inset-[4px] rounded-[2.6rem] overflow-hidden bg-[#0b1020]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(77,124,255,0.16),transparent_32%),radial-gradient(circle_at_80%_30%,rgba(34,211,238,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_32%)]" />
                     <div ref={mapLayerRef} className="absolute inset-x-0 top-0 w-full h-[170%]" style={{ willChange: 'transform', filter: 'blur(0px)', transform: 'translateZ(0)' }}>
                       <svg className="w-full h-full" viewBox="0 0 300 850" preserveAspectRatio="none">
                         {[
@@ -364,7 +381,7 @@ export default function VibeHero() {
                     </div>
 
                     <div ref={uiNavRef} className="absolute top-12 left-3.5 right-3.5 z-40" style={{ willChange: 'transform, opacity' }}>
-                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[rgba(28,28,30,0.88)] backdrop-blur-xl border border-white/[0.05]">
+                      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-[rgba(14,17,28,0.82)] backdrop-blur-2xl border border-white/[0.08] shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
                         <div className="w-6 h-6 rounded-lg bg-[rgba(10,132,255,0.08)] flex items-center justify-center">
                           <Navigation className="w-3 h-3 text-[#0A84FF]" />
                         </div>
@@ -377,7 +394,7 @@ export default function VibeHero() {
                     </div>
 
                     <div ref={uiCardRef} className="absolute bottom-4 left-3 right-3 z-40 gsap-card" style={{ willChange: 'transform, opacity' }}>
-                      <div className="p-3 rounded-2xl bg-[rgba(28,28,30,0.92)] backdrop-blur-xl border border-white/[0.05]">
+                      <div className="p-3 rounded-[1.35rem] bg-[rgba(14,17,28,0.88)] backdrop-blur-2xl border border-white/[0.08] shadow-[0_18px_40px_-28px_rgba(0,0,0,0.85)]">
                         <div className="flex items-center gap-2.5 mb-2.5">
                           <div className="w-8 h-8 rounded-lg bg-[rgba(10,132,255,0.06)] flex items-center justify-center">
                             <MapPin className="w-3.5 h-3.5 text-[#0A84FF]" />

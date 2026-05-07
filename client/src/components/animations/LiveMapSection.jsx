@@ -146,11 +146,11 @@ export default function LiveMapSection() {
   }, []);
 
   return (
-    <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden" ref={containerRef}>
+    <section className="py-32 md:py-40 px-6 bg-[#05070A]/90 relative overflow-hidden" ref={containerRef}>
       <div className="max-w-[1440px] mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left: Map */}
-          <div className="relative aspect-square rounded-3xl bg-[#0a0e1a] border border-white/[0.06] overflow-hidden map-container">
+          <div className="relative aspect-square rounded-3xl bg-[#0a0e1a] border border-white/[0.08] overflow-hidden map-container shadow-[0_30px_80px_-40px_rgba(0,0,0,0.85)]">
             {/* Map grid background */}
             <div className="absolute inset-0 opacity-[0.04]" style={{
               backgroundImage: 'linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)',

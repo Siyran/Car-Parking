@@ -137,7 +137,7 @@ export default function HowItWorks() {
   }, []);
 
   return (
-    <section ref={containerRef} className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden">
+    <section ref={containerRef} className="py-32 md:py-40 px-6 bg-[#05070A]/90 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px]" />

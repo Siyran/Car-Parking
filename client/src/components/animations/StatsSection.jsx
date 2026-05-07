@@ -89,7 +89,7 @@ export default function StatsSection() {
   }, []);
 
   return (
-    <section className="py-32 md:py-40 px-6 bg-[#05070A] relative overflow-hidden" ref={containerRef}>
+    <section className="py-32 md:py-40 px-6 bg-[#05070A]/90 relative overflow-hidden" ref={containerRef}>
       {/* Animated gradient bg */}
       <div className="absolute inset-0 pointer-events-none stats-bg-gradient" style={{
         background: 'radial-gradient(800px circle at 20% 50%, rgba(59,130,246,0.06), transparent 60%)',
@@ -110,7 +110,7 @@ export default function StatsSection() {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="relative p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center transition-all duration-500 group stat-card"
+              className="relative p-8 rounded-3xl bg-white/[0.035] border border-white/[0.08] text-center transition-all duration-500 group stat-card backdrop-blur-2xl shadow-[0_20px_60px_-30px_rgba(0,0,0,0.7)]"
             >
               <p className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
                 <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} isVisible={isVisible} />
