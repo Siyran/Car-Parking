@@ -183,7 +183,7 @@ export default function LiveTrackingMap({
         }
       },
       (err) => {
-        console.warn('GPS error:', err.message);
+        if (import.meta.env.DEV) console.warn('GPS error:', err.message);
         setGpsActive(false);
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
@@ -215,7 +215,7 @@ export default function LiveTrackingMap({
         }
       }
     } catch (err) {
-      console.warn('ETA fetch error:', err.message);
+      if (import.meta.env.DEV) console.warn('ETA fetch error:', err.message);
     }
   }, [destination]);
 

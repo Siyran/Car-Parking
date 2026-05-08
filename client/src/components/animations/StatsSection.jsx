@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useQuery } from '@tanstack/react-query';
+import api from '../../api';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,7 +32,7 @@ function AnimatedCounter({ target, suffix = '', prefix = '', isVisible }) {
   );
 }
 
-const stats = [
+const defaultStats = [
   { value: 5000, suffix: '+', label: 'Verified Spots', desc: 'Active across major cities' },
   { value: 12, suffix: 'ms', label: 'Response Time', desc: 'Near-instant updates' },
   { value: 0, prefix: '₹', suffix: '', label: 'Hidden Fees', desc: 'Transparent pricing always' },
@@ -40,6 +42,19 @@ const stats = [
 export default function StatsSection() {
   const containerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+
+  // Fetch live stats from backend (falls back to defaults)
+  const { data: statsData } = useQuery(['stats'], async () => {
+    const res = await api.get('/stats');
+    return res.data;
+  }, { staleTime: 60_000, retry: 1, refetchOnWindowFocus: false, placeholderData: null });
+
+  const stats = statsData ? [
+    { value: statsData.totalSpots || 5000, suffix: '+', label: 'Verified Spots', desc: 'Active across major cities' },
+    { value: statsData.responseMs || 12, suffix: 'ms', label: 'Response Time', desc: 'Near-instant updates' },
+    { value: 0, prefix: '₹', suffix: '', label: 'Hidden Fees', desc: 'Transparent pricing always' },
+    { value: statsData.uptimePercent || 99, suffix: '%', label: 'Uptime', desc: 'Enterprise-grade reliability' },
+  ] : defaultStats;
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {

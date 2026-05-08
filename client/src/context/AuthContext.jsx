@@ -55,7 +55,8 @@ export const AuthProvider = ({ children }) => {
         toast.success('Logged out successfully', { id: toastId });
       }
     } catch (err) {
-      console.error('Failed to auto-end session:', err);
+      // Log in dev only
+      if (import.meta.env.DEV) console.warn('Failed to auto-end session:', err);
       toast.error('Logout completed with session errors', { id: toastId });
     } finally {
       localStorage.removeItem('parkflow_token');

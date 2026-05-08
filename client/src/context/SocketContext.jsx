@@ -117,7 +117,7 @@ export const SocketProvider = ({ children }) => {
           });
         }
       },
-      (err) => console.warn('GPS broadcast error:', err.message),
+      (err) => { if (import.meta.env.DEV) console.warn('GPS broadcast error:', err.message); },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
     );
 

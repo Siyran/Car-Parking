@@ -189,7 +189,8 @@ export default function Search() {
       const { data } = await spotAPI.getNearby(params);
       
       if (!data || !Array.isArray(data.spots)) {
-        console.error('Invalid spots data received:', data);
+        // Bad response from API — notify user and abort
+        toast.error('Invalid data received from server while searching');
         setSpots([]);
         return;
       }
@@ -205,8 +206,8 @@ export default function Search() {
       withDist.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
       setSpots(withDist);
     } catch (err) {
-      console.error('Fetch spots failed:', err);
-      toast.error(`Search failed: ${err.message}`);
+      if (import.meta.env.DEV) console.warn('Fetch spots failed:', err);
+      toast.error(`Search failed: ${err?.message || 'Network error'}`);
     }
     setLoading(false);
   };

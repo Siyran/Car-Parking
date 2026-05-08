@@ -67,7 +67,7 @@ export default function MyBookings() {
       setBookings(bookingsRes?.data?.bookings || []);
       setActiveSession(activeRes?.data?.booking || null);
     } catch (err) {
-      console.error('Load bookings failed:', err);
+      if (import.meta.env.DEV) console.warn('Load bookings failed:', err);
       toast.error('Failed to load bookings');
     }
     setLoading(false);
