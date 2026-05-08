@@ -35,6 +35,7 @@ export default function VibeHero() {
   const [liveDemand, setLiveDemand] = useState(94);
   const [avgSavings, setAvgSavings] = useState(320);
   const [highlightSpot, setHighlightSpot] = useState(null);
+  const totalSpots = statsData?.totalSpots || 5000;
 
   const handleMouse = useCallback((e) => {
     const r = heroRef.current?.getBoundingClientRect();
@@ -264,7 +265,7 @@ export default function VibeHero() {
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 backdrop-blur-xl shadow-[0_12px_35px_-22px_rgba(0,0,0,0.8)]">
                 <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.7)]" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">Live network • 5,000+ spots</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">Live network • {Number(totalSpots).toLocaleString()}+ spots</span>
               </div>
 
               <h1 className="max-w-[12ch] text-[3.6rem] md:text-[5.2rem] lg:text-[6.4rem] font-black text-white tracking-[-0.05em] leading-[0.94]">
@@ -301,8 +302,8 @@ export default function VibeHero() {
 
               <div className="grid gap-3 sm:grid-cols-3 pt-2">
                 {[
-                  { icon: ShieldCheck, label: 'Verified listings', value: '100%' },
-                  { icon: TrendingUp, label: 'Faster booking', value: '2 min' },
+                  { icon: ShieldCheck, label: 'Verified listings', value: `${Math.min(100, Math.round((totalSpots / Math.max(totalSpots, 1)) * 100))}%` },
+                  { icon: TrendingUp, label: 'Faster booking', value: `${Math.max(1, Math.round(6 - (liveDemand / 30)))} min` },
                   { icon: Sparkles, label: 'No hidden fees', value: 'Zero' },
                 ].map((stat) => (
                   <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-2xl shadow-[0_18px_45px_-28px_rgba(0,0,0,0.8)]">
@@ -329,12 +330,12 @@ export default function VibeHero() {
               <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-white/[0.08] via-transparent to-cyan-400/10 blur-2xl" />
               <div className="absolute -left-10 top-24 hidden rounded-[2rem] border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl lg:block" style={{ transform: 'translateZ(90px)' }}>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">Live demand</p>
-                <p className="mt-1 text-2xl font-black text-white">94%</p>
+                  <p className="mt-1 text-2xl font-black text-white">{liveDemand}%</p>
               </div>
 
               <div className="absolute -right-6 bottom-24 hidden rounded-[2rem] border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl lg:block" style={{ transform: 'translateZ(110px)' }}>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">Avg. savings</p>
-                <p className="mt-1 text-2xl font-black text-emerald-300">₹320</p>
+                  <p className="mt-1 text-2xl font-black text-emerald-300">₹{Number(avgSavings).toLocaleString()}</p>
               </div>
 
               <div 
@@ -452,14 +453,14 @@ export default function VibeHero() {
                             <MapPin className="w-3.5 h-3.5 text-[#0A84FF]" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-[10px] font-semibold text-white/80">Sector 7 Hub • A-12</p>
+                            <p className="text-[10px] font-semibold text-white/80">{highlightSpot?.title || 'Loading live space'}{highlightSpot?.address ? ` • ${highlightSpot.address}` : ''}</p>
                             <div className="flex items-center gap-1 mt-0.5">
                               <Star className="w-2 h-2 text-[#FF9F0A] fill-[#FF9F0A]" />
-                              <span className="text-[8px] text-white/30">4.8 • Ground Floor</span>
+                              <span className="text-[8px] text-white/30">{(highlightSpot?.rating || 4.8).toFixed(1)} • {highlightSpot?.available_slots ?? highlightSpot?.availableSlots ?? 0} slots open</span>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-bold text-white leading-none">₹40</p>
+                            <p className="text-sm font-bold text-white leading-none">₹{Number(highlightSpot?.price_per_hour || highlightSpot?.price || 40).toLocaleString()}</p>
                             <p className="text-[7px] text-white/20">/hour</p>
                           </div>
                         </div>
