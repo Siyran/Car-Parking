@@ -1,20 +1,21 @@
 import { MapPin, Zap, Clock, Star } from 'lucide-react';
 import { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { spotAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 import MapOverlay from '../../components/map/MapOverlay';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const MARKERS = [
-  { id: 1, x: 15, y: 25, name: 'Sector 7 Hub', price: 40, rating: 4.8, available: 3 },
-  { id: 2, x: 55, y: 18, name: 'Mall Parking A', price: 60, rating: 4.5, available: 8 },
-  { id: 3, x: 75, y: 45, name: 'Tech Park Gate', price: 30, rating: 4.9, available: 2 },
-  { id: 4, x: 30, y: 60, name: 'Residential Block', price: 25, rating: 4.7, available: 5 },
-  { id: 5, x: 60, y: 70, name: 'City Center Deep', price: 80, rating: 4.6, available: 1 },
-  { id: 6, x: 85, y: 20, name: 'Airport Zone', price: 100, rating: 4.4, available: 12 },
-  { id: 7, x: 40, y: 40, name: 'Stadium Lot', price: 50, rating: 4.3, available: 6 },
-];
+// Convert lat/lng into a stable on-screen percentage position for the demo map.
+function latLngToPercent(lat, lng) {
+  // Simple deterministic projection for UI demo: normalize lat/lng into 10-90% range
+  const x = (((lng + 180) % 360) / 360) * 80 + 10; // 10%..90%
+  const y = (((90 - lat) / 180) % 1) * 80 + 10; // 10%..90%
+  return { x: Math.max(8, Math.min(92, x)), y: Math.max(8, Math.min(92, y)) };
+}
 
 function MapMarker({ marker, delay, onHover, isHovered }) {
   const markerRef = useRef(null);
@@ -93,6 +94,35 @@ export default function LiveMapSection() {
   const containerRef = useRef(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [activeCount, setActiveCount] = useState(37);
+  const socket = useSocket();
+
+  // Fetch nearby spots (demo center coordinates used)
+  const { data: spotsData } = useQuery(['spots', 'nearby'], async () => {
+    const res = await spotAPI.getNearby({ lat: 28.7041, lng: 77.1025, radius: 5000 });
+    return res.data;
+  }, { staleTime: 15_000, refetchInterval: 10_000, retry: 1, refetchOnWindowFocus: false });
+
+  const [markers, setMarkers] = useState([]);
+
+  // Map spots -> UI markers when data arrives
+  useEffect(() => {
+    if (!spotsData || !Array.isArray(spotsData.spots)) return;
+    const mapped = spotsData.spots.map((s) => {
+      const pos = latLngToPercent(s.lat || s.latitude || 0, s.lng || s.longitude || 0);
+      return {
+        id: s.id || s._id || `${s.lat}:${s.lng}`,
+        x: pos.x,
+        y: pos.y,
+        name: s.title || s.name || 'Parking Spot',
+        price: s.price || s.hourly || 0,
+        rating: s.rating || 4.5,
+        available: s.available || s.availableSlots || Math.max(0, Math.floor(Math.random() * 8))
+      };
+    });
+    setMarkers(mapped);
+    // set active count from API if provided
+    if (typeof spotsData.activeCount === 'number') setActiveCount(spotsData.activeCount);
+  }, [spotsData]);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -138,13 +168,16 @@ export default function LiveMapSection() {
     return () => ctx.revert();
   }, []);
 
-  // Simulate real-time updates
+  // Subscribe to real-time spot updates from socket and apply to markers
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveCount(prev => prev + Math.floor(Math.random() * 3) - 1);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!socket) return;
+    const unsub = socket.onSpotUpdate((data) => {
+      // data should be { id, available, price, rating }
+      setMarkers((prev) => prev.map((m) => m.id === data.id ? { ...m, ...data } : m));
+      if (typeof data.activeCount === 'number') setActiveCount(data.activeCount);
+    });
+    return unsub;
+  }, [socket]);
 
   return (
     <section className="py-32 md:py-40 px-6 bg-[#05070A]/90 relative overflow-hidden" ref={containerRef}>
@@ -170,11 +203,11 @@ export default function LiveMapSection() {
             <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
 
             {/* Markers */}
-            {MARKERS.map((m, i) => (
+            {markers.map((m, i) => (
               <MapMarker
                 key={m.id}
                 marker={m}
-                delay={0.3 + i * 0.12}
+                delay={0.3 + i * 0.08}
                 onHover={setHoveredId}
                 isHovered={hoveredId === m.id}
               />
