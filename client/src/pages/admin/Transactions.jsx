@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { adminAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { IndianRupee } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../lib/utils';
-import toast from 'react-hot-toast';
 
 export default function AdminTransactions() {
-  const [transactions, setTransactions] = useState([]);
   const [filter, setFilter] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { load(); }, [filter]);
-
-  const load = async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-transactions', filter],
+    queryFn: async () => {
       const { data } = await adminAPI.getTransactions({ type: filter || undefined });
-      setTransactions(data.transactions);
-    } catch { toast.error('Failed'); }
-    setLoading(false);
-  };
+      return data.transactions || [];
+    },
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
+
+  const transactions = data || [];
 
   const typeVariant = { booking: 'primary', payout: 'success', withdrawal: 'warning' };
 
@@ -63,7 +63,7 @@ export default function AdminTransactions() {
                 ))}
               </tbody>
             </table>
-            {transactions.length === 0 && !loading && (
+            {transactions.length === 0 && !isLoading && (
               <div className="text-center py-8 text-surface-400 text-sm">No transactions found</div>
             )}
           </div>

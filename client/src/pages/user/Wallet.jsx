@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { walletAPI } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,33 +11,34 @@ import Card from '../../components/ui/Card';
 
 export default function Wallet() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [balance, setBalance] = useState(0);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [showTopUp, setShowTopUp] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [upiLink, setUpiLink] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
+  const { data: walletData, isLoading } = useQuery({
+    queryKey: ['wallet-data'],
+    queryFn: async () => {
       const [balRes, histRes] = await Promise.all([
         walletAPI.getBalance(),
         walletAPI.getHistory()
       ]);
-      setBalance(balRes?.data?.balance || 0);
-      setHistory(histRes?.data?.transactions || []);
-    } catch (err) {
-      toast.error('Failed to load wallet data');
-    }
-    setLoading(false);
-  };
+      return {
+        balance: balRes?.data?.balance || 0,
+        history: histRes?.data?.transactions || []
+      };
+    },
+    enabled: Boolean(user),
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const history = walletData?.history || [];
+  const currentBalance = walletData?.balance ?? balance;
 
   const initiateUPI = async () => {
     const amount = parseFloat(topUpAmount);
@@ -72,7 +74,7 @@ export default function Wallet() {
       setShowQR(false);
       setShowTopUp(false);
       setTopUpAmount('');
-      loadData();
+      queryClient.invalidateQueries({ queryKey: ['wallet-data'] });
     } catch (err) {
       toast.error('Verification failed');
     }
@@ -113,7 +115,7 @@ export default function Wallet() {
           <div>
             <p className="text-xs font-medium text-surface-500 uppercase tracking-widest mb-2">Available Balance</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-white">₹{balance.toLocaleString('en-IN')}</span>
+              <span className="text-4xl font-bold text-white">₹{currentBalance.toLocaleString('en-IN')}</span>
               <span className="text-sm font-medium text-surface-500 uppercase">INR</span>
             </div>
           </div>
@@ -161,12 +163,12 @@ export default function Wallet() {
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-surface-400 uppercase tracking-widest px-1">Recent Activity</h3>
         <div className="space-y-2">
-          {loading && (
+          {isLoading && (
             <Card className="p-8 text-center text-surface-500">
               Loading wallet activity...
             </Card>
           )}
-          {!loading && history.length === 0 && (
+          {!isLoading && history.length === 0 && (
             <Card className="p-8 text-center text-surface-500">
               No wallet transactions yet.
             </Card>

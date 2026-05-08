@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -37,9 +38,9 @@ export default function SpotDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [spot, setSpot] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
@@ -53,25 +54,37 @@ export default function SpotDetail() {
   const [showLiveNav, setShowLiveNav] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
 
+  const { data, isLoading } = useQuery({
+    queryKey: ['spot-detail', id],
+    queryFn: async () => {
+      const { data } = await spotAPI.getById(id);
+      return data;
+    },
+    enabled: Boolean(id),
+    staleTime: 20_000,
+    retry: 1,
+    refetchOnWindowFocus: false
+  });
+
   useEffect(() => {
-    loadSpot();
     navigator.geolocation?.getCurrentPosition(
       (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
       () => {}
     );
   }, [id]);
 
-  const loadSpot = async () => {
-    try {
-      const { data } = await spotAPI.getById(id);
-      setSpot(data.spot);
-      setReviews(data.reviews || []);
-    } catch (err) {
+  useEffect(() => {
+    if (!data) return;
+    setSpot(data.spot);
+    setReviews(data.reviews || []);
+  }, [data]);
+
+  useEffect(() => {
+    if (!isLoading && !data?.spot) {
       toast.error('Spot not found');
       navigate('/search');
     }
-    setLoading(false);
-  };
+  }, [isLoading, data, navigate]);
 
   const openPaymentModal = async () => {
     if (!user) { navigate('/login'); return; }
@@ -129,13 +142,13 @@ export default function SpotDetail() {
       setShowReview(false);
       setReviewForm({ rating: 5, comment: '' });
       toast.success('Review added!');
-      loadSpot();
+      queryClient.invalidateQueries({ queryKey: ['spot-detail', id] });
     } catch (err) {
       toast.error('Failed to add review');
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-surface-950">
         <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
