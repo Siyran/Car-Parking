@@ -1,10 +1,13 @@
-import { useRef, useCallback, useLayoutEffect } from 'react';
+import { useRef, useCallback, useLayoutEffect, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, MapPin, Navigation, Star, Sparkles, ShieldCheck, TrendingUp } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import MapOverlay from '../../components/map/MapOverlay';
+import { useQuery } from '@tanstack/react-query';
+import api, { spotAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
@@ -28,6 +31,10 @@ export default function VibeHero() {
   const bgRef = useRef(null);
   const etaRef = useRef(null);
   const navigate = useNavigate();
+  const socket = useSocket();
+  const [liveDemand, setLiveDemand] = useState(94);
+  const [avgSavings, setAvgSavings] = useState(320);
+  const [highlightSpot, setHighlightSpot] = useState(null);
 
   const handleMouse = useCallback((e) => {
     const r = heroRef.current?.getBoundingClientRect();
@@ -188,6 +195,50 @@ export default function VibeHero() {
 
     return () => ctx.revert();
   }, []);
+
+  // Fetch quick hero stats (total spots / demand / savings)
+  const { data: statsData } = useQuery(['heroStats'], async () => {
+    const res = await api.get('/stats');
+    return res.data;
+  }, { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false, placeholderData: null });
+
+  useEffect(() => {
+    if (statsData) {
+      if (statsData.totalSpots) {
+        // update the Live network badge text via DOM (simple) — or could use state mapping
+      }
+      if (statsData.demandPercent) setLiveDemand(statsData.demandPercent);
+      if (statsData.avgSavings) setAvgSavings(statsData.avgSavings);
+    }
+  }, [statsData]);
+
+  // Highlight a nearby spot for the hero card
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await spotAPI.getNearby({ lat: 28.7041, lng: 77.1025, radius: 2000 });
+        const spot = res.data.spots?.[0];
+        if (spot && mounted) setHighlightSpot(spot);
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn('Hero spot fetch failed', err);
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
+
+  // Subscribe to socket updates for the highlighted spot (ETA/availability)
+  useEffect(() => {
+    if (!socket || !highlightSpot) return;
+    const handle = (data) => {
+      if (data.id === highlightSpot.id) {
+        // update UI values if provided
+        if (data.price) setAvgSavings(Math.max(0, Math.round((avgSavings + data.price) / 2)));
+      }
+    };
+    const unsub = socket.onSpotUpdate(handle);
+    return unsub;
+  }, [socket, highlightSpot]);
 
   return (
     <section

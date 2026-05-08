@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
+import { spotAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
 
 const ThreeParkingScene = () => {
   const mountRef = useRef(null);
@@ -68,24 +70,48 @@ const ThreeParkingScene = () => {
     carShadow.position.z = -0.05;
     carPlane.add(carShadow);
 
-    // 5. PARKING SPOTS (GLOW SPRITES)
+    // 5. PARKING SPOTS (GLOW SPRITES) - prefer API-driven spots
     const spots = [];
     const glowTexture = textureLoader.load("https://res.cloudinary.com/df9v7as6k/image/upload/v1642103507/radial-glow.png"); // Generic radial glow
-    
-    for (let i = 0; i < 15; i++) {
+
+    // helper: convert lat/lng -> scene coords
+    function proj(lat, lng) {
+      const x = (lng - 77.1025) * 120; // tuned scale for display
+      const y = (lat - 28.7041) * -120;
+      return { x, y };
+    }
+
+    // Async populate spots from API (fallback to random)
+    (async () => {
+      let spotData = [];
+      try {
+        const res = await spotAPI.getNearby({ lat: 28.7041, lng: 77.1025, radius: 8000 });
+        spotData = res.data.spots || [];
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn('Three scene spot fetch failed', err);
+        for (let i = 0; i < 15; i++) {
+          spotData.push({ id: `r${i}`, lat: 28.7 + (Math.random() - 0.5) * 0.1, lng: 77.1 + (Math.random() - 0.5) * 0.1, available: Math.random() > 0.3 });
+        }
+      }
+
+      spotData.forEach((s, i) => {
+        const color = s.available ? 0x00ffa3 : 0xff3b3b;
         const spotMat = new THREE.SpriteMaterial({ 
           map: glowTexture, 
-          color: Math.random() > 0.3 ? 0x00ffa3 : 0xff3b3b,
+          color,
           transparent: true,
           opacity: 0.6,
           blending: THREE.AdditiveBlending
         });
         const spot = new THREE.Sprite(spotMat);
-        spot.position.set((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 20, -1.8);
-        spot.scale.set(0.6, 0.6, 1);
+        const p = proj(s.lat || s.latitude || 28.7041, s.lng || s.longitude || 77.1025);
+        spot.position.set(p.x, p.y, -1.8);
+        const scale = 0.6 + Math.min(1.8, (s.available ? 1.2 : 0.6));
+        spot.scale.set(scale, scale, 1);
         scene.add(spot);
-        spots.push(spot);
-    }
+        spots.push({ sprite: spot, id: s.id || s._id || `gen-${i}` });
+      });
+    })();
 
     // 6. GSAP ANIMATION TIMELINE
     const tl = gsap.timeline({
@@ -111,10 +137,11 @@ const ThreeParkingScene = () => {
       carPlane.position.y += Math.sin(delta * 2) * 0.002;
       
       // Pulsing spots
-      spots.forEach((s, i) => {
+      spots.forEach((entry, i) => {
+        const s = entry.sprite || entry;
         const pulse = 0.5 + Math.sin(delta * 2 + i) * 0.2;
         s.scale.set(pulse, pulse, 1);
-        s.material.opacity = 0.4 + Math.sin(delta * 2 + i) * 0.2;
+        if (s.material) s.material.opacity = 0.4 + Math.sin(delta * 2 + i) * 0.2;
       });
 
       renderer.render(scene, camera);
@@ -135,6 +162,15 @@ const ThreeParkingScene = () => {
       renderer.dispose();
       tl.kill();
       ScrollTrigger.getAll().forEach(t => t.kill());
+      // remove any sprites
+      try {
+        spots.forEach((entry) => {
+          const s = entry.sprite || entry;
+          scene.remove(s);
+          if (s.material) s.material.dispose();
+          if (s.geometry) s.geometry.dispose();
+        });
+      } catch (e) { /* ignore */ }
       if (mountRef.current) mountRef.current.removeChild(renderer.domElement);
     };
   }, []);
