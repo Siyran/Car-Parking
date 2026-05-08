@@ -116,7 +116,7 @@ export default function LiveMapSection() {
         name: s.title || s.name || 'Parking Spot',
         price: s.price || s.hourly || 0,
         rating: s.rating || 4.5,
-        available: s.available || s.availableSlots || Math.max(0, Math.floor(Math.random() * 8))
+        available: Number.isFinite(s.available) ? s.available : (Number.isFinite(s.availableSlots) ? s.availableSlots : 0)
       };
     });
     setMarkers(mapped);

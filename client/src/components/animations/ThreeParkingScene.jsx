@@ -90,7 +90,13 @@ const ThreeParkingScene = () => {
       } catch (err) {
         if (import.meta.env.DEV) console.warn('Three scene spot fetch failed', err);
         for (let i = 0; i < 15; i++) {
-          spotData.push({ id: `r${i}`, lat: 28.7 + (Math.random() - 0.5) * 0.1, lng: 77.1 + (Math.random() - 0.5) * 0.1, available: Math.random() > 0.3 });
+          const offset = (i % 5) - 2;
+          spotData.push({
+            id: `r${i}`,
+            lat: 28.7041 + offset * 0.01,
+            lng: 77.1025 + (Math.floor(i / 5) - 1) * 0.012,
+            available: i % 3 !== 0
+          });
         }
       }
 
