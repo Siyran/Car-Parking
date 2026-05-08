@@ -17,20 +17,20 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[12000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[11999] bg-surface-950/80 backdrop-blur-md" 
+            className="fixed inset-0 z-[10000] bg-surface-950/60 backdrop-blur-sm" 
           />
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`relative glass-dark border border-white/10 rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden flex flex-col`}
+            className={`relative z-[10002] glass-dark border border-white/10 rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden flex flex-col`}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-surface-950/40 backdrop-blur-xl">
               <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
