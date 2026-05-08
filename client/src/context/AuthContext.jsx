@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const { data } = await authAPI.login({ email, password });
     localStorage.setItem('parkflow_token', data.token);
+    if (data.refresh) localStorage.setItem('parkflow_refresh', data.refresh);
     localStorage.setItem('parkflow_user', JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
@@ -36,6 +37,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (formData) => {
     const { data } = await authAPI.register(formData);
     localStorage.setItem('parkflow_token', data.token);
+    if (data.refresh) localStorage.setItem('parkflow_refresh', data.refresh);
     localStorage.setItem('parkflow_user', JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
@@ -44,6 +46,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     const toastId = toast.loading('Logging out and securing session...');
     try {
+      const refresh = localStorage.getItem('parkflow_refresh');
+      try {
+        await authAPI.logout({ refresh });
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn('Logout API failed:', err);
+      }
       if (user?.role === 'user') {
         const { data } = await bookingAPI.endActive();
         if (data.booking) {
@@ -61,6 +69,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem('parkflow_token');
       localStorage.removeItem('parkflow_user');
+      localStorage.removeItem('parkflow_refresh');
       setUser(null);
     }
   };

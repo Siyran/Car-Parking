@@ -10,27 +10,68 @@ const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' }
 });
-
 const getLoginUrl = () => {
   const { origin, pathname, search } = window.location;
   return `${origin}${pathname}${search}#/login`;
 };
 
+// Refresh handling
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function onRefreshed(token) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
+function addRefreshSubscriber(cb) {
+  refreshSubscribers.push(cb);
+}
+
+async function refreshAuthToken() {
+  const refresh = localStorage.getItem('parkflow_refresh');
+  if (!refresh) throw new Error('No refresh token');
+  // use a bare axios instance to avoid interceptor loops
+  const plain = axios.create({ baseURL: baseURL, headers: { 'Content-Type': 'application/json' } });
+  const res = await plain.post('/auth/refresh', { refresh });
+  return res.data.token;
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('parkflow_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('parkflow_token');
-      localStorage.removeItem('parkflow_user');
-      window.location.href = getLoginUrl();
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          const newToken = await refreshAuthToken();
+          localStorage.setItem('parkflow_token', newToken);
+          isRefreshing = false;
+          onRefreshed(newToken);
+        }
+
+        return new Promise((resolve, reject) => {
+          addRefreshSubscriber((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          });
+        });
+      } catch (err) {
+        // Refresh failed: clear storage and redirect to login
+        localStorage.removeItem('parkflow_token');
+        localStorage.removeItem('parkflow_user');
+        localStorage.removeItem('parkflow_refresh');
+        window.location.href = getLoginUrl();
+        return Promise.reject(err);
+      }
     }
     return Promise.reject(error);
   }
