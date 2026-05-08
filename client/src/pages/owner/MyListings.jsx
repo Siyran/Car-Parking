@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { spotAPI } from '../../api';
 import Card from '../../components/ui/Card';
@@ -9,25 +10,26 @@ import { formatCurrency } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 export default function MyListings() {
-  const [spots, setSpots] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
-    try {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ['owner-spots'],
+    queryFn: async () => {
       const { data } = await spotAPI.getMy();
-      setSpots(data.spots);
-    } catch { toast.error('Failed to load'); }
-    setLoading(false);
-  };
+      return data.spots || [];
+    },
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
+
+  const spots = data || [];
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this spot?')) return;
     try {
       await spotAPI.delete(id);
       toast.success('Deleted');
-      load();
+      queryClient.invalidateQueries({ queryKey: ['owner-spots'] });
     } catch { toast.error('Failed'); }
   };
 
@@ -51,7 +53,7 @@ export default function MyListings() {
           </Link>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
         ) : spots.length === 0 ? (
           <div className="text-center py-24 glass-dark border border-white/5 rounded-[3rem]">

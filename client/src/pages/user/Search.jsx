@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useNavigate } from 'react-router-dom';
@@ -119,7 +120,6 @@ export default function Search() {
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([34.0837, 74.7973]); // Srinagar default
   const [spots, setSpots] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [view, setView] = useState('map');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ minPrice: '', maxPrice: '', radius: 5000 });
@@ -130,6 +130,43 @@ export default function Search() {
   const [routeInfo, setRouteInfo] = useState(null);
   const searchTimeout = useRef(null);
   const watchIdRef = useRef(null);
+
+  const nearbyQuery = useQuery({
+    queryKey: [
+      'nearby-spots',
+      mapCenter?.[0],
+      mapCenter?.[1],
+      filters.radius,
+      filters.minPrice,
+      filters.maxPrice
+    ],
+    queryFn: async () => {
+      const lat = mapCenter?.[0];
+      const lng = mapCenter?.[1];
+      if (!lat || !lng) return [];
+
+      const params = { lat, lng, radius: filters.radius };
+      if (filters.minPrice) params.minPrice = filters.minPrice;
+      if (filters.maxPrice) params.maxPrice = filters.maxPrice;
+
+      const { data } = await spotAPI.getNearby(params);
+      if (!data || !Array.isArray(data.spots)) {
+        throw new Error('Invalid data received from server while searching');
+      }
+
+      return data.spots.map(s => {
+        if (!s.location || !s.location.coordinates) return { ...s, distance: null };
+        return {
+          ...s,
+          distance: userLocation ? getDistance(userLocation[0], userLocation[1], s.location.coordinates[1], s.location.coordinates[0]) : null
+        };
+      }).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+    },
+    enabled: Boolean(mapCenter?.[0] && mapCenter?.[1]),
+    staleTime: 10_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -175,42 +212,15 @@ export default function Search() {
   }, [onSpotUpdate]);
 
   useEffect(() => {
-    if (mapCenter) fetchSpots(mapCenter[0], mapCenter[1]);
-  }, [mapCenter]);
-
-  const fetchSpots = async (lat, lng) => {
-    if (!lat || !lng) return;
-    setLoading(true);
-    try {
-      const params = { lat, lng, radius: filters.radius };
-      if (filters.minPrice) params.minPrice = filters.minPrice;
-      if (filters.maxPrice) params.maxPrice = filters.maxPrice;
-      
-      const { data } = await spotAPI.getNearby(params);
-      
-      if (!data || !Array.isArray(data.spots)) {
-        // Bad response from API — notify user and abort
-        toast.error('Invalid data received from server while searching');
-        setSpots([]);
-        return;
-      }
-
-      const withDist = data.spots.map(s => {
-        if (!s.location || !s.location.coordinates) return { ...s, distance: null };
-        return {
-          ...s,
-          distance: userLocation ? getDistance(userLocation[0], userLocation[1], s.location.coordinates[1], s.location.coordinates[0]) : null
-        };
-      });
-      
-      withDist.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
-      setSpots(withDist);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Fetch spots failed:', err);
-      toast.error(`Search failed: ${err?.message || 'Network error'}`);
+    if (nearbyQuery.data) setSpots(nearbyQuery.data);
+    else if (nearbyQuery.error) {
+      if (import.meta.env.DEV) console.warn('Fetch spots failed:', nearbyQuery.error);
+      toast.error(`Search failed: ${nearbyQuery.error?.message || 'Network error'}`);
+      setSpots([]);
     }
-    setLoading(false);
-  };
+  }, [nearbyQuery.data, nearbyQuery.error]);
+
+  const loading = nearbyQuery.isLoading;
 
   const requestUserLocation = () => {
     return new Promise((resolve, reject) => {
@@ -340,7 +350,7 @@ export default function Search() {
                 <option value={10000} className="bg-surface-900">10 KM</option>
               </select>
             </div>
-            <Button size="sm" onClick={() => fetchSpots(mapCenter[0], mapCenter[1])} className="h-9 rounded-lg">Apply</Button>
+            <Button size="sm" onClick={() => nearbyQuery.refetch()} className="h-9 rounded-lg">Apply</Button>
           </motion.div>
         )}
       </AnimatePresence>
