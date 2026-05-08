@@ -1,27 +1,69 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Smartphone, ShieldCheck, Activity, Zap, Radio, Signal, Lock, Star, Globe, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { bookingAPI, walletAPI } from '../../api';
+import { useSocket } from '../../context/SocketContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MobileInterface() {
+  const { user } = useAuth();
+  const socket = useSocket();
   const [ledger, setLedger] = useState([
     { id: 'ID_7742', type: 'Check-in', status: 'Active' },
     { id: 'ID_7741', type: 'Payout', status: 'Complete' },
     { id: 'ID_7740', type: 'Processing', status: 'Synced' },
   ]);
 
+  const { data: bookingsData } = useQuery(['mobile-bookings'], async () => {
+    const res = await bookingAPI.getMy();
+    return res.data;
+  }, { staleTime: 20_000, refetchInterval: 15_000, retry: 1, refetchOnWindowFocus: false, enabled: Boolean(user) });
+
+  const { data: walletData } = useQuery(['wallet-balance'], async () => {
+    try {
+      const res = await walletAPI.getBalance();
+      return res.data;
+    } catch {
+      return { balance: 2440 };
+    }
+  }, { staleTime: 60_000, retry: 0, refetchOnWindowFocus: false, enabled: Boolean(user) });
+
+  const totalEarnings = useMemo(() => {
+    if (!bookingsData?.bookings?.length) return 2440;
+    return bookingsData.bookings.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0);
+  }, [bookingsData]);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLedger(prev => {
-        const newTx = { 
-          id: `ID_${Math.floor(Math.random() * 9000) + 1000}`, 
-          type: Math.random() > 0.5 ? 'Check-in' : 'Payout', 
-          status: 'Active' 
-        };
-        return [newTx, ...prev.slice(0, 3)];
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!bookingsData?.bookings?.length) return;
+    const recent = bookingsData.bookings.slice(0, 3).map((booking, index) => ({
+      id: `ID_${String(booking.id).slice(-4).padStart(4, '0')}`,
+      type: booking.status === 'cancelled' ? 'Cancelled' : booking.status === 'paid' ? 'Payout' : 'Check-in',
+      status: booking.status === 'cancelled' ? 'Cancelled' : booking.status === 'paid' ? 'Complete' : 'Active',
+      booking,
+      index
+    }));
+    setLedger((prev) => {
+      const merged = [...recent, ...prev].slice(0, 4);
+      return merged.filter((item, idx, arr) => arr.findIndex((x) => x.id === item.id) === idx);
+    });
+  }, [bookingsData]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const unsub = socket.onSpotUpdate((update) => {
+      if (!update?.bookingId && !update?.id) return;
+      setLedger((prev) => [
+        {
+          id: `ID_${String(update.bookingId || update.id).slice(-4).padStart(4, '0')}`,
+          type: update.available === 0 ? 'Check-in' : 'Processing',
+          status: update.available === 0 ? 'Active' : 'Synced'
+        },
+        ...prev,
+      ].slice(0, 4));
+    });
+    return unsub;
+  }, [socket]);
 
   return (
     <div className="relative group perspective-1000">
@@ -115,7 +157,7 @@ export default function MobileInterface() {
              <div className="flex justify-between items-end">
                 <div>
                    <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Your Earnings</p>
-                   <h4 className="text-2xl font-black text-white italic tracking-tighter">₹2,440.00</h4>
+                   <h4 className="text-2xl font-black text-white italic tracking-tighter">₹{Number(walletData?.balance ?? totalEarnings).toLocaleString()}</h4>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center">
                    <Zap className="w-5 h-5 text-primary-400" />
