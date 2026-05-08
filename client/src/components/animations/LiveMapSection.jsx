@@ -1,5 +1,6 @@
 import { MapPin, Zap, Clock, Star } from 'lucide-react';
 import { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import MapOverlay from '../../components/map/MapOverlay';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -180,18 +181,20 @@ export default function LiveMapSection() {
             ))}
 
             {/* Live badge */}
-            <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Live</span>
-            </div>
+            <MapOverlay left="20px" top="20px">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/6 backdrop-blur-sm border border-white/12 shadow-sm">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-semibold text-white/70 uppercase tracking-widest">Live</span>
+              </div>
+            </MapOverlay>
 
             {/* Active spots counter */}
-            <div className="absolute bottom-5 right-5 px-4 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-              <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Active Spots</p>
-              <div
-                className="text-2xl font-black text-white"
-              >{activeCount}</div>
-            </div>
+            <MapOverlay right="20px" bottom="20px">
+              <div className="px-4 py-2 rounded-xl bg-white/6 backdrop-blur-sm border border-white/12 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.8)]">
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Active Spots</p>
+                <div className="text-2xl font-black text-white">{activeCount}</div>
+              </div>
+            </MapOverlay>
           </div>
 
           {/* Right: Copy */}

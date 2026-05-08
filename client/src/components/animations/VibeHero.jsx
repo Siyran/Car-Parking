@@ -4,6 +4,7 @@ import { ArrowRight, MapPin, Navigation, Star, Sparkles, ShieldCheck, TrendingUp
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import MapOverlay from '../../components/map/MapOverlay';
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
@@ -425,6 +426,17 @@ export default function VibeHero() {
                     </div>
                     <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-24 h-[3px] bg-white/12 rounded-full z-50" />
                   </div>
+
+                    {/* Small overlay CTA on hero map (consistent with MapOverlay usage) */}
+                    <MapOverlay right="24px" top="28px" className="hidden lg:block">
+                      <div className="rounded-xl p-3 bg-white/6 border border-white/10 backdrop-blur-sm shadow-[0_12px_40px_-22px_rgba(0,0,0,0.7)]">
+                        <p className="text-xs font-bold text-white/70">Explore Live Map</p>
+                        <button onClick={() => window.scrollTo({ top: document.getElementById('live-map')?.offsetTop || 0, behavior: 'smooth' })} className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-primary-500 to-cyan-400 text-[#05070A] font-semibold text-xs">
+                          Open Map
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </MapOverlay>
 
                   <div
                     ref={lightRef}
