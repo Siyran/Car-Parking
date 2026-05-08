@@ -1,7 +1,7 @@
 import express from 'express';
 import db from '../db.js';
 import bcrypt from 'bcrypt';
-import { signAccess, signRefresh } from '../middleware/auth.js';
+import { signAccess, signRefresh, requireAuth } from '../middleware/auth.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -72,6 +72,18 @@ router.post('/logout', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT id, email, name, role FROM users WHERE id=$1', [req.user.id]);
+    const user = rows[0];
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load profile' });
   }
 });
 
