@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { billingAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -9,25 +10,32 @@ import toast from 'react-hot-toast';
 
 export default function Billing() {
   const [bill, setBill] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(null);
+  const queryClient = useQueryClient();
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
 
-  useEffect(() => { loadBill(); }, [month]);
+  const { data, isLoading } = useQuery({
+    queryKey: ['monthly-billing', month],
+    queryFn: async () => {
+      try {
+        const { data } = await billingAPI.getMonthly({ month });
+        return data;
+      } catch (err) {
+        toast.error('Failed to load bill');
+        throw err;
+      }
+    },
+    staleTime: 20_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
 
-  const loadBill = async () => {
-    setLoading(true);
-    try {
-      const { data } = await billingAPI.getMonthly({ month });
-      setBill(data);
-    } catch (err) {
-      toast.error('Failed to load bill');
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    if (data) setBill(data);
+  }, [data]);
 
 
   const handlePay = async (method) => {
@@ -35,7 +43,7 @@ export default function Billing() {
     try {
       await billingAPI.pay({ month, amount: bill.totalAmount, paymentMethod: method });
       toast.success(`Payment successful via ${method}!`);
-      loadBill();
+      queryClient.invalidateQueries({ queryKey: ['monthly-billing'] });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Payment failed');
     }
@@ -52,7 +60,7 @@ export default function Billing() {
             className="text-xs px-4 py-2 rounded-xl bg-surface-900 border border-white/5 text-white focus:ring-2 focus:ring-primary-500/30 outline-none uppercase font-black tracking-widest" />
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>
         ) : bill && (
           <>

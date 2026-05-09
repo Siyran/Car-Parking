@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -59,15 +60,56 @@ export default function OwnerDashboard() {
   const { subscribeToDrivers, subscribeToDriverETA, joinSpot, leaveSpot, onGPSStopped } = useSocket();
   const [stats, setStats] = useState({ totalSpots: 0, activeBookings: 0, totalEarnings: 0 });
   const [recentBookings, setRecentBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeDrivers, setActiveDrivers] = useState([]);
   const [liveDriverPositions, setLiveDriverPositions] = useState(new Map());
   const [ownerSpots, setOwnerSpots] = useState([]);
   const [mapMode, setMapMode] = useState('portfolio');
 
+  const { data, isLoading } = useQuery({
+    queryKey: ['owner-dashboard'],
+    queryFn: async () => {
+      try {
+        const [dashRes, spotsRes] = await Promise.all([
+          billingAPI.getOwnerDashboard(),
+          spotAPI.getMy()
+        ]);
+
+        const driversRes = await bookingAPI.getOwnerDrivers().catch(() => ({ data: { drivers: [] } }));
+
+        return {
+          stats: {
+            totalSpots: dashRes.data.totalSpots || 0,
+            activeBookings: dashRes.data.activeBookings || 0,
+            totalEarnings: dashRes.data.totalEarnings || 0
+          },
+          recentBookings: dashRes.data.recentTransactions || [],
+          ownerSpots: spotsRes.data.spots || [],
+          activeDrivers: driversRes.data.drivers || []
+        };
+      } catch (err) {
+        toast.error('Failed to sync dashboard data');
+        throw err;
+      }
+    },
+    staleTime: 20_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
+
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!data) return;
+
+    setStats(data.stats);
+    setRecentBookings(data.recentBookings);
+    setOwnerSpots(data.ownerSpots);
+    setActiveDrivers(data.activeDrivers);
+
+    const posMap = new Map();
+    (data.activeDrivers || []).forEach(d => {
+      if (d.position) posMap.set(d.bookingId, { lat: d.position.lat, lng: d.position.lng, heading: d.position.heading || 0, userId: d.user?._id });
+    });
+    setLiveDriverPositions(posMap);
+  }, [data]);
 
   useEffect(() => {
     if (ownerSpots.length === 0) return;
@@ -97,34 +139,6 @@ export default function OwnerDashboard() {
       unsubStop();
     };
   }, [ownerSpots]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [dashRes, spotsRes] = await Promise.all([
-        billingAPI.getOwnerDashboard(),
-        spotAPI.getMy()
-      ]);
-      setStats({
-        totalSpots: dashRes.data.totalSpots || 0,
-        activeBookings: dashRes.data.activeBookings || 0,
-        totalEarnings: dashRes.data.totalEarnings || 0
-      });
-      setRecentBookings(dashRes.data.recentTransactions || []);
-      setOwnerSpots(spotsRes.data.spots || []);
-
-      const driversRes = await bookingAPI.getOwnerDrivers().catch(() => ({ data: { drivers: [] } }));
-      setActiveDrivers(driversRes.data.drivers || []);
-      const posMap = new Map();
-      (driversRes.data.drivers || []).forEach(d => {
-        if (d.position) posMap.set(d.bookingId, { lat: d.position.lat, lng: d.position.lng, heading: d.position.heading || 0, userId: d.user?._id });
-      });
-      setLiveDriverPositions(posMap);
-    } catch (err) {
-      toast.error('Failed to sync dashboard data');
-    }
-    setLoading(false);
-  };
 
   const statCards = [
     { label: 'Total Spaces', value: stats.totalSpots, note: `${ownerSpots.filter((spot) => spot.status === 'approved').length} approved`, icon: MapPin, color: 'text-primary-300', bg: 'from-primary-500/20 to-primary-500/5', glow: 'shadow-[0_0_40px_-18px_rgba(59,92,255,0.6)]' },

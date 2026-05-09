@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { bookingAPI } from '../../api';
 import { useSocket } from '../../context/SocketContext';
@@ -13,20 +14,39 @@ import toast from 'react-hot-toast';
 
 export default function MyBookings() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { startGPSBroadcast, stopGPSBroadcast, onETAUpdate, emitGPSStop } = useSocket();
   const [bookings, setBookings] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [filter, setFilter] = useState('');
-  const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [showLiveMap, setShowLiveMap] = useState(false);
   const [liveETA, setLiveETA] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
 
+  const { data, isLoading } = useQuery({
+    queryKey: ['my-bookings', filter],
+    queryFn: async () => {
+      const [bookingsRes, activeRes] = await Promise.all([
+        bookingAPI.getMy({ status: filter || undefined }),
+        bookingAPI.getActive()
+      ]);
+      return {
+        bookings: bookingsRes?.data?.bookings || [],
+        activeSession: activeRes?.data?.booking || null
+      };
+    },
+    staleTime: 10_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
+
   useEffect(() => {
-    loadData();
-  }, [filter]);
+    if (!data) return;
+    setBookings(data.bookings);
+    setActiveSession(data.activeSession);
+  }, [data]);
 
   useEffect(() => {
     if (!activeSession) return;
@@ -57,22 +77,6 @@ export default function MyBookings() {
     return unsub;
   }, [activeSession?._id, onETAUpdate]);
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [bookingsRes, activeRes] = await Promise.all([
-        bookingAPI.getMy({ status: filter || undefined }),
-        bookingAPI.getActive()
-      ]);
-      setBookings(bookingsRes?.data?.bookings || []);
-      setActiveSession(activeRes?.data?.booking || null);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Load bookings failed:', err);
-      toast.error('Failed to load bookings');
-    }
-    setLoading(false);
-  };
-
   const handleEnd = async () => {
     if (!activeSession) return;
     setEnding(true);
@@ -82,7 +86,7 @@ export default function MyBookings() {
       toast.success(`Session Ended: ₹${data.booking.totalAmount} charged`);
       setActiveSession(null);
       setLiveETA(null);
-      loadData();
+      queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
     } catch (err) {
       toast.error('Failed to end session');
     }
@@ -96,7 +100,7 @@ export default function MyBookings() {
       toast.success('Reservation cancelled');
       setActiveSession(null);
       setLiveETA(null);
-      loadData();
+      queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
     } catch (err) {
       toast.error('Failed to cancel');
     }
@@ -205,7 +209,7 @@ export default function MyBookings() {
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-surface-400 uppercase tracking-widest px-1">Booking History</h3>
         <div className="space-y-2">
-          {bookings.length === 0 && !loading && (
+          {bookings.length === 0 && !isLoading && (
             <div className="text-center py-12">
               <Calendar className="w-12 h-12 mx-auto mb-4 opacity-20 text-white" />
               <p className="text-surface-500">No bookings found</p>
