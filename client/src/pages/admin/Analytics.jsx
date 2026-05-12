@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { adminAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -8,20 +8,18 @@ import { formatCurrency } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 export default function AdminDashboard() {
-  const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
-    try {
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: async () => {
       const { data } = await adminAPI.getAnalytics();
-      setAnalytics(data);
-    } catch { toast.error('Failed to load'); }
-    setLoading(false);
-  };
+      return data;
+    },
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
 
-  if (loading) return <div className="pt-20 flex justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>;
+  if (isLoading) return <div className="pt-20 flex justify-center min-h-screen"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>;
 
   const stats = [
     { label: 'Total Users', value: analytics?.users?.total, sub: `${analytics?.users?.regular} regular, ${analytics?.users?.owners} owners`, icon: Users, color: 'from-primary-500 to-blue-400' },

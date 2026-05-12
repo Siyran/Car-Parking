@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -8,26 +9,27 @@ import { formatCurrency, formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 export default function AdminListings() {
-  const [spots, setSpots] = useState([]);
   const [filter, setFilter] = useState('pending');
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => { load(); }, [filter]);
-
-  const load = async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-listings', filter],
+    queryFn: async () => {
       const { data } = await adminAPI.getSpots({ status: filter || undefined });
-      setSpots(data.spots);
-    } catch { toast.error('Failed'); }
-    setLoading(false);
-  };
+      return data.spots || [];
+    },
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
+
+  const spots = data || [];
 
   const handleApprove = async (id, action) => {
     try {
       await adminAPI.approveSpot(id, action);
       toast.success(`Spot ${action}d`);
-      load();
+      queryClient.invalidateQueries({ queryKey: ['admin-listings'] });
     } catch { toast.error('Failed'); }
   };
 
@@ -48,7 +50,7 @@ export default function AdminListings() {
         </div>
 
         <div className="space-y-4">
-          {loading ? (
+          {isLoading ? (
             <div className="flex justify-center py-12"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }} /></div>
           ) : spots.length === 0 ? (
             <div className="text-center py-12 text-surface-400"><p>No listings found</p></div>

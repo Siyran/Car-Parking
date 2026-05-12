@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { billingAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -9,20 +9,23 @@ import toast from 'react-hot-toast';
 
 export default function Earnings() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: ['owner-earnings'],
+    queryFn: async () => {
+      try {
+        const { data: d } = await billingAPI.getOwnerEarnings();
+        return d;
+      } catch {
+        toast.error('Failed to load earnings data');
+        throw new Error('Failed to load earnings data');
+      }
+    },
+    staleTime: 20_000,
+    refetchOnWindowFocus: false,
+    retry: 1
+  });
 
-  useEffect(() => { load(); }, []);
-
-  const load = async () => {
-    try {
-      const { data: d } = await billingAPI.getOwnerEarnings();
-      setData(d);
-    } catch { toast.error('Failed to load earnings data'); }
-    setLoading(false);
-  };
-
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-surface-950">
       <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
       <p className="text-sm text-surface-500 font-medium tracking-widest uppercase">Loading earnings...</p>
