@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { spotAPI } from '../../api';
@@ -28,7 +29,6 @@ function MapRecenter({ position }) {
 export default function AddSpot() {
   const navigate = useNavigate();
   const fileRef = useRef();
-  const [loading, setLoading] = useState(false);
   const [position, setPosition] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -37,6 +37,19 @@ export default function AddSpot() {
     amenities: '', vehicleTypes: ['car']
   });
   const [locating, setLocating] = useState(false);
+
+  const createSpot = useMutation({
+    mutationFn: async (formData) => {
+      await spotAPI.create(formData);
+    },
+    onSuccess: () => {
+      toast.success('Parking spot added successfully!');
+      navigate('/owner/listings');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.error || 'Failed to add spot');
+    }
+  });
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
@@ -76,27 +89,19 @@ export default function AddSpot() {
     e.preventDefault();
     if (!position) { toast.error('Please drop a pin on the map'); return; }
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('title', form.title);
-      formData.append('description', form.description);
-      formData.append('address', form.address);
-      formData.append('latitude', position[0]);
-      formData.append('longitude', position[1]);
-      formData.append('totalSlots', form.totalSlots);
-      formData.append('pricePerHour', form.pricePerHour);
-      formData.append('amenities', JSON.stringify(form.amenities.split(',').map(s => s.trim()).filter(Boolean)));
-      formData.append('vehicleTypes', JSON.stringify(form.vehicleTypes));
-      photos.forEach(p => formData.append('photos', p));
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('description', form.description);
+    formData.append('address', form.address);
+    formData.append('latitude', position[0]);
+    formData.append('longitude', position[1]);
+    formData.append('totalSlots', form.totalSlots);
+    formData.append('pricePerHour', form.pricePerHour);
+    formData.append('amenities', JSON.stringify(form.amenities.split(',').map(s => s.trim()).filter(Boolean)));
+    formData.append('vehicleTypes', JSON.stringify(form.vehicleTypes));
+    photos.forEach(p => formData.append('photos', p));
 
-      await spotAPI.create(formData);
-      toast.success('Parking spot added successfully!');
-      navigate('/owner/listings');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to add spot');
-    }
-    setLoading(false);
+    createSpot.mutate(formData);
   };
 
   return (
@@ -204,7 +209,7 @@ export default function AddSpot() {
             </div>
           </Card>
 
-          <Button type="submit" loading={loading} className="w-full !rounded-[2rem] py-6 text-sm font-black uppercase tracking-[0.3em] shadow-glow" size="lg">Confirm Space Listing</Button>
+          <Button type="submit" loading={createSpot.isPending} className="w-full !rounded-[2rem] py-6 text-sm font-black uppercase tracking-[0.3em] shadow-glow" size="lg">Confirm Space Listing</Button>
         </form>
       </div>
     </div>
