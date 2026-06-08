@@ -137,6 +137,11 @@ export const addReview = async (req, res, next) => {
     const { rating, comment } = req.body;
     const spotId = req.params.id;
 
+    const existingReview = await Review.findOne({ user: req.user._id, spot: spotId });
+    if (existingReview) {
+      return res.status(409).json({ error: 'You have already reviewed this parking spot' });
+    }
+
     const review = await Review.create({
       user: req.user._id,
       spot: spotId,

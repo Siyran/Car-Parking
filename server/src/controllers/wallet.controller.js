@@ -48,6 +48,8 @@ export const verifyManual = async (req, res, next) => {
       await Transaction.create({
         user: user._id,
         amount: parseFloat(amount),
+        ownerShare: 0,
+        platformShare: 0,
         type: 'wallet_topup',
         status: 'completed',
         month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,

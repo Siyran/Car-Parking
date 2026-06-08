@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { billingAPI } from '../../api';
+import { billingAPI, paymentsAPI } from '../../api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -41,6 +41,16 @@ export default function Billing() {
   const handlePay = async (method) => {
     setPaying(method);
     try {
+      if (method === 'card') {
+        // Redirect to Stripe Checkout
+        const { data } = await paymentsAPI.checkout({ amount: bill.totalAmount, currency: 'inr', month });
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+        throw new Error('Failed to create checkout session');
+      }
+
       await billingAPI.pay({ month, amount: bill.totalAmount, paymentMethod: method });
       toast.success(`Payment successful via ${method}!`);
       queryClient.invalidateQueries({ queryKey: ['monthly-billing'] });

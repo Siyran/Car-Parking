@@ -26,6 +26,44 @@ router.post('/confirm', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Create a Stripe Checkout session and return the redirect URL
+router.post('/checkout', async (req, res) => {
+  const { amount, currency = 'inr', month } = req.body;
+  try {
+    if (!process.env.STRIPE_SECRET) return res.status(500).json({ error: 'Stripe not configured' });
+    const successUrl = process.env.STRIPE_SUCCESS_URL || `${req.protocol}://${req.get('host')}/payments/success`;
+    const cancelUrl = process.env.STRIPE_CANCEL_URL || `${req.protocol}://${req.get('host')}/payments/cancel`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency,
+          product_data: { name: `ParkFlow Billing ${month || ''}` },
+          unit_amount: Math.round(Number(amount) * 100)
+        },
+        quantity: 1
+      }],
+      success_url: successUrl,
+      cancel_url: cancelUrl
+    });
+
+    // Optionally persist a placeholder payment row linking to the session
+    await db.query('INSERT INTO payments (booking_id,stripe_payment_intent_id,status,amount) VALUES($1,$2,$3,$4)', [month || null, session.payment_intent || session.id, session.payment_status || 'open', amount]);
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Checkout session failed' });
+  }
+});
+
+// Expose publishable key for frontend (optional)
+router.get('/key', (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE || '' });
+});
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   const secret = process.env.STRIPE_WEBHOOK_SECRET;

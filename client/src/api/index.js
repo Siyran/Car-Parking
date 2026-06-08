@@ -123,6 +123,13 @@ export const billingAPI = {
   withdraw: (data) => api.post('/billing/owner/withdraw', data)
 };
 
+// Payments (Stripe)
+export const paymentsAPI = {
+  createIntent: (data) => api.post('/payments/intent', data),
+  checkout: (data) => api.post('/payments/checkout', data),
+  getKey: () => api.get('/payments/key')
+};
+
 // Wallet (Razorpay)
 export const walletAPI = {
   getBalance: () => api.get('/wallet'),
